@@ -1,0 +1,116 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ProtobufNetLibrary</name>
+    </assembly>
+    <members>
+        <member name="T:ProtobufNetLibrary.ProtobufNetWrapper">
+            <summary>
+            protobuf-net操作类
+            </summary>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.WriteValueToByteArray(System.Byte[],System.Int32,System.Int32)">
+            <summary>
+            将Int32整型数字转换为byte数组并写入另一指定byte数组内（从指定的目标索引开始）
+            </summary>
+            <param name="buffer">待写入值的目标byte数组</param>
+            <param name="offset">开始写入的目标索引位置</param>
+            <param name="value">待写入的值</param>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.ReadValueFromByteArray(System.Byte[],System.Int32)">
+            <summary>
+            在一指定byte数组内，从指定的目标索引开始将4个字节转换为Int32整型数字
+            </summary>
+            <param name="data">待提取整型数字的源byte数组</param>
+            <param name="offset">开始读取的索引位置</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.SerializeToBytes``1(``0)">
+            <summary>
+            将实体类对象序列化为byte数组
+            </summary>
+            <typeparam name="T">源实体类类型</typeparam>
+            <param name="instance">待序列化的实体类对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.SerializeToBytes``1(``0,System.Int32)">
+            <summary>
+            将实体类对象序列化为byte数组，放在由Int32整型数字转换而来的byte数组后方
+            </summary>
+            <typeparam name="T">源实体类类型</typeparam>
+            <param name="instance">待序列化的实体类对象</param>
+            <param name="header"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.SerializeToString``1(``0)">
+            <summary>
+            将实体类序列化为Base64数字编码字符串
+            </summary>
+            <typeparam name="T">源实体类类型</typeparam>
+            <param name="instance">待序列化的实体类</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.SerializeToString``1(``0,System.String)">
+            <summary>
+            将实体类序列化为Base64数字编码字符串，在最前面添加特定字符串
+            </summary>
+            <typeparam name="T">源实体类类型</typeparam>
+            <param name="instance">待序列化的实体类</param>
+            <param name="header">待添加在最前面的字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.DeserializeFromBytes``1(System.Byte[])">
+            <summary>
+            从开头开始跳过消息头等长数量的元素，再将byte数组全部反序列化为实体类对象
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="bytes">待反序列化的byte数组</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.DeserializeFromBytes``1(System.Byte[],System.Int32)">
+            <summary>
+            从开头开始跳过byte数组中指定数量的元素，再将byte数组反序列化为实体类对象
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="bytes">待反序列化的byte数组</param>
+            <param name="length">byte数组的跳过长度</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.TryDeserializeFromBytes``1(System.Byte[],System.Int32,``0@)">
+            <summary>
+            从开头开始跳过byte数组中指定数量的元素，再尝试将byte数组反序列化为实体类对象，返回序列化是否成功
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="bytes">待反序列化的byte数组</param>
+            <param name="length">byte数组的跳过长度</param>
+            <param name="target">待转换的目标实体类对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.TryDeserializeFromBytes``1(System.Byte[],``0@)">
+            <summary>
+            从开头开始跳过消息头等长数量的元素，再尝试将byte数组反序列化为实体类对象，返回序列化是否成功
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="bytes">待反序列化的byte数组</param>
+            <param name="target">待转换的目标实体类对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.DeserializeFromString``1(System.String)">
+            <summary>
+            将字符串反序列化为实体类对象
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="str">待反序列化的字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.DeserializeFromString``1(System.String,System.String)">
+            <summary>
+            从字符串开头跳过特定的子字符串，将字符串剩余部分反序列化为实体类对象
+            </summary>
+            <typeparam name="T">目标实体类类型</typeparam>
+            <param name="str">待反序列化的字符串</param>
+            <param name="header">跳过的子字符串</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

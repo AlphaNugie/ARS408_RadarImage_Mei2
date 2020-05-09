@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SerializationFactory</name>
+    </assembly>
+    <members>
+        <member name="T:SerializationFactory.ProtoInfoType">
+            <summary>
+            通过ProtobufNet传输的消息类型
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.ProtoInfoType.GNSS">
+            <summary>
+            GNSS消息
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.ProtoInfoType.RADAR">
+            <summary>
+            雷达消息
+            </summary>
+        </member>
+        <member name="T:SerializationFactory.GnssProtoInfo">
+            <summary>
+            用于GNSS数据传输的protobuf数据实体类
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Tipx">
+            <summary>
+            臂架顶端本地X坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Tipy">
+            <summary>
+            臂架顶端本地Y坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Tipz">
+            <summary>
+            臂架顶端本地Z坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.WalkingPosition">
+            <summary>
+            行走位置
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.PitchAngle">
+            <summary>
+            俯仰角
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.YawAngle">
+            <summary>
+            回转角
+            </summary>
+        </member>
+        <member name="T:SerializationFactory.RadarProtoInfo">
+            <summary>
+            用于雷达数据传输的protobuf数据实体类
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistWheelLeft">
+            <summary>
+            斗轮左侧距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistWheelRight">
+            <summary>
+            斗轮右侧距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistWheelAverage">
+            <summary>
+            斗轮平均距离
+            </summary>
+        </member>
+    </members>
+</doc>
