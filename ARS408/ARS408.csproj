@@ -196,6 +196,8 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include=".editorconfig" />
+    <None Include="bin\Debug\base.db" />
+    <None Include="bin\Debug\Config.ini" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -214,6 +216,20 @@
     <None Include="bin\Debug\ars_coor.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Debug\ChnCharInfo.dll" />
+    <Content Include="bin\Debug\CommonLib.dll" />
+    <Content Include="bin\Debug\CommonLib.xml" />
+    <Content Include="bin\Debug\Interop.OPCAutomation.dll" />
+    <Content Include="bin\Debug\MySql.Data.dll" />
+    <Content Include="bin\Debug\OPCDAAuto.dll" />
+    <Content Include="bin\Debug\Oracle.ManagedDataAccess.dll" />
+    <Content Include="bin\Debug\ProtobufNetLibrary.dll" />
+    <Content Include="bin\Debug\ProtobufNetLibrary.xml" />
+    <Content Include="bin\Debug\SerializationFactory.dll" />
+    <Content Include="bin\Debug\SerializationFactory.xml" />
+    <Content Include="bin\Debug\SocketHelper.dll" />
+    <Content Include="bin\Debug\SocketHelper.xml" />
+    <Content Include="bin\Debug\System.Data.SQLite.dll" />
     <Content Include="dot-chart_pink_purple_512.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
