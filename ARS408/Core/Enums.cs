@@ -34,6 +34,11 @@ namespace ARS408.Core
     public enum RadarGroupType
     {
         /// <summary>
+        /// 无归属
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// 臂架
         /// </summary>
         Arm = 1,

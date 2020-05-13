@@ -73,7 +73,7 @@
             </summary>
             <typeparam name="T">目标实体类类型</typeparam>
             <param name="bytes">待反序列化的byte数组</param>
-            <param name="length">byte数组的跳过长度</param>
+            <param name="skip_length">byte数组的跳过长度</param>
             <returns></returns>
         </member>
         <member name="M:ProtobufNetLibrary.ProtobufNetWrapper.TryDeserializeFromBytes``1(System.Byte[],System.Int32,``0@)">
@@ -82,7 +82,7 @@
             </summary>
             <typeparam name="T">目标实体类类型</typeparam>
             <param name="bytes">待反序列化的byte数组</param>
-            <param name="length">byte数组的跳过长度</param>
+            <param name="skip_length">byte数组的跳过长度</param>
             <param name="target">待转换的目标实体类对象</param>
             <returns></returns>
         </member>

@@ -336,9 +336,9 @@ namespace ARS408.Forms
             //byte[] buffer = ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo);
             //RadarProtoInfo info = ProtobufNetWrapper.DeserializeFromBytes<RadarProtoInfo>(buffer);
             //info = ProtobufNetWrapper.DeserializeFromString<RadarProtoInfo>(s, RadarProtoInfo.RADAR_PROTO_PREFIX);
-            byte[] array = ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR);
+            //byte[] array = ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR);
             //RadarProtoInfo info = ProtobufNetWrapper.DeserializeFromBytes<RadarProtoInfo>(array);
-            this.tcpServer_Watchdog.SendData(array);
+            this.tcpServer_Watchdog.SendData(ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR));
             this.label_Error.Text = this.tcp_info_error;
             this.label_State.Text = this.tcp_info_state;
             this.label_Receive.Text = this.tcp_info_receive;

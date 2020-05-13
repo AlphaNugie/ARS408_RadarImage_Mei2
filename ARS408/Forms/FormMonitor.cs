@@ -34,11 +34,6 @@ namespace ARS408.Forms
         #endregion
 
         #region 属性
-        ///// <summary>
-        ///// 各方向距离的键值对集合
-        ///// </summary>
-        //public Dictionary<string, double> DictDistances { get; private set; }
-
         /// <summary>
         /// 对应装船机对象
         /// </summary>
@@ -48,16 +43,6 @@ namespace ARS408.Forms
         /// 数据源
         /// </summary>
         public DataTable DataSource { get; private set; }
-
-        ///// <summary>
-        ///// 数据列表
-        ///// </summary>
-        //public List<Radar> RadarList { get; private set; }
-
-        ///// <summary>
-        ///// 包含所有显示窗体的键值对
-        ///// </summary>
-        //public Dictionary<Radar, FormDisplay> DictForms { get; private set; }
 
         /// <summary>
         /// 是否正在加载
@@ -92,9 +77,6 @@ namespace ARS408.Forms
             this.column_width = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
             this.Loading = true;
             this.DataSource = null;
-            //BaseConst.DictForms = new Dictionary<Radar, FormDisplay>();
-            //this.DictDistances = new Dictionary<string, double>() { { "DistLand", 0 }, { "DistSea", 0 }, { "DistNorth", 0 }, { "DistSouth", 0 }, { "DistLandMax", 0 }, { "DistSeaMax", 0 }, { "DistNorthMax", 0 }, { "DistSouthMax", 0 }, { "ShoreNorth", 0 }, { "ShoreSouth", 0 } };
-            //this.DictDistances = new Dictionary<string, double>() { { "DistWheelLeft", 0 }, { "DistWheelRight", 0 } };
             this.UpdateShiploader();
             this.InitOpcHelper();
             this.DataSourceRefresh();
@@ -146,7 +128,6 @@ namespace ARS408.Forms
                 };
             }
             this.Shiploader = loader;
-            //return loader;
         }
 
         /// <summary>
@@ -158,8 +139,6 @@ namespace ARS408.Forms
             new Thread(new ThreadStart(() =>
             {
                 this.OpcHelper.Init();
-                //if (!string.IsNullOrWhiteSpace(this.OpcHelper.LastErrorMessage))
-                //    MessageBox.Show(this.OpcHelper.LastErrorMessage);
                 this.label_opc.Text = this.OpcHelper.LastErrorMessage;
             }))
             { IsBackground = true }.Start();
@@ -169,12 +148,7 @@ namespace ARS408.Forms
         {
             try
             {
-                //this.DataSource = this.dataService.GetLevels(this.shiploader_id);
-                //DataTable radars = (new DataService_Radar()).GetRadars(this.shiploader_id, "radar_name");
-                //DataTable radars = (new DataService_Radar()).GetRadars(this.shiploader_id, "radar_id");
-                //BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => BaseFunc.GetRadarFromDataRow(row)).ToList();
                 this.DataSource = this.dataService.GetAllLevels();
-                //BaseFunc.RadarListUpdate();
             }
             catch (Exception e)
             {
@@ -183,84 +157,9 @@ namespace ARS408.Forms
                 return;
             }
 
-            //this.InitForms(); //初始化窗体对象
             this.treeView_Main.BindTreeViewDataSource(this.DataSource, this.parent_field, this.key_field, this.display_field);
             this.Loading = false;
         }
-
-        //private Radar GetRadarFromDataRow(DataRow row)
-        //{
-        //    if (row == null)
-        //        return null;
-
-        //    Radar radar = new Radar
-        //    {
-        //        //OpcHelper = this.OpcHelper,
-        //        Id = int.Parse(row["radar_id"].ToString()),
-        //        Name = row["radar_name"].ToString(),
-        //        IpAddress = row["ip_address"].ToString(),
-        //        Port = ushort.Parse(row["port"].ToString()),
-        //        ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString()),
-        //        UsingLocal = row["using_local"].ToString().Equals("1"),
-        //        IpAddressLocal = row["ip_address_local"].ToString(),
-        //        PortLocal = int.Parse(row["port_local"].ToString()),
-        //        OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString()),
-        //        TopicName = row["topic_name"].ToString(),
-        //        OwnerGroupId = int.Parse(row["owner_group_id"].ToString()),
-        //        GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString()),
-        //        DegreeYoz = double.Parse(row["degree_yoz"].ToString()),
-        //        DegreeXoy = double.Parse(row["degree_xoy"].ToString()),
-        //        DegreeXoz = double.Parse(row["degree_xoz"].ToString()),
-        //        DegreeGeneral = double.Parse(row["degree_general"].ToString()),
-        //        Direction = (Directions)int.Parse(row["direction_id"].ToString()),
-        //        DefenseMode = int.Parse(row["defense_mode_id"].ToString()),
-        //        Offset = double.Parse(row["offset"].ToString()),
-        //        Remark = row["remark"].ToString(),
-        //        ItemNameRadarState = row["item_name_radar_state"].ToString(),
-        //        ItemNameCollisionState = row["item_name_collision_state"].ToString(),
-        //        ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString(),
-        //        RcsMinimum = int.Parse(row["rcs_min"].ToString()),
-        //        RcsMaximum = int.Parse(row["rcs_max"].ToString()),
-        //        RadarHeight = double.Parse(row["radar_height"].ToString()),
-        //        RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1"),
-        //        RadarxMin = double.Parse(row["radar_x_min"].ToString()),
-        //        RadarxMax = double.Parse(row["radar_x_max"].ToString()),
-        //        RadaryMin = double.Parse(row["radar_y_min"].ToString()),
-        //        RadaryMax = double.Parse(row["radar_y_max"].ToString()),
-        //        ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1"),
-        //        ClaimerxMin = double.Parse(row["claimer_x_min"].ToString()),
-        //        ClaimerxMax = double.Parse(row["claimer_x_max"].ToString()),
-        //        ClaimeryMin = double.Parse(row["claimer_y_min"].ToString()),
-        //        ClaimeryMax = double.Parse(row["claimer_y_max"].ToString()),
-        //        ClaimerzMin = double.Parse(row["claimer_z_min"].ToString()),
-        //        ClaimerzMax = double.Parse(row["claimer_z_max"].ToString())
-        //    };
-        //    return radar;
-        //}
-
-        ///// <summary>
-        ///// 键值对初始化
-        ///// </summary>
-        //private void InitForms()
-        //{
-        //    //if (this.DataSource == null || this.DataSource.Rows.Count == 0)
-        //    //{
-        //    //    this.Loading = false;
-        //    //    return;
-        //    //}
-
-        //    ////排除根节点
-        //    //foreach (Radar radar in BaseConst.RadarList)
-        //    //{
-        //    //    if (BaseConst.DictForms.ContainsKey(radar))
-        //    //        continue;
-
-        //    //    FormDisplay form = new FormDisplay(radar);
-        //    //    BaseConst.DictForms.Add(radar, form);
-        //    //}
-        //    this.Loading = false;
-        //}
-
 
         /// <summary>
         /// 根据雷达信息查询窗体，找到则在TabPage页中加载窗体对象
@@ -372,68 +271,6 @@ namespace ARS408.Forms
 ]", this.OpcHelper.WalkingPosition, this.OpcHelper.PitchAngle, this.OpcHelper.StretchLength, this.OpcHelper.BucketYaw, this.OpcHelper.BucketPitch, this.OpcHelper.BeltSpeed, this.OpcHelper.Stream, BaseConst.RadarInfo.DistWheelLeft/*this.DictDistances["DistWheelLeft"]*/, BaseConst.RadarInfo.DistWheelRight/*this.DictDistances["DistWheelRight"]*//*, this.DictDistances["DistLand"] + this.DictDistances["DistSea"] + 2.623, this.DictDistances["DistNorth"], this.DictDistances["DistSouth"], this.DictDistances["DistNorth"] + this.DictDistances["DistSouth"] + 4.831*/).Replace('[', '{').Replace(']', '}');
             return main;
         }
-
-        ///// <summary>
-        ///// 获取包含斗轮两侧雷达距离的字符串
-        ///// </summary>
-        ///// <returns></returns>
-        //public static string GetWheelRadarDistances()
-        //{
-        //    BaseFunc.UpdateUniversalInfo();
-        //    //string result = string.Format("radar/dist_wheel_left:{0};dist_wheel_right:{1}", Math.Round(this.DictDistances["DistWheelLeft"], 4), Math.Round(this.DictDistances["DistWheelRight"], 4));
-        //    string result = string.Format("radar/dist_wheel_left:{0};dist_wheel_right:{1}", BaseConst.UniversalInfo.DistWheelLeft, BaseConst.UniversalInfo.DistWheelRight);
-        //    return result;
-        //}
-
-        ///// <summary>
-        ///// 更新各方向距离
-        ///// </summary>
-        //public static void UpdateUniversalInfo()
-        //{
-        //    //IEnumerable<Radar> radars = BaseConst.RadarList;
-        //    BaseConst.UniversalInfo.DistWheelLeft = BaseFunc.GetMinValueExceptZero(BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance)); //斗轮左距离
-        //    BaseConst.UniversalInfo.DistWheelRight = BaseFunc.GetMinValueExceptZero(BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance)); //斗轮右距离
-        //}
-
-        ///// <summary>
-        ///// 根据Radar对象获取雷达最近距离
-        ///// </summary>
-        ///// <param name="radar">Radar实体类对象</param>
-        ///// <returns></returns>
-        //public static double GetRadarDistance(Radar radar)
-        //{
-        //    double dist = 0;
-        //    try { dist = BaseConst.DictForms[radar].Infos.CurrentDistance; } catch (Exception) { }
-        //    //if (radar != null && BaseConst.DictForms[radar] != null && BaseConst.DictForms[radar].Infos != null)
-        //    //    dist = BaseConst.DictForms[radar].Infos.CurrentDistance;
-        //    return dist;
-        //}
-
-  //      /// <summary>
-  //      /// 根据Radar对象获取雷达信息字符串
-  //      /// </summary>
-  //      /// <param name="radar">Radar实体类对象</param>
-  //      /// <returns></returns>
-  //      public static string GetRadarString(Radar radar, out double distance)
-  //      {
-  //          string result = string.Empty;
-  //          FormDisplay display;
-  //          DataFrameMessages infos;
-  //          distance = 0;
-  //          if (radar != null && (display = BaseConst.DictForms[radar]) != null && (infos = display.Infos) != null)
-  //          {
-  //              dynamic obj_other = infos.CurrentSensorMode == SensorMode.Object ? (dynamic)infos.ObjectHighest : (dynamic)infos.ClusterHighest;
-  //              double obj_height = obj_other == null ? 0 : 0 - BaseConst.BucketHeight - obj_other.ModiCoors.Z;
-  //              distance = infos.CurrentDistance;
-  //              result = string.Format(@"  ""radar_{0}"": [
-  //""effective"": {1},
-  //""distance"": {2},
-  //""below"": {3}
-  //],", radar.PortLocal + "_" + radar.Name, infos.RadarState.Working, distance, obj_height);
-  //          }
-
-  //          return result;
-  //      }
         #endregion
 
         #region OPC
@@ -515,7 +352,7 @@ namespace ARS408.Forms
             {
                 if (radar == null)
                     continue;
-                states.Insert(0, radar.RadarState.Working);
+                states.Insert(0, radar.State.Working);
                 if (radar.GroupType == RadarGroupType.Wheel)
                     buckets.Insert(0, radar.ThreatLevelBinary);
                 else if (radar.GroupType == RadarGroupType.Arm)
@@ -611,7 +448,9 @@ namespace ARS408.Forms
             foreach (FormDisplay form in BaseConst.DictForms.Values)
             {
                 try { form.StartOrEndReceiving(flag); }
+#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
                 catch (Exception ex) { }
+#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
             }
             this.button_StartOrEnd.Text = flag ? "结束" : "开始";
         }

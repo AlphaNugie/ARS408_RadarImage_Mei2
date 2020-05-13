@@ -2,7 +2,9 @@
 using ARS408.Model;
 //using ARS408.Model.Serializable;
 using CommonLib.Clients.Object;
+using CommonLib.Extensions;
 using CommonLib.Function;
+using ProtoBuf;
 using SerializationFactory;
 using System;
 using System.Collections.Generic;
@@ -303,7 +305,9 @@ property float rcs";
                 if (table != null && table.Rows.Count > 0)
                     BaseConst.ThreatLevelValues = table.Rows.Cast<DataRow>().Select(row => double.Parse(row["LEVEL_VALUE"].ToString())).ToArray();
             }
+#pragma warning disable CS0168 // 声明了变量“e”，但从未使用过
             catch (Exception e) { }
+#pragma warning restore CS0168 // 声明了变量“e”，但从未使用过
             //BaseFunc.RadarListUpdate();
         }
 
@@ -361,7 +365,8 @@ property float rcs";
         public static void UpdateRadarList()
         {
             DataTable radars = (new DataService_Radar()).GetAllRadars("radar_id");
-            BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => BaseFunc.GetRadarFromDataRow(row)).ToList();
+            //BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => BaseFunc.GetRadarFromDataRow(row)).ToList();
+            BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => new Radar(row)).ToList();
 
             //排除根节点
             foreach (Radar radar in BaseConst.RadarList)
@@ -380,6 +385,8 @@ property float rcs";
             BaseConst.RadarInfo.DistWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
             BaseConst.RadarInfo.DistWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
             BaseConst.RadarInfo.DistWheelMin = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮最近距离
+            BaseConst.RadarInfo.RadarList.Clear();
+            BaseConst.RadarInfo.RadarList.AddRange(BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)));
         }
 
         /// <summary>
@@ -395,8 +402,7 @@ property float rcs";
             distance = 0;
             if (radar != null && (display = BaseConst.DictForms[radar]) != null && (infos = display.Infos) != null)
             {
-                dynamic obj_other = infos.CurrentSensorMode == SensorMode.Object ? (dynamic)infos.ObjectHighest : (dynamic)infos.ClusterHighest;
-                double obj_height = obj_other == null ? 0 : 0 - BaseConst.BucketHeight - obj_other.ModiCoors.Z;
+                double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.ModiCoors.Z;
                 distance = infos.CurrentDistance;
                 result = string.Format(@"  ""radar_{0}"": [
   ""effective"": {1},
@@ -406,61 +412,6 @@ property float rcs";
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// 将从sqlite数据查询出的Radar基础表每一行转换为Radar实体类对象
-        /// </summary>
-        /// <param name="row">待转换的DataRow对象</param>
-        /// <returns></returns>
-        public static Radar GetRadarFromDataRow(DataRow row)
-        {
-            if (row == null)
-                return null;
-
-            Radar radar = new Radar
-            {
-                //OpcHelper = this.OpcHelper,
-                Id = int.Parse(row["radar_id"].ToString()),
-                Name = row["radar_name"].ToString(),
-                IpAddress = row["ip_address"].ToString(),
-                Port = ushort.Parse(row["port"].ToString()),
-                ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString()),
-                UsingLocal = row["using_local"].ToString().Equals("1"),
-                IpAddressLocal = row["ip_address_local"].ToString(),
-                PortLocal = int.Parse(row["port_local"].ToString()),
-                OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString()),
-                TopicName = row["topic_name"].ToString(),
-                OwnerGroupId = int.Parse(row["owner_group_id"].ToString()),
-                GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString()),
-                DegreeYoz = double.Parse(row["degree_yoz"].ToString()),
-                DegreeXoy = double.Parse(row["degree_xoy"].ToString()),
-                DegreeXoz = double.Parse(row["degree_xoz"].ToString()),
-                DegreeGeneral = double.Parse(row["degree_general"].ToString()),
-                Direction = (Directions)int.Parse(row["direction_id"].ToString()),
-                DefenseMode = int.Parse(row["defense_mode_id"].ToString()),
-                Offset = double.Parse(row["offset"].ToString()),
-                Remark = row["remark"].ToString(),
-                ItemNameRadarState = row["item_name_radar_state"].ToString(),
-                ItemNameCollisionState = row["item_name_collision_state"].ToString(),
-                ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString(),
-                RcsMinimum = int.Parse(row["rcs_min"].ToString()),
-                RcsMaximum = int.Parse(row["rcs_max"].ToString()),
-                RadarHeight = double.Parse(row["radar_height"].ToString()),
-                RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1"),
-                RadarxMin = double.Parse(row["radar_x_min"].ToString()),
-                RadarxMax = double.Parse(row["radar_x_max"].ToString()),
-                RadaryMin = double.Parse(row["radar_y_min"].ToString()),
-                RadaryMax = double.Parse(row["radar_y_max"].ToString()),
-                ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1"),
-                ClaimerxMin = double.Parse(row["claimer_x_min"].ToString()),
-                ClaimerxMax = double.Parse(row["claimer_x_max"].ToString()),
-                ClaimeryMin = double.Parse(row["claimer_y_min"].ToString()),
-                ClaimeryMax = double.Parse(row["claimer_y_max"].ToString()),
-                ClaimerzMin = double.Parse(row["claimer_z_min"].ToString()),
-                ClaimerzMax = double.Parse(row["claimer_z_max"].ToString())
-            };
-            return radar;
         }
 
         public static Radar GetRadarByName(string name)
@@ -485,38 +436,6 @@ property float rcs";
             input = !result ? string.Empty : matches.Cast<Match>().Last().Value;
             return result;
         }
-
-        ///// <summary>
-        ///// 获取数据集中所有不为0的数中最小的数
-        ///// </summary>
-        ///// <param name="set"></param>
-        ///// <returns></returns>
-        //public static double GetMinValueExceptZero(IEnumerable<double> set)
-        //{
-        //    if (set == null)
-        //        return 0;
-        //    set = set.Where(d => d != 0);
-        //    double min = 0;
-        //    try { min = set.Count() == 0 ? 0 : set.Min(); }
-        //    catch (Exception) { }
-        //    return min;
-        //}
-
-        ///// <summary>
-        ///// 获取数据集中所有不为0的数中最大的数
-        ///// </summary>
-        ///// <param name="set"></param>
-        ///// <returns></returns>
-        //public static double GetMaxValueExceptZero(IEnumerable<double> set)
-        //{
-        //    if (set == null)
-        //        return 0;
-        //    set = set.Where(d => d != 0);
-        //    double max = 0;
-        //    try { max = set.Count() == 0 ? 0 : set.Max(); }
-        //    catch (Exception) { }
-        //    return max;
-        //}
 
         /// <summary>
         /// 根据雷达散射截面属性获取颜色
@@ -606,7 +525,7 @@ property float rcs";
         /// <returns></returns>
         public static int GetThreatLevelByValue(double value)
         {
-            return GetThreatLevelByValue(value, RadarGroupType.Wheel);
+            return GetThreatLevelByValue(value, RadarGroupType.None);
         }
 
         /// <summary>

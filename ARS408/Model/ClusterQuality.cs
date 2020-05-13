@@ -10,7 +10,7 @@ namespace ARS408.Model
     /// <summary>
     /// 集群重要信息
     /// </summary>
-    public class ClusterQuality : SensorMessage
+    public class ClusterQuality : SensorQuality
     {
         #region 静态属性，过滤器
         /// <summary>
@@ -31,31 +31,6 @@ namespace ARS408.Model
 
         #region 属性
         /// <summary>
-        /// 集群ID（编号）
-        /// </summary>
-        public byte Id { get; set; }
-
-        /// <summary>
-        /// 纵向（x）坐标的标准差，米
-        /// </summary>
-        public SignalValue DistLongRms { get; set; }
-
-        /// <summary>
-        /// 横向（y）坐标的标准差，米
-        /// </summary>
-        public SignalValue DistLatRms { get; set; }
-
-        /// <summary>
-        /// 纵向的相对速度（x）的标准差，米/秒
-        /// </summary>
-        public SignalValue VrelLongRms { get; set; }
-
-        /// <summary>
-        /// 横向的相对速度（y）的标准差，米/秒
-        /// </summary>
-        public SignalValue VrelLatRms { get; set; }
-
-        /// <summary>
         /// 集群的虚警概率（错误报警）
         /// </summary>
         public FalseAlarmProbability Pdh0 { get; set; }
@@ -69,21 +44,6 @@ namespace ARS408.Model
         /// 集群的有效状态
         /// </summary>
         public InvalidState InvalidState { get; set; }
-
-        private BaseMessage _base = new BaseMessage();
-
-        /// <summary>
-        /// 基础信息
-        /// </summary>
-        public BaseMessage Base
-        {
-            get { return this._base; }
-            set
-            {
-                this._base = value;
-                this.DataConvert(this._base.DataString_Binary);
-            }
-        }
         #endregion
 
         /// <summary>
@@ -104,7 +64,7 @@ namespace ARS408.Model
         /// 转换2进制数据
         /// </summary>
         /// <param name="binary"></param>
-        private void DataConvert(string binary)
+        protected override void DataConvert(string binary)
         {
             try
             {

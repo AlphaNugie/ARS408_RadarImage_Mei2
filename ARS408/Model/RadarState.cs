@@ -11,8 +11,6 @@ namespace ARS408.Model
     /// </summary>
     public class RadarState : SensorMessage
     {
-        private BaseMessage _base = new BaseMessage();
-
         #region 属性
         /// <summary>
         /// 是否在工作
@@ -103,20 +101,6 @@ namespace ARS408.Model
         /// 是否激活传感器高灵敏度模式，0 标准模式，1 高灵敏度模式
         /// </summary>
         public byte RcsThreshold { get; set; }
-
-        /// <summary>
-        /// 基础信息
-        /// </summary>
-        public BaseMessage Base
-        {
-            get { return this._base; }
-            set
-            {
-                this._base = value;
-                if (this._base != null)
-                    this.DataConvert(this._base.DataString_Binary);
-            }
-        }
         #endregion
 
         /// <summary>
@@ -137,12 +121,11 @@ namespace ARS408.Model
         /// 转换2进制数据
         /// </summary>
         /// <param name="binary"></param>
-        private void DataConvert(string binary)
+        protected override void DataConvert(string binary)
         {
             try
             {
-                this.MemoryWriteStatus =
-                    Convert.ToByte(binary.Substring(0, 1), 2);
+                this.MemoryWriteStatus = Convert.ToByte(binary.Substring(0, 1), 2);
                 this.MemoryReadStatus = Convert.ToByte(binary.Substring(1, 1), 2);
                 this.MaxDistance = Convert.ToUInt16(binary.Substring(8, 10), 2);
                 this.PersistentError = Convert.ToByte(binary.Substring(18, 1), 2);

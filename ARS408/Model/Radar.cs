@@ -1,6 +1,8 @@
 ﻿using ARS408.Core;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,45 +12,84 @@ namespace ARS408.Model
     /// <summary>
     /// 雷达实体类
     /// </summary>
+    [ProtoContract]
     public class Radar
     {
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
+        internal double _current;
+        internal int _threat_level = 0;
+        internal string _threat_level_binary = "00";
 
         #region 属性
-        ///// <summary>
-        ///// OPC工具
-        ///// </summary>
-        //public OpcUtilHelper OpcHelper { get; set; }
-
         /// <summary>
         /// ID
         /// </summary>
+        [ProtoMember(1)]
         public int Id { get; set; }
 
         /// <summary>
         /// 雷达名称
         /// </summary>
+        [ProtoMember(2)]
         public string Name { get; set; }
+
+        /// <summary>
+        /// 工作状态，1 收到数据，0 未收到数据
+        /// </summary>
+        [ProtoMember(3)]
+        public int Working
+        {
+            get { return this.State.Working; }
+            set { this.State.Working = value; }
+        }
 
         /// <summary>
         /// 雷达状态信息
         /// </summary>
-        public RadarState RadarState { get; set; }
+        public RadarState State { get; set; }
 
-        public double CurrentDistance { get; set; }
+        /// <summary>
+        /// 当前障碍物距离
+        /// </summary>
+        [ProtoMember(4)]
+        public double CurrentDistance
+        {
+            get { return this._current; }
+            set { this._current = value; }
+        }
 
-        public string ThreatLevelBinary { get; set; }
+        /// <summary>
+        /// 报警级数
+        /// </summary>
+        [ProtoMember(5)]
+        public int ThreatLevel
+        {
+            get { return this._threat_level; }
+            set { this._threat_level = value; }
+        }
+
+        /// <summary>
+        /// 报警级数2进制字符串（2位）
+        /// </summary>
+        [ProtoMember(6)]
+        public string ThreatLevelBinary
+        {
+            get { return this._threat_level_binary; }
+            set { this._threat_level_binary = value; }
+        }
 
         #region 通讯与地址
         /// <summary>
         /// IP地址
         /// </summary>
+        [ProtoMember(7)]
         public string IpAddress { get; set; }
 
         /// <summary>
         /// 端口
         /// </summary>
+        [ProtoMember(8)]
         public ushort Port { get; set; }
 
         /// <summary>
@@ -288,30 +329,87 @@ namespace ARS408.Model
         /// </summary>
         public string ItemNameCollisionState2 { get; set; }
 
-        /// <summary>
-        /// 存在概率最低值
-        /// </summary>
-        public double ProbOfExistMinimum { get; set; }
+        ///// <summary>
+        ///// 存在概率最低值
+        ///// </summary>
+        //public double ProbOfExistMinimum { get; set; }
         #endregion
 
+        #region 构造器
         /// <summary>
-        /// 默认构造器
+        /// 默认构造器，从公共变量获取属性值
         /// </summary>
         public Radar()
         {
-            this.RcsMinimum = -64;
-            this.RcsMaximum = 64;
             this.RadarHeight = 0;
-            this.ProbOfExistMinimum = -1;
+            this.State = new RadarState();
+            this.Id = -1;
+            this.Name = "ARS408-21";
+            this.GroupType = RadarGroupType.None;
+            this.IpAddress = BaseConst.IpAddress;
+            this.Port = BaseConst.Port;
+            this.ConnectionMode = BaseConst.ConnectionMode;
+            this.UsingLocal = BaseConst.UsingLocal;
+            this.PortLocal = BaseConst.Port_Local;
+            this.RcsMinimum = BaseConst.RcsMinimum;
+            this.RcsMinimum = BaseConst.RcsMaximum;
         }
+
+        /// <summary>
+        /// 构造器，从公共变量获取属性值，再用给定的DataRow对象覆盖各属性的值
+        /// </summary>
+        /// <param name="row"></param>
+        public Radar(DataRow row) : this()
+        {
+            if (row == null)
+                return;
+
+            this.Id = int.Parse(row["radar_id"].ToString());
+            this.Name = row["radar_name"].ToString();
+            this.IpAddress = row["ip_address"].ToString();
+            this.Port = ushort.Parse(row["port"].ToString());
+            this.ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());
+            this.UsingLocal = row["using_local"].ToString().Equals("1");
+            this.IpAddressLocal = row["ip_address_local"].ToString();
+            this.PortLocal = int.Parse(row["port_local"].ToString());
+            this.OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString());
+            this.TopicName = row["topic_name"].ToString();
+            this.OwnerGroupId = int.Parse(row["owner_group_id"].ToString());
+            this.GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString());
+            this.DegreeYoz = double.Parse(row["degree_yoz"].ToString());
+            this.DegreeXoy = double.Parse(row["degree_xoy"].ToString());
+            this.DegreeXoz = double.Parse(row["degree_xoz"].ToString());
+            this.DegreeGeneral = double.Parse(row["degree_general"].ToString());
+            this.Direction = (Directions)int.Parse(row["direction_id"].ToString());
+            this.DefenseMode = int.Parse(row["defense_mode_id"].ToString());
+            this.Offset = double.Parse(row["offset"].ToString());
+            this.Remark = row["remark"].ToString();
+            this.ItemNameRadarState = row["item_name_radar_state"].ToString();
+            this.ItemNameCollisionState = row["item_name_collision_state"].ToString();
+            this.ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
+            this.RcsMinimum = int.Parse(row["rcs_min"].ToString());
+            this.RcsMaximum = int.Parse(row["rcs_max"].ToString());
+            this.RadarHeight = double.Parse(row["radar_height"].ToString());
+            this.RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
+            this.RadarxMin = double.Parse(row["radar_x_min"].ToString());
+            this.RadarxMax = double.Parse(row["radar_x_max"].ToString());
+            this.RadaryMin = double.Parse(row["radar_y_min"].ToString());
+            this.RadaryMax = double.Parse(row["radar_y_max"].ToString());
+            this.ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
+            this.ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
+            this.ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
+            this.ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
+            this.ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
+            this.ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
+            this.ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
+        }
+        #endregion
 
         /// <summary>
         /// 更新修改后XYZ坐标的系数
         /// </summary>
         public void UpdateRatios()
         {
-            //this.XmodifiedRatios = new CoordinateRatios() { Xratio = this.cosphi * coslamda, Yratio = 0 - sintheta * sinlamda - costheta * sinphi * coslamda };
-            //this.YmodifiedRatios = new CoordinateRatios() { Xratio = sinphi, Yratio = costheta * cosphi };
             this.XmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * cosg - sinphi * sing, Yratio = 0 - sintheta * sinlamda * cosg - costheta * sinphi * coslamda * cosg - costheta * cosphi * sing };
             this.YmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * sing + sinphi * cosg, Yratio = costheta * cosphi * cosg - costheta * sinphi * coslamda * sing - sintheta * sinlamda * sing };
             this.ZmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * sinlamda, Yratio = sintheta * coslamda - costheta * sinphi * sinlamda };

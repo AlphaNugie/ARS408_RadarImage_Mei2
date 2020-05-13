@@ -2,7 +2,7 @@
 using ARS408.Model;
 using CommonLib.Clients;
 using CommonLib.Events;
-using CommonLib.Function;
+using CommonLib.Extensions;
 using CommonLib.UIControlUtil;
 using OPCAutomation;
 using SocketHelper;
@@ -26,9 +26,7 @@ namespace ARS408.Forms
         private readonly Regex pattern = new Regex(BaseConst.Pattern_WrappedStatus, RegexOptions.Compiled);
         private readonly DataService_Sqlite dataService = new DataService_Sqlite();
         private readonly DataService_Radar dataService_Radar = new DataService_Radar();
-        private List<ClusterGeneral> list_cluster = null;
-        private List<ObjectGeneral> list_object = null;
-        //private readonly ushort refresh_interval = 200;
+        private List<SensorGeneral> list_general = null;
         private Bitmap bitmap = null;
         private Graphics graphic = null;
         private string received = string.Empty, wrapped = string.Empty;
@@ -41,7 +39,8 @@ namespace ARS408.Forms
         /// <summary>
         /// 标题栏原始标题
         /// </summary>
-        public string Title { get { return this.Radar == null ? "ARS408-21" : this.Radar.Name; } }
+        //public string Title { get { return this.Radar == null ? "ARS408-21" : this.Radar.Name; } }
+        public string Title { get { return this.Radar.Name; } }
 
         /// <summary>
         /// 帧消息处理类
@@ -130,9 +129,7 @@ namespace ARS408.Forms
                 else
                 {
                     this.rcsMinimum = value;
-                    //向数据库保存RCS值最小值
-                    if (this.Radar != null)
-                        this.dataService_Radar.UpdateRadarRcsMinById(this.rcsMinimum, this.Radar.Id);
+                    this.dataService_Radar.UpdateRadarRcsMinById(this.rcsMinimum, this.Radar.Id); //向数据库保存RCS值最小值
                 }
             }
         }
@@ -150,38 +147,10 @@ namespace ARS408.Forms
                 else
                 {
                     this.rcsMaximum = value;
-                    //向数据库保存RCS值最小值
-                    if (this.Radar != null)
-                        this.dataService_Radar.UpdateRadarRcsMaxById(this.rcsMaximum, this.Radar.Id);
+                    this.dataService_Radar.UpdateRadarRcsMaxById(this.rcsMaximum, this.Radar.Id); //向数据库保存RCS值最小值
                 }
             }
         }
-
-        ///// <summary>
-        ///// 允许的存在概率最低值
-        ///// </summary>
-        //public double ProbOfExistMinimum { get; set; }
-        #endregion
-        #region OPC属性
-        ///// <summary>
-        ///// OPC工具
-        ///// </summary>
-        //public OpcUtilHelper OpcHelper { get { return this.Radar == null ? null : this.Radar.OpcHelper; } }
-
-        ///// <summary>
-        ///// 雷达对应OPC组
-        ///// </summary>
-        //public OPCGroup OpcGroup { get; set; }
-
-        ///// <summary>
-        ///// 所有待添加OPC标签名称
-        ///// </summary>
-        //public string[] OpcItemNames { get; set; }
-
-        ///// <summary>
-        ///// OPC标签的服务端句柄
-        ///// </summary>
-        //public Array ServerHandlers;
         #endregion
 
         /// <summary>
@@ -191,9 +160,10 @@ namespace ARS408.Forms
         public FormDisplay(Radar radar)
         {
             InitializeComponent();
-            this.Radar = radar;
+            this.Radar = radar == null ? new Radar() : radar;
 
-            this.Init(this.Radar);
+            this.Init();
+            this.InitControls();
         }
 
         /// <summary>
@@ -218,34 +188,29 @@ namespace ARS408.Forms
             this.Finalizing();
         }
 
-        private void Init(Radar radar)
+        #region 功能
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        private void Init()
         {
-            //this.OpcHelper = radar == null ? null : radar.OpcHelper;
-            this.IpAddress = radar == null ? BaseConst.IpAddress : radar.IpAddress;
-            this.Port = radar == null ? BaseConst.Port : radar.Port;
-            this.ConnectionMode = radar == null ? BaseConst.ConnectionMode : radar.ConnectionMode;
-            this.UsingLocal = radar == null ? BaseConst.UsingLocal : radar.UsingLocal;
+            this.IpAddress = this.Radar.IpAddress;
+            this.Port = this.Radar.Port;
+            this.ConnectionMode = this.Radar.ConnectionMode;
+            this.UsingLocal = this.Radar.UsingLocal;
             this.IpAddress_Local = BaseConst.IpAddress_Local;
-            this.Port_Local = radar == null ? BaseConst.Port_Local : radar.PortLocal;
-            //this.ProbOfExistMinimum = radar == null ? BaseConst.ProbOfExistMinimum : radar.ProbOfExistMinimum;
-            this.rcsMinimum = radar == null ? BaseConst.RcsMinimum : radar.RcsMinimum;
-            this.rcsMaximum = radar == null ? BaseConst.RcsMaximum : radar.RcsMaximum;
-
-            //this.thread_writeitems = new Thread(new ThreadStart(this.WriteItemValuesLoop)) { IsBackground = true };
-            //this.AddGroupItemsAsync();
+            this.Port_Local = this.Radar.PortLocal;
+            this.rcsMinimum = this.Radar.RcsMinimum;
+            this.rcsMaximum = this.Radar.RcsMaximum;
 
             this.column_width = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
             this.Infos = new DataFrameMessages(this, this.Radar);
-            this.list_cluster = this.Infos.ListTrigger_Cluster;
-            this.list_object = this.Infos.ListTrigger_Object;
+            this.list_general = this.Infos.ListTrigger;
             this.Name = this.Title;
             this.Text = this.Title;
             this.S = this.scale_original;
-
-            this.InitControls();
         }
 
-        #region 功能
         /// <summary>
         /// 初始化控件
         /// </summary>
@@ -261,14 +226,9 @@ namespace ARS408.Forms
             this.comboBox_ConnMode.SelectedIndexChanged += new System.EventHandler(this.ComboBox_ConnMode_SelectedIndexChanged);
             this.comboBox_ConnMode.SelectedValue = (int)this.ConnectionMode;
 
-            //this.comboBox_ProbMinimum.DataSource = this.dataService.GetAllExistProbs();
-            //this.comboBox_ProbMinimum.SelectedIndexChanged += new System.EventHandler(this.ComboBox_ProbMinimum_SelectedIndexChanged);
-            //this.comboBox_ProbMinimum.SelectedValue = this.ProbOfExistMinimum;
-
             this.checkBox_UsingLocal.Checked = this.UsingLocal;
             this.textBox_IpAddress_Local.Text = this.IpAddress_Local;
             this.numeric_Port_Local.Value = this.Port_Local;
-            //int min = this.RcsMinimum, max = this.RcsMaximum;
             this.trackBar_RcsMin.Value = this.RcsMinimum;
             this.trackBar_RcsMax.Value = this.RcsMaximum;
             this.timer_UIUpdate.Start();
@@ -288,7 +248,7 @@ namespace ARS408.Forms
             this.finalized = true;
             BaseConst.IniHelper.WriteData("Detection", "RcsMinimum", this.RcsMinimum.ToString());
             BaseConst.IniHelper.WriteData("Detection", "RcsMaximum", this.RcsMaximum.ToString());
-            if (this.Radar != null)
+            if (this.Radar.Id > 0)
                 return;
 
             BaseConst.IniHelper.WriteData("Connection", "IpAddress", this.IpAddress);
@@ -297,7 +257,6 @@ namespace ARS408.Forms
             BaseConst.IniHelper.WriteData("Connection", "UsingLocal", this.checkBox_UsingLocal.Checked ? "1" : "0");
             BaseConst.IniHelper.WriteData("Connection", "IpAddressLocal", this.textBox_IpAddress_Local.Text);
             BaseConst.IniHelper.WriteData("Connection", "PortLocal", this.numeric_Port_Local.Value.ToString());
-            //BaseConst.IniHelper.WriteData("Detection", "ProbOfExistMinimum", this.ProbOfExistMinimum.ToString());
         }
 
         /// <summary>
@@ -327,10 +286,6 @@ namespace ARS408.Forms
         public void StartOrEndReceiving(bool flag)
         {
             int result;
-            //if (this.ConnectionMode == ConnectionMode.TCP_CLIENT)
-            //    result = flag ? this.Connect() : this.Disconnect();
-            //else
-            //    this.UdpInitOrClose();
             switch (this.ConnectionMode)
             {
                 case ConnectionMode.TCP_CLIENT:
@@ -350,13 +305,11 @@ namespace ARS408.Forms
         /// </summary>
         private int Connect()
         {
-            //bool usingTcp = this.ConnectionMode == 1;
             try
             {
                 switch (this.ConnectionMode)
                 {
                     case ConnectionMode.TCP_CLIENT:
-                        //this.SocketTcpClient.Tcpclient.ReceiveBufferSize = 4096;
                         this.SocketTcpClient.ServerIp = this.IpAddress;
                         this.SocketTcpClient.ServerPort = this.Port;
                         this.SocketTcpClient.AssignLocalAddress = this.checkBox_UsingLocal.Checked;
@@ -365,7 +318,6 @@ namespace ARS408.Forms
                         this.SocketTcpClient.StartConnection();
                         break;
                     case ConnectionMode.UDP:
-                        //this.UdpClient.ReceiveRestTime = BaseConst.ReceiveRestTime;
                         if (this.checkBox_UsingLocal.Checked)
                             this.UdpClient.Connect(this.IpAddress, this.Port, this.IpAddress_Local, this.Port_Local);
                         else
@@ -397,7 +349,6 @@ namespace ARS408.Forms
         /// </summary>
         private int Disconnect()
         {
-            //bool usingTcp = this.ConnectionMode == 1;
             try
             {
                 switch (this.ConnectionMode)
@@ -439,7 +390,6 @@ namespace ARS408.Forms
             {
                 try { this.UdpClient = this.checkBox_UsingLocal.Checked ? new DerivedUdpClient(this.IpAddress_Local, this.Port_Local) : new DerivedUdpClient(); }
                 catch (Exception) { return; }
-                //this.UdpClient.ReceiveRestTime = BaseConst.ReceiveRestTime;
                 this.UdpClient.DataReceived += new DataReceivedEventHandler(this.Client_DataReceived);
                 this.UdpClient.ReconnTimerChanged += new ReconnTimerChangedEventHandler(this.ReconnTimerChanged);
             }
@@ -463,7 +413,6 @@ namespace ARS408.Forms
         /// <param name="init">是否开始监听，为true开始，为false结束</param>
         private void TcpServerInitOrClose(bool init)
         {
-            //bool init = this.button_ServerInit.Text.Equals("初始化"); //初始化或结束
             if (init)
             {
                 this.SocketTcpServer.ServerIp = this.IpAddress_Local;
@@ -553,17 +502,7 @@ namespace ARS408.Forms
 
             try
             {
-                dynamic list_new, binding;
-                if (this.Infos.CurrentSensorMode == SensorMode.Cluster)
-                {
-                    list_new = this.list_cluster.ToList();
-                    binding = new BindingList<ClusterGeneral>(list_new);
-                }
-                else
-                {
-                    list_new = this.list_object.ToList();
-                    binding = new BindingList<ObjectGeneral>(list_new);
-                }
+                var binding = new BindingList<SensorGeneral>(this.list_general.ToList());
                 this.dataGridView_Output.DataSource = null;
                 this.dataGridView_Output.DataSource = binding;
             }
@@ -585,24 +524,21 @@ namespace ARS408.Forms
         /// </summary>
         private void PaintVertexes()
         {
-            if (this.Infos.CurrentSensorMode == SensorMode.Cluster)
-                this.PaintVertexes(this.list_cluster);
-            else
-                this.PaintVertexes(this.list_object);
+            this.PaintVertexes(this.list_general);
         }
 
         /// <summary>
         /// 画出指定的集群
         /// </summary>
         /// <param name="list">集群列表</param>
-        private void PaintVertexes<T>(IEnumerable<T> list)
+        private void PaintVertexes<T>(IEnumerable<T> list) where T : SensorGeneral
         {
             if (list == null || list.Count() == 0)
                 return;
 
             List<T> list_new = list.ToList();
-            foreach (dynamic dot in list_new)
-                if (dot != null/* && dot.DistLong <= 100 && Math.Abs(dot.DistLat) <= 50*/)
+            foreach (var dot in list_new)
+                if (dot != null)
                     if (dot is ClusterGeneral)
                         this.graphic.FillEllipse(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S, (float)(839 - dot.DistLong * BaseConst.R) * S, BaseConst.T, BaseConst.T); //画实心椭圆
                     else if (dot is ObjectGeneral)
@@ -808,7 +744,6 @@ namespace ARS408.Forms
             hscrollv = this.panel1.HorizontalScroll.Value;
             vscrollv = this.panel1.VerticalScroll.Value;
             this.PictureMoving = true;
-            //new Thread(new ThreadStart(this.Moving)) { IsBackground = true }.Start();
         }
 
         /// <summary>
@@ -869,11 +804,6 @@ namespace ARS408.Forms
             this.button_ServerInit.Enabled = this.ConnectionMode != ConnectionMode.TCP_CLIENT; //UDP, TCP Server模式下可使用初始化按钮
             this.button_Connect.Enabled = this.ConnectionMode != ConnectionMode.TCP_SERVER && !this.button_ServerInit.Enabled; //非Tcp Server模式连接按钮是否可用取决于初始化按钮
         }
-
-        //private void ComboBox_ProbMinimum_SelectedIndexChanged(object sender, EventArgs e)
-        //{
-        //    //this.ProbOfExistMinimum = double.Parse(this.comboBox_ProbMinimum.SelectedValue.ToString());
-        //}
 
         private void Timer_WriteItems_Tick(object sender, EventArgs e)
         {

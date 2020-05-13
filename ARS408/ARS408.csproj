@@ -35,12 +35,17 @@
     <ApplicationIcon>dot-chart_pink_purple_512.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommonLib">
-      <HintPath>..\..\..\..\CommonLib\CommonLib\CommonLib\bin\Debug\CommonLib.dll</HintPath>
+    <Reference Include="CommonLib, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\CommonLib\CommonLib\CommonLib\bin\Debug\CommonLib.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.OPCAutomation">
-      <HintPath>..\..\..\..\OPC\DLL\Interop.OPCAutomation.dll</HintPath>
+    <Reference Include="Interop.OPCAutomation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\..\OPC\DLL\Interop.OPCAutomation.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <HintPath>..\packages\protobuf-net.2.4.6\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
     <Reference Include="ProtobufNetLibrary">
       <HintPath>..\..\..\CommonLib\CommonLib\ProtobufNetWrapper\bin\Debug\ProtobufNetLibrary.dll</HintPath>
@@ -152,7 +157,9 @@
     <Compile Include="Model\Radar.cs" />
     <Compile Include="Model\RadarGroup.cs" />
     <Compile Include="Model\RadarState.cs" />
+    <Compile Include="Model\SensorGeneral.cs" />
     <Compile Include="Model\SensorMessage.cs" />
+    <Compile Include="Model\SensorQuality.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Forms\FormCoorsLimitationConfig.resx">
@@ -216,20 +223,6 @@
     <None Include="bin\Debug\ars_coor.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\ChnCharInfo.dll" />
-    <Content Include="bin\Debug\CommonLib.dll" />
-    <Content Include="bin\Debug\CommonLib.xml" />
-    <Content Include="bin\Debug\Interop.OPCAutomation.dll" />
-    <Content Include="bin\Debug\MySql.Data.dll" />
-    <Content Include="bin\Debug\OPCDAAuto.dll" />
-    <Content Include="bin\Debug\Oracle.ManagedDataAccess.dll" />
-    <Content Include="bin\Debug\ProtobufNetLibrary.dll" />
-    <Content Include="bin\Debug\ProtobufNetLibrary.xml" />
-    <Content Include="bin\Debug\SerializationFactory.dll" />
-    <Content Include="bin\Debug\SerializationFactory.xml" />
-    <Content Include="bin\Debug\SocketHelper.dll" />
-    <Content Include="bin\Debug\SocketHelper.xml" />
-    <Content Include="bin\Debug\System.Data.SQLite.dll" />
     <Content Include="dot-chart_pink_purple_512.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

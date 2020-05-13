@@ -19,6 +19,11 @@
             雷达消息
             </summary>
         </member>
+        <member name="F:SerializationFactory.ProtoInfoType.RADAR_DETAIL">
+            <summary>
+            雷达详细信息
+            </summary>
+        </member>
         <member name="T:SerializationFactory.GnssProtoInfo">
             <summary>
             用于GNSS数据传输的protobuf数据实体类
@@ -54,6 +59,51 @@
             回转角
             </summary>
         </member>
+        <member name="T:SerializationFactory.RadarInfoDetail">
+            <summary>
+            每台雷达的基础信息
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.Id">
+            <summary>
+            雷达ID
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.Name">
+            <summary>
+            雷达名称
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.Working">
+            <summary>
+            工作状态，1 收到数据，2 未收到数据
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.CurrentDistance">
+            <summary>
+            当前距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.ThreatLevel">
+            <summary>
+            报警级数
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.ThreatLevelBinary">
+            <summary>
+            报警级数2进制数
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.IpAddress">
+            <summary>
+            IP地址
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.Port">
+            <summary>
+            端口号
+            </summary>
+        </member>
         <member name="T:SerializationFactory.RadarProtoInfo">
             <summary>
             用于雷达数据传输的protobuf数据实体类
@@ -72,6 +122,26 @@
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelAverage">
             <summary>
             斗轮平均距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistWheelMin">
+            <summary>
+            两侧斗轮距离的最小值
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistWheelDiff">
+            <summary>
+            两侧斗轮距离的差值（绝对值）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.RadarList">
+            <summary>
+            雷达基础信息列表
+            </summary>
+        </member>
+        <member name="M:SerializationFactory.RadarProtoInfo.#ctor">
+            <summary>
+            构造器
             </summary>
         </member>
     </members>

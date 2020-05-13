@@ -1966,32 +1966,229 @@
             数据库表字段名称
             </summary>
         </member>
-        <member name="T:CommonLib.DataUtil.DataProvider">
+        <member name="T:CommonLib.DataUtil.DataProvider`4">
+            <summary>
+            与特定数据库连接相关的数据库操作类
+            </summary>
+            <typeparam name="Connection">数据库连接类型</typeparam>
+            <typeparam name="Adapter">用于更新DataSet、更新数据源的类型</typeparam>
+            <typeparam name="Command">数据库命令类</typeparam>
+            <typeparam name="Transaction">事务类</typeparam>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.GetConnStr(System.String,System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            获取连接字符串
+            </summary>
+            <param name="connStr">连接字符串模板，按顺序为后面5个参数留出替换格式项（如{0}, {1}）</param>
+            <param name="hostAddress">数据库主机地址</param>
+            <param name="hostPort">数据库主机端口</param>
+            <param name="serviceName">数据库名称</param>
+            <param name="userName">用户名</param>
+            <param name="password">密码</param>
+            <returns>返回连接字符串</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.IsConnOpen(System.String)">
+            <summary>
+            测试以给定的连接字符串描述的数据库连接是否正常（能够连接）
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <returns>假如能够连接，返回true，否则返回false</returns>
+        </member>
+        <member name="P:CommonLib.DataUtil.DataProvider`4.ConnStr">
+            <summary>
+            数据库连接字符串
+            MySql形如“Data Source=localhost; port=3306; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”port, Charset, Persist Security Info可选，Persist Security Info=True代表连接方法在数据库连接成功后保存密码信息
+            </summary>
+        </member>
+        <member name="P:CommonLib.DataUtil.DataProvider`4.ErrorMessage">
+            <summary>
+            错误信息
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.#ctor(System.String,System.Object)">
+            <summary>
+            用App.config配置项名称初始化
+            </summary>
+            <param name="configurationName">App.config文件中configuration/appSettings节点下的关键字名称</param>
+            <param name="_">充数的参数，防止签名一致</param>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.#ctor(System.String)">
+            <summary>
+            构造器
+            </summary>
+            <param name="connStr">连接字符串</param>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.#ctor(System.String,System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            根据给定的连接字符串模板与数据库相关信息初始化
+            </summary>
+            <param name="connStr">连接字符串模板，按顺序为后面5个参数留出替换格式项（如{0}, {1}）</param>
+            <param name="hostAddress">数据库地址</param>
+            <param name="hostPort">端口号</param>
+            <param name="serviceName">数据库服务名</param>
+            <param name="userName">用户名称</param>
+            <param name="password">用户密码</param>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.MultiQuery(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            执行一条或多条SQL语句，返回查询结果集
+            </summary>
+            <param name="connStr">数据库连接字符串</param>
+            <param name="sqlStrings">待执行的查询语句数组</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.MultiQuery(System.String,System.String)">
+            <summary>
+            执行一条或多条SQL语句，返回查询结果集
+            </summary>
+            <param name="connStr">数据库连接字符串</param>
+            <param name="sqlStrings">待执行的多条查询语句（假如需要执行多条，以“;”分隔）</param>
+            <returns>返回数据集</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.Query(System.String,System.String)">
+            <summary>
+            执行sql语句，返回查询结果集DateTable
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <param name="sqlString">执行的查询语句</param>
+            <returns>返回查询结果数据表</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSql(System.String,System.String)">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <param name="sqlString">执行的查询语句</param>
+            <returns>返回影响的记录行数</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.String,System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
+            <summary>
+            执行多条SQL语句，实现数据事务
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <param name="sqlStrings">存储SQL语句的字符串数组</param>
+            <param name="level">事务隔离（锁定）级别</param>
+            <returns>假如所有语句执行成功，返回true，否则返回false</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            执行一条或多条SQL语句，实现数据事务
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <param name="sqlStrings">存储SQL语句的字符串数组</param>
+            <returns>假如执行成功，返回true</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.String,System.String)">
+            <summary>
+            执行一条或多条SQL语句，实现数据事务
+            </summary>
+            <param name="connStr">连接字符串</param>
+            <param name="sqlStrings">SQL语句拼接成的字符串，SQL语句以分号“;”分隔</param>
+            <returns>假如执行成功，返回true</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.RunProcedure(System.String,System.String,System.Data.IDataParameter[])">
+            <summary>
+            执行存储过程，返回影响的行数 
+            </summary>
+            <param name="connStr">数据库连接字符串</param>
+            <param name="procedureName">存储过程名</param>
+            <param name="parameters">输入参数</param>
+            <returns>返回影响的行数（？）</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.IsConnOpen">
+            <summary>
+            测试当前数据库连接是否正常（能够连接）
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.MultiQuery(System.String[])">
+            <summary>
+            执行一条或多条SQL语句，返回查询结果集
+            </summary>
+            <param name="sqlStrings">包含SQL语句的字符串数组</param>
+            <returns>返回结果集</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.MultiQuery(System.String)">
+            <summary>
+            执行一条或多条SQL语句，返回查询结果集
+            </summary>
+            <param name="sqlStrings">执行的查询语句（假如需要执行多条，以“;”分隔）</param>
+            <returns>返回数据集</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.Query(System.String)">
+            <summary>
+            进行单条SQL语句查询，返回数据表
+            </summary>
+            <param name="sqlString">待执行的一条SQL语句</param>
+            <returns>返回数据表</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSql(System.String)">
+            <summary>
+            执行SQL语句并返回受影响行数
+            </summary>
+            <param name="sqlString">待执行的SQL语句</param>
+            <returns>返回影响的记录行数</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
+            <summary>
+            执行多条SQL语句，实现数据事务
+            </summary>
+            <param name="sqlStrings">存储SQL语句的字符串数组</param>
+            <param name="level">事务隔离（锁定）级别</param>
+            <returns>假如执行成功，返回true</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            执行一条或多条SQL语句，实现数据事务
+            </summary>
+            <param name="sqlStrings">存储SQL语句的字符串数组</param>
+            <returns>假如执行成功，返回true</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.ExecuteSqlTrans(System.String)">
+            <summary>
+            执行一条或多条SQL语句，实现数据事务
+            </summary>
+            <param name="sqlStrings">SQL语句拼接成的字符串，SQL语句以分号“;”分隔</param>
+            <returns>假如执行成功，返回true</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.RunProcedure(System.String,System.Data.IDataParameter[])">
+            <summary>
+            执行存储过程
+            </summary>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">存储过程参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.BuildCommand(`0,System.String,System.Data.IDataParameter[],System.Boolean)">
+            <summary>
+            为存储过程构建Command对象
+            </summary>
+            <param name="connection">数据库连接对象</param>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">存储过程输入参数</param>
+            <param name="bindByName">是否根据名称绑定参数（假如为OracleCommand）</param>
+            <returns>返回Command对象</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`4.BuildCommand(`0,System.String,System.Data.IDataParameter[])">
+            <summary>
+            为存储过程构建Command对象，默认根据名称绑定参数（假如为OracleCommand）
+            </summary>
+            <param name="connection">数据库连接对象</param>
+            <param name="procedureName">存储过程名称</param>
+            <param name="parameters">存储过程输入参数</param>
+            <returns>返回Command对象</returns>
+        </member>
+        <member name="T:CommonLib.DataUtil.DataProviderOld">
             <summary>
             与特定数据库连接相关的数据库操作类
             </summary>
         </member>
-        <member name="P:CommonLib.DataUtil.DataProvider.ConnStrModel_Oracle">
-            <summary>
-            Oracle连接字符串模板
-            </summary>
-        </member>
-        <member name="P:CommonLib.DataUtil.DataProvider.ConnStrModel_SqlServer">
-            <summary>
-            SqlServer连接字符串模板
-            </summary>
-        </member>
-        <member name="P:CommonLib.DataUtil.DataProvider.ConnStrModel_MySql">
-            <summary>
-            MySql连接字符串模板
-            </summary>
-        </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.#ctor">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.#ctor">
             <summary>
             默认构造器
             </summary>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.GetConnStr(CommonLib.Enums.DatabaseTypes,System.String,System.Int32,System.String,System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.GetConnStr(CommonLib.Enums.DatabaseTypes,System.String,System.Int32,System.String,System.String,System.String)">
             <summary>
             获取连接字符串
             </summary>
@@ -2003,7 +2200,7 @@
             <param name="password">密码</param>
             <returns>返回Oracle或SqlServer的连接字符串</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.IsConnOpen(CommonLib.Enums.DatabaseTypes,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.IsConnOpen(CommonLib.Enums.DatabaseTypes,System.String)">
             <summary>
             测试数据库连接是否正常（能够连接）
             </summary>
@@ -2011,7 +2208,7 @@
             <param name="connStr">连接字符串</param>
             <returns>假如能够连接，返回true，否则返回false</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.MultiQuery(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.MultiQuery(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             执行一条或多条SQL语句，返回查询结果集
             </summary>
@@ -2020,7 +2217,7 @@
             <param name="sqlStrings">待执行的查询语句数组</param>
             <returns></returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.MultiQuery(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.MultiQuery(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
             <summary>
             执行一条或多条SQL语句，返回查询结果集
             </summary>
@@ -2029,7 +2226,7 @@
             <param name="sqlStrings">待执行的多条查询语句（假如需要执行多条，以“;”分隔）</param>
             <returns>返回数据集</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.Query(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.Query(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
             <summary>
             执行sql语句，返回查询结果集DateTable
             </summary>
@@ -2038,7 +2235,7 @@
             <param name="sqlString">执行的查询语句</param>
             <returns>返回查询结果数据表</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.ExecuteSql(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.ExecuteSql(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
             <summary>
             执行SQL语句，返回影响的记录数
             </summary>
@@ -2047,7 +2244,7 @@
             <param name="sqlString">执行的查询语句</param>
             <returns>返回影响的记录行数</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
             <summary>
             执行多条SQL语句，实现数据事务
             </summary>
@@ -2057,7 +2254,7 @@
             <param name="level">事务隔离（锁定）级别</param>
             <returns>假如所有语句执行成功，返回true，否则返回false</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             执行一条或多条SQL语句，实现数据事务
             </summary>
@@ -2066,7 +2263,7 @@
             <param name="sqlStrings">存储SQL语句的字符串数组</param>
             <returns>假如执行成功，返回true</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.ExecuteSqlTrans(CommonLib.Enums.DatabaseTypes,System.String,System.String)">
             <summary>
             执行一条或多条SQL语句，实现数据事务
             </summary>
@@ -2075,7 +2272,7 @@
             <param name="sqlStrings">SQL语句拼接成的字符串，SQL语句以分号“;”分隔</param>
             <returns>假如执行成功，返回true</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.RunProcedure(CommonLib.Enums.DatabaseTypes,System.String,System.String,System.Data.IDataParameter[])">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.RunProcedure(CommonLib.Enums.DatabaseTypes,System.String,System.String,System.Data.IDataParameter[])">
             <summary>
             执行存储过程，返回影响的行数 
             </summary>
@@ -2085,7 +2282,7 @@
             <param name="parameters">输入参数</param>
             <returns>返回影响的行数（？）</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.BuildOracleCommand(Oracle.ManagedDataAccess.Client.OracleConnection,System.String,System.Data.IDataParameter[],System.Boolean)">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.BuildOracleCommand(Oracle.ManagedDataAccess.Client.OracleConnection,System.String,System.Data.IDataParameter[],System.Boolean)">
             <summary>
             为存储过程构建OracleCommand对象
             </summary>
@@ -2095,7 +2292,7 @@
             <param name="bindByName">是否根据名称绑定参数</param>
             <returns>返回OracleCommand对象</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.BuildOracleCommand(Oracle.ManagedDataAccess.Client.OracleConnection,System.String,System.Data.IDataParameter[])">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.BuildOracleCommand(Oracle.ManagedDataAccess.Client.OracleConnection,System.String,System.Data.IDataParameter[])">
             <summary>
             为存储过程构建OracleCommand对象
             </summary>
@@ -2104,7 +2301,7 @@
             <param name="parameters">存储过程输入参数</param>
             <returns>返回OracleCommand对象</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.BuildSqlServerCommand(System.Data.SqlClient.SqlConnection,System.String,System.Data.IDataParameter[])">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.BuildSqlServerCommand(System.Data.SqlClient.SqlConnection,System.String,System.Data.IDataParameter[])">
             <summary>
             为存储过程构建SQLCommand对象
             </summary>
@@ -2113,7 +2310,7 @@
             <param name="parameters">输入参数</param>    
             <returns>返回SqlCommand对象</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider.BuildMySqlCommand(MySql.Data.MySqlClient.MySqlConnection,System.String,System.Data.IDataParameter[])">
+        <member name="M:CommonLib.DataUtil.DataProviderOld.BuildMySqlCommand(MySql.Data.MySqlClient.MySqlConnection,System.String,System.Data.IDataParameter[])">
             <summary>
             为存储过程构建MySQLCommand对象
             </summary>
@@ -2123,15 +2320,26 @@
             <returns>返回SqlCommand对象</returns>
         </member>
         <member name="T:CommonLib.DataUtil.MySqlProvider">
-            <summary>  
-            数据访问抽象基础类  
-            </summary>  
-        </member>
-        <member name="P:CommonLib.DataUtil.MySqlProvider.ConnStr">
             <summary>
-            数据库连接字符串，形如“Data Source=localhost; port=3306; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”
-            port, Charset, Persist Security Info可选，Persist Security Info=True则代表连接方法在数据库连接成功后保存密码信息
+            MySql数据库基础操作类
             </summary>
+        </member>
+        <member name="F:CommonLib.DataUtil.MySqlProvider.ConnStrModel">
+            <summary>
+            MySql连接字符串模板
+            形如“Data Source=localhost; port=3306; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”，port, Charset, Persist Security Info可选，Persist Security Info=True则代表连接方法在数据库连接成功后保存密码信息，=False则不保存
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.MySqlProvider.GetConnStr(System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            获取连接字符串
+            </summary>
+            <param name="hostAddress">数据库主机地址</param>
+            <param name="hostPort">数据库主机端口</param>
+            <param name="serviceName">数据库名称</param>
+            <param name="userName">用户名</param>
+            <param name="password">密码</param>
+            <returns>返回连接字符串</returns>
         </member>
         <member name="M:CommonLib.DataUtil.MySqlProvider.#ctor">
             <summary>
@@ -2140,9 +2348,9 @@
         </member>
         <member name="M:CommonLib.DataUtil.MySqlProvider.#ctor(System.String,System.Object)">
             <summary>
-            用MySql配置项名称初始化MySqlProvider
+            用App.config配置项名称初始化
             </summary>
-            <param name="configurationName">项目在App.config文件中appSettings节点下的关键字名称</param>
+            <param name="configurationName">App.config文件中configuration/appSettings节点下的关键字名称</param>
             <param name="_">充数的参数，防止签名一致</param>
         </member>
         <member name="M:CommonLib.DataUtil.MySqlProvider.#ctor(System.String)">
@@ -2151,124 +2359,135 @@
             </summary>
             <param name="connStr">连接字符串，形如“Data Source=localhost; port=3306; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”</param>
         </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.MultiQuery(System.String[])">
+        <member name="M:CommonLib.DataUtil.MySqlProvider.#ctor(System.String,System.Int32,System.String,System.String,System.String)">
             <summary>
-            执行一条或多条SQL语句，返回查询结果集
+            根据给定的数据库相关信息初始化
             </summary>
-            <param name="sqlStrings">包含SQL语句的字符串数组</param>
-            <returns>返回结果集</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.MultiQuery(System.String)">
-            <summary>
-            执行一条或多条SQL语句，返回查询结果集
-            </summary>
-            <param name="sqlStrings">执行的查询语句（假如需要执行多条，以“;”分隔）</param>
-            <returns>返回数据集</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.Query(System.String)">
-            <summary>
-            进行单条SQL语句查询，返回数据表
-            </summary>
-            <param name="sqlString">待执行的一条SQL语句</param>
-            <returns>返回数据表</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.ExecuteSql(System.String)">
-            <summary>
-            执行SQL语句并返回受影响行数
-            </summary>
-            <param name="sqlString">待执行的SQL语句</param>
-            <returns>返回影响的记录行数</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
-            <summary>
-            执行多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <param name="level">事务隔离（锁定）级别</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>
-            执行一条或多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.ExecuteSqlTrans(System.String)">
-            <summary>
-            执行一条或多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">SQL语句拼接成的字符串，SQL语句以分号“;”分隔</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.MySqlProvider.RunProcedure(System.String,System.Data.IDataParameter[])">
-            <summary>
-            执行存储过程
-            </summary>
-            <param name="procedureName">存储过程名称</param>
-            <param name="parameters">存储过程参数</param>
-            <returns></returns>
+            <param name="hostAddress">数据库地址</param>
+            <param name="hostPort">端口号</param>
+            <param name="serviceName">数据库服务名</param>
+            <param name="userName">用户名称</param>
+            <param name="password">用户密码</param>
         </member>
         <member name="T:CommonLib.DataUtil.SqliteProvider">
             <summary>
             SQLite数据库基础操作类
             </summary>
         </member>
-        <member name="P:CommonLib.DataUtil.SqliteProvider.ConnStr">
+        <member name="F:CommonLib.DataUtil.SqliteProvider.ConnStrModel">
             <summary>
-            连接字符串
+            SQLite连接字符串模板，格式形如“[路径\]xxx.db”
             </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqliteProvider.GetConnStr(System.String,System.String)">
+            <summary>
+            获取连接字符串
+            </summary>
+            <param name="fileDir">数据库文件路径</param>
+            <param name="fileName">数据库文件名称，包括后缀</param>
+            <returns>返回连接字符串</returns>
         </member>
         <member name="M:CommonLib.DataUtil.SqliteProvider.#ctor">
             <summary>
-            默认构造器
+            以默认配置初始化MySqlProvider
             </summary>
         </member>
-        <member name="M:CommonLib.DataUtil.SqliteProvider.Query(System.String)">
+        <member name="M:CommonLib.DataUtil.SqliteProvider.#ctor(System.String,System.Object)">
             <summary>
-            执行单条SQL语句查询
+            用App.config配置项名称初始化
             </summary>
-            <param name="sqlString"></param>
-            <returns></returns>
+            <param name="configurationName">App.config文件中configuration/appSettings节点下的关键字名称</param>
+            <param name="_">充数的参数，防止签名一致</param>
         </member>
-        <member name="M:CommonLib.DataUtil.SqliteProvider.MultiQuery(System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:CommonLib.DataUtil.SqliteProvider.#ctor(System.String)">
             <summary>
-            执行多个SQL语句查询
+            构造器
             </summary>
-            <param name="sqlStrings">待执行SQL语句</param>
-            <returns>返回数据集</returns>
+            <param name="connStr">连接字符串，格式形如“[路径\]xxx.db”</param>
         </member>
-        <member name="M:CommonLib.DataUtil.SqliteProvider.ExecuteSql(System.String)">
+        <member name="M:CommonLib.DataUtil.SqliteProvider.#ctor(System.String,System.String)">
             <summary>
-            执行SQL语句，返回影响的记录数
+            以给定的文件路径与文件名称初始化
             </summary>
-            <param name="sqlString">执行的查询语句</param>
-            <returns>返回影响的记录行数</returns>
+            <param name="fileDir">数据库文件路径（为空则查找可执行文件所在路径）</param>
+            <param name="fileName">数据库文件名称（包括后缀）</param>
         </member>
-        <member name="M:CommonLib.DataUtil.SqliteProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String})">
+        <member name="T:CommonLib.DataUtil.SqlProvider">
             <summary>
-            执行多条SQL语句，实现数据事务
+            SQL Server数据库基础操作类
             </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <returns>假如所有语句执行成功，返回true，否则返回false</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.SqliteProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
+        <member name="F:CommonLib.DataUtil.SqlProvider.ConnStrModel">
             <summary>
-            执行多条SQL语句，实现数据事务
+            SQL Server连接字符串模板
+            形如“Data Source=localhost,1433; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”，Data Source处格式形如[SQL Server服务器ip]\[SQL Server实例名],[端口号] 或 [SQL Server服务器ip],[端口号]\[SQL Server实例名]
             </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <param name="level">事务隔离（锁定）级别</param>
-            <returns>假如所有语句执行成功，返回true，否则返回false</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqlProvider.GetConnStr(System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            获取连接字符串
+            </summary>
+            <param name="hostAddress">数据库主机地址</param>
+            <param name="hostPort">数据库主机端口</param>
+            <param name="serviceName">数据库名称</param>
+            <param name="userName">用户名</param>
+            <param name="password">密码</param>
+            <returns>返回连接字符串</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqlProvider.#ctor">
+            <summary>
+            以默认配置初始化MySqlProvider
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqlProvider.#ctor(System.String,System.Object)">
+            <summary>
+            用App.config配置项名称初始化
+            </summary>
+            <param name="configurationName">App.config文件中configuration/appSettings节点下的关键字名称</param>
+            <param name="_">充数的参数，防止签名一致</param>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqlProvider.#ctor(System.String)">
+            <summary>
+            构造器
+            </summary>
+            <param name="connStr">连接字符串，形如“Data Source=localhost,1433; Initial Catalog=xxx; Persist Security Info=True; user id=root; password=xxx;”</param>
+        </member>
+        <member name="M:CommonLib.DataUtil.SqlProvider.#ctor(System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            根据给定的数据库相关信息初始化
+            </summary>
+            <param name="hostAddress">数据库地址</param>
+            <param name="hostPort">端口号</param>
+            <param name="serviceName">数据库服务名</param>
+            <param name="userName">用户名称</param>
+            <param name="password">用户密码</param>
         </member>
         <member name="T:CommonLib.DataUtil.OracleProvider">
             <summary>
             Oracle数据库基础操作类
             </summary>
         </member>
-        <member name="P:CommonLib.DataUtil.OracleProvider.ConnStr">
+        <member name="F:CommonLib.DataUtil.OracleProvider.ConnStrModel">
             <summary>
-            数据库连接字符串，形如“Data Source=ORCL1;User Id=test;Password=123;”，其中ORCL1可由具体的(DESCRIPTION...)代替
+            Oracle连接字符串模板
+            形如“Data Source=ORCL1;User Id=test;Password=123;”，其中ORCL1可由具体的(DESCRIPTION...)代替
             </summary>
+        </member>
+        <member name="F:CommonLib.DataUtil.OracleProvider.DefaultPort">
+            <summary>
+            默认端口号
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.OracleProvider.GetConnStr(System.String,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            获取连接字符串
+            </summary>
+            <param name="hostAddress">数据库主机地址</param>
+            <param name="hostPort">数据库主机端口</param>
+            <param name="serviceName">数据库名称</param>
+            <param name="userName">用户名</param>
+            <param name="password">密码</param>
+            <returns>返回连接字符串</returns>
         </member>
         <member name="M:CommonLib.DataUtil.OracleProvider.#ctor">
             <summary>
@@ -2277,9 +2496,9 @@
         </member>
         <member name="M:CommonLib.DataUtil.OracleProvider.#ctor(System.String,System.Object)">
             <summary>
-            用Oracle配置项名称初始化OracleProvider
+            用App.config配置项名称初始化
             </summary>
-            <param name="configurationName">项目在App.config文件中appSettings节点下的关键字名称</param>
+            <param name="configurationName">App.config文件中configuration/appSettings节点下的关键字名称</param>
             <param name="_">充数的参数，防止签名一致</param>
         </member>
         <member name="M:CommonLib.DataUtil.OracleProvider.#ctor(System.String)">
@@ -2288,63 +2507,24 @@
             </summary>
             <param name="connStr">连接字符串，形如“Data Source=ORCL1;User Id=test;Password=123;”，其中ORCL1可由具体的(DESCRIPTION...)代替</param>
         </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.MultiQuery(System.String[])">
+        <member name="M:CommonLib.DataUtil.OracleProvider.#ctor(System.String,System.Int32,System.String,System.String,System.String)">
             <summary>
-            执行一条或多条SQL语句，返回查询结果集
+            根据给定的数据库相关信息初始化
             </summary>
-            <param name="sqlStrings">包含SQL语句的字符串数组</param>
-            <returns>返回结果集</returns>
+            <param name="hostAddress">数据库地址</param>
+            <param name="hostPort">端口号</param>
+            <param name="serviceName">数据库服务名</param>
+            <param name="userName">用户名称</param>
+            <param name="password">用户密码</param>
         </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.MultiQuery(System.String)">
+        <member name="M:CommonLib.DataUtil.OracleProvider.#ctor(System.String,System.String,System.String,System.String)">
             <summary>
-            执行一条或多条SQL语句，返回查询结果集
+            根据给定的数据库相关信息以及默认端口号初始化
             </summary>
-            <param name="sqlStrings">执行的查询语句（假如需要执行多条，以“;”分隔）</param>
-            <returns>返回数据集</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.Query(System.String)">
-            <summary>
-            进行单条SQL语句查询，返回数据表
-            </summary>
-            <param name="sqlString">待执行的一条SQL语句</param>
-            <returns>返回数据表</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.ExecuteSql(System.String)">
-            <summary>
-            执行SQL语句并返回受影响行数
-            </summary>
-            <param name="sqlString">待执行的SQL语句</param>
-            <returns>返回影响的记录行数</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
-            <summary>
-            执行多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <param name="level">事务隔离（锁定）级别</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String})">
-            <summary>
-            执行一条或多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">存储SQL语句的字符串数组</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.ExecuteSqlTrans(System.String)">
-            <summary>
-            执行一条或多条SQL语句，实现数据事务
-            </summary>
-            <param name="sqlStrings">SQL语句拼接成的字符串，SQL语句以分号“;”分隔</param>
-            <returns>假如执行成功，返回true</returns>
-        </member>
-        <member name="M:CommonLib.DataUtil.OracleProvider.RunProcedure(System.String,System.Data.IDataParameter[])">
-            <summary>
-            执行存储过程
-            </summary>
-            <param name="procedureName">存储过程名称</param>
-            <param name="parameters">存储过程参数</param>
-            <returns></returns>
+            <param name="hostAddress">数据库地址</param>
+            <param name="serviceName">数据库服务名</param>
+            <param name="userName">用户名称</param>
+            <param name="password">用户密码</param>
         </member>
         <member name="T:CommonLib.Enums.DatabaseTypes">
             <summary>
@@ -2995,35 +3175,6 @@
             <param name="n"></param>
             <returns>返回值是函数的系数</returns>
         </member>
-        <member name="T:CommonLib.Function.ExtensionClass">
-            <summary>
-            类功能扩展类
-            </summary>
-        </member>
-        <member name="M:CommonLib.Function.ExtensionClass.GetName(System.Net.Sockets.Socket,System.Net.IPEndPoint@,System.Net.IPEndPoint@)">
-            <summary>
-            获取Socket连接名称，格式：(本地终结点不为空)本地IP:端口->服务端IP:端口(远程终结点不为空)
-            </summary>
-            <param name="socket">套接字接口对象</param>
-            <param name="remote">远程IP终结点</param>
-            <param name="local">本地IP终结点</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.ExtensionClass.GetName(System.Net.Sockets.Socket)">
-            <summary>
-            获取Socket连接名称，格式：(本地终结点不为空)本地IP:端口->服务端IP:端口(远程终结点不为空)
-            </summary>
-            <param name="socket">套接字接口对象</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.ExtensionClass.SetDoubleBuffered``1(``0,System.Boolean)">
-            <summary>
-            泛型类的扩展方法，使用双缓存（适用于DataGridView / ListView等
-            </summary>
-            <typeparam name="T">欲扩展方法的类型</typeparam>
-            <param name="obj">泛型对象，对泛型进行扩展</param>
-            <param name="setting">是否启用双缓存</param>
-        </member>
         <member name="T:CommonLib.Function.HexHelper">
             <summary>
             16进制操作相关操作类
@@ -3309,77 +3460,6 @@
             <param name="retVal">负责拼接配置项内容的StringBuilder对象</param>
             <param name="size">配置项内容最大尺寸</param>
             <param name="filePath">INI配置文件路径</param>
-            <returns></returns>
-        </member>
-        <member name="T:CommonLib.Function.MathUtil">
-            <summary>
-            计算功能类
-            </summary>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Haversine(System.Double,System.Boolean)">
-            <summary>
-            计算输入值的半正矢，假如输入为角度，自动转换为弧度
-            </summary>
-            <param name="input">输入角度或弧度</param>
-            <param name="input_as_degree">是否为角度</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Haversine(System.Double)">
-            <summary>
-            计算输入值的半正矢，默认输入为角度
-            </summary>
-            <param name="input">输入角度</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.GetCoordinateDistance(System.Double,System.Double,System.Double,System.Double,System.Int32)">
-            <summary>
-            [不准确]根据两个坐标的经纬度与地球半径计算坐标间的距离（米）
-            </summary>
-            <param name="lat1">纬度1</param>
-            <param name="lon1">经度1</param>
-            <param name="lat2">纬度1</param>
-            <param name="lon2">经度2</param>
-            <param name="earth_radius">地球半径，米</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Between(System.Double,System.Double,System.Double)">
-            <summary>
-            判断是否在两个数值之间（或等于）
-            </summary>
-            <param name="input">待判断的数字</param>
-            <param name="number1">数值1</param>
-            <param name="number2">数值2</param>
-            <returns>假如在数值之间，返回true，否则返回false</returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Between(System.Int32,System.Double,System.Double)">
-            <summary>
-            判断是否在两个数值之间（或等于）
-            </summary>
-            <param name="input">待判断的数字</param>
-            <param name="number1">数值1</param>
-            <param name="number2">数值2</param>
-            <returns>假如在数值之间，返回true，否则返回false</returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Variance(System.Collections.Generic.IEnumerable{System.Double})">
-            <summary>
-            根据样本计算方差
-            </summary>
-            <param name="numbers">样本</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Variance(System.Collections.Generic.IEnumerable{System.Double},System.Double)">
-            <summary>
-            根据样本与平均值计算方差
-            </summary>
-            <param name="numbers">样本</param>
-            <param name="average">平均值</param>
-            <returns></returns>
-        </member>
-        <member name="M:CommonLib.Function.MathUtil.Standard(System.Collections.Generic.IEnumerable{System.Double})">
-            <summary>
-            计算标准差
-            </summary>
-            <param name="numbers"></param>
             <returns></returns>
         </member>
         <member name="T:CommonLib.Function.Modbus.ModbusHelper">
@@ -4084,6 +4164,116 @@
             <param name="input">待查找字符串</param>
             <param name="pattern">匹配模式</param>
             <returns>返回包含匹配字符串的字符串数组</returns>
+        </member>
+        <member name="T:CommonLib.Extensions.ExtensionClass">
+            <summary>
+            类功能扩展类
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.ExtensionClass.Reverse(System.String)">
+            <summary>
+            反转字符串
+            </summary>
+            <param name="input">待反转的源字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.ExtensionClass.GetName(System.Net.Sockets.Socket,System.Net.IPEndPoint@,System.Net.IPEndPoint@)">
+            <summary>
+            获取Socket连接名称，格式：(本地终结点不为空)本地IP:端口->服务端IP:端口(远程终结点不为空)
+            </summary>
+            <param name="socket">套接字接口对象</param>
+            <param name="remote">远程IP终结点</param>
+            <param name="local">本地IP终结点</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.ExtensionClass.GetName(System.Net.Sockets.Socket)">
+            <summary>
+            获取Socket连接名称，格式：(本地终结点不为空)本地IP:端口->服务端IP:端口(远程终结点不为空)
+            </summary>
+            <param name="socket">套接字接口对象</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.ExtensionClass.SetDoubleBuffered``1(``0,System.Boolean)">
+            <summary>
+            泛型类的扩展方法，使用双缓存（适用于DataGridView / ListView等
+            </summary>
+            <typeparam name="T">欲扩展方法的类型</typeparam>
+            <param name="obj">泛型对象，对泛型进行扩展</param>
+            <param name="setting">是否启用双缓存</param>
+        </member>
+        <member name="T:CommonLib.Extensions.MathExtension">
+            <summary>
+            计算功能类
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Haversine(System.Double,System.Boolean)">
+            <summary>
+            计算输入值的半正矢，假如输入为角度，自动转换为弧度
+            </summary>
+            <param name="input">输入角度或弧度</param>
+            <param name="input_as_degree">是否为角度</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Haversine(System.Double)">
+            <summary>
+            计算输入值的半正矢，默认输入为角度
+            </summary>
+            <param name="input">输入角度</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Between(System.Double,System.Double,System.Double)">
+            <summary>
+            判断是否在两个数值之间（或等于）
+            </summary>
+            <param name="input">待判断的数字</param>
+            <param name="number1">数值1</param>
+            <param name="number2">数值2</param>
+            <returns>假如在数值之间，返回true，否则返回false</returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Between(System.Int32,System.Double,System.Double)">
+            <summary>
+            判断是否在两个数值之间（或等于）
+            </summary>
+            <param name="input">待判断的数字</param>
+            <param name="number1">数值1</param>
+            <param name="number2">数值2</param>
+            <returns>假如在数值之间，返回true，否则返回false</returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Variance(System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            根据样本计算方差
+            </summary>
+            <param name="numbers">样本</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Variance(System.Collections.Generic.IEnumerable{System.Double},System.Double)">
+            <summary>
+            根据样本与平均值计算方差
+            </summary>
+            <param name="numbers">样本</param>
+            <param name="average">平均值</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.Standard(System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            计算标准差
+            </summary>
+            <param name="numbers"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.MinExceptZero(System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            获取数据集中所有不为0的数中最小的数，假如数据集为空或不存在非0的数据，则返回0
+            </summary>
+            <param name="set">待从中寻找符合条件的数据的源数据集</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.MathExtension.MaxExceptZero(System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            获取数据集中所有不为0的数中最大的数，假如数据集为空或不存在非0的数据，则返回0
+            </summary>
+            <param name="set">待从中寻找符合条件的数据的源数据集</param>
+            <returns></returns>
         </member>
         <member name="T:CommonLib.UIControlUtil.TaskDelegate">
             <summary>

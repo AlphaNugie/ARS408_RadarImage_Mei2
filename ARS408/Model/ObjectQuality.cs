@@ -10,7 +10,7 @@ namespace ARS408.Model
     /// <summary>
     /// 目标重要信息
     /// </summary>
-    class ObjectQuality : SensorMessage
+    class ObjectQuality : SensorQuality
     {
         #region 静态属性，过滤器
         /// <summary>
@@ -25,31 +25,6 @@ namespace ARS408.Model
         #endregion
 
         #region 属性
-        /// <summary>
-        /// 目标ID（编号）
-        /// </summary>
-        public byte Id { get; set; }
-
-        /// <summary>
-        /// 纵向（x）坐标的标准差，米
-        /// </summary>
-        public SignalValue DistLongRms { get; set; }
-
-        /// <summary>
-        /// 横向（y）坐标的标准差，米
-        /// </summary>
-        public SignalValue DistLatRms { get; set; }
-
-        /// <summary>
-        /// 纵向的相对速度（x）的标准差，米/秒
-        /// </summary>
-        public SignalValue VrelLongRms { get; set; }
-
-        /// <summary>
-        /// 横向的相对速度（y）的标准差，米/秒
-        /// </summary>
-        public SignalValue VrelLatRms { get; set; }
-
         /// <summary>
         /// 纵向的相对加速度（x）的标准差，米/平方秒
         /// </summary>
@@ -74,21 +49,6 @@ namespace ARS408.Model
         /// 存在概率
         /// </summary>
         public ProbOfExist ProbOfExist { get; set; }
-
-        private BaseMessage _base = new BaseMessage();
-
-        /// <summary>
-        /// 基础信息
-        /// </summary>
-        public BaseMessage Base
-        {
-            get { return this._base; }
-            set
-            {
-                this._base = value;
-                this.DataConvert(this._base.DataString_Binary);
-            }
-        }
         #endregion
 
         /// <summary>
@@ -109,7 +69,7 @@ namespace ARS408.Model
         /// 转换2进制数据
         /// </summary>
         /// <param name="binary"></param>
-        private void DataConvert(string binary)
+        protected override void DataConvert(string binary)
         {
             try
             {

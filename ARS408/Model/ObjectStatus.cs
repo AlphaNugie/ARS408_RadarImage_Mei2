@@ -26,21 +26,6 @@ namespace ARS408.Model
         /// 目标列表，CAN 接口版本
         /// </summary>
         public byte InterfaceVersion { get; set; }
-
-        private BaseMessage _base = new BaseMessage();
-
-        /// <summary>
-        /// 基础信息
-        /// </summary>
-        public BaseMessage Base
-        {
-            get { return this._base; }
-            set
-            {
-                this._base = value;
-                this.DataConvert(this._base.DataString_Binary);
-            }
-        }
         #endregion
 
         /// <summary>
@@ -61,7 +46,7 @@ namespace ARS408.Model
         /// 转换2进制数据
         /// </summary>
         /// <param name="binary"></param>
-        private void DataConvert(string binary)
+        protected override void DataConvert(string binary)
         {
             try
             {
