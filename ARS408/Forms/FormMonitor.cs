@@ -62,7 +62,7 @@ namespace ARS408.Forms
         /// <summary>
         /// 所有待添加OPC标签名称
         /// </summary>
-        public string[] OpcItemNames { get; set; }
+        public List<string> OpcItemNames { get; set; }
 
         /// <summary>
         /// OPC标签的服务端句柄
@@ -73,6 +73,7 @@ namespace ARS408.Forms
         public FormMonitor(int shiploader_id)
         {
             InitializeComponent();
+            BaseConst.Log.WriteLogsToFile("监视页面初始化中...shiploader_id: " + shiploader_id);
             this.shiploader_id = shiploader_id;
             this.column_width = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
             this.Loading = true;
@@ -86,6 +87,11 @@ namespace ARS408.Forms
             this.AddGroupItemsAsync();
             this.threadUpdateItems.Start();
             //this.threadWriteitems.Start();
+
+            if (BaseConst.AutoConnect)
+                this.StartOrEnd(true);
+
+            BaseConst.Log.WriteLogsToFile("监视页面初始化完成, shiploader_id: " + shiploader_id);
         }
 
         public FormMonitor() : this(0) { }
@@ -139,7 +145,7 @@ namespace ARS408.Forms
             new Thread(new ThreadStart(() =>
             {
                 this.OpcHelper.Init();
-                this.label_opc.Text = this.OpcHelper.LastErrorMessage;
+                this.label_opc.SafeInvoke(() => this.label_opc.Text = this.OpcHelper.LastErrorMessage);
             }))
             { IsBackground = true }.Start();
         }
@@ -159,6 +165,22 @@ namespace ARS408.Forms
 
             this.treeView_Main.BindTreeViewDataSource(this.DataSource, this.parent_field, this.key_field, this.display_field);
             this.Loading = false;
+        }
+
+        /// <summary>
+        /// 全部开始或全部结束
+        /// </summary>
+        /// <param name="flag">假如为true则开始，否则结束</param>
+        private void StartOrEnd(bool flag)
+        {
+            //bool flag = this.button_StartOrEnd.Text.Equals("开始");
+            BaseConst.Log.WriteLogsToFile("通讯操作开始，全部" + (flag ? "开始" : "结束"));
+            foreach (FormDisplay form in BaseConst.DictForms.Values)
+            {
+                try { form.StartOrEndReceiving(flag); }
+                catch (Exception) { }
+            }
+            this.button_StartOrEnd.Text = flag ? "结束" : "开始";
         }
 
         /// <summary>
@@ -255,22 +277,6 @@ namespace ARS408.Forms
         {
             foreach (TabPage page in this.tabControl_Main.TabPages) this.DisposeTabPage(page);
         }
-
-        public string GetInfoString()
-        {
-            string main = string.Format(@"[
-  ""walkpos"": {0},
-  ""armpitch"": {1},
-  ""armstretch"": {2},
-  ""bucketyaw"": {3},
-  ""bucketpitch"": {4},
-  ""beltspeed"": {5},
-  ""stream"": {6},
-  斗轮左：{7}
-  斗轮右：{8}
-]", this.OpcHelper.WalkingPosition, this.OpcHelper.PitchAngle, this.OpcHelper.StretchLength, this.OpcHelper.BucketYaw, this.OpcHelper.BucketPitch, this.OpcHelper.BeltSpeed, this.OpcHelper.Stream, BaseConst.RadarInfo.DistWheelLeft/*this.DictDistances["DistWheelLeft"]*/, BaseConst.RadarInfo.DistWheelRight/*this.DictDistances["DistWheelRight"]*//*, this.DictDistances["DistLand"] + this.DictDistances["DistSea"] + 2.623, this.DictDistances["DistNorth"], this.DictDistances["DistSouth"], this.DictDistances["DistNorth"] + this.DictDistances["DistSouth"] + 4.831*/).Replace('[', '{').Replace(']', '}');
-            return main;
-        }
         #endregion
 
         #region OPC
@@ -303,11 +309,13 @@ namespace ARS408.Forms
             {
                 this.OpcGroup = this.OpcHelper.OpcServer.OPCGroups.Add("Group_Radar_All");
                 string basic = "[" + this.Shiploader.TopicName + "]" + "{0}";
-                List<string> names = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
-                names.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
-                this.OpcItemNames = names.ToArray();
+                this.OpcItemNames = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
+                this.OpcItemNames.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
+                //List<string> names = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
+                //names.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
+                //this.OpcItemNames = names.ToArray();
 
-                int count = this.OpcItemNames.Length;
+                int count = this.OpcItemNames.Count;
                 string[] itemIds = new string[count + 1];
                 int[] clientHandlers = new int[count + 1];
 
@@ -399,7 +407,7 @@ namespace ARS408.Forms
                 List<object> values = new List<object>() { 0, this.radarState, this.bucketAlarms, this.armAlarms, this.feetAlarms };
                 values.AddRange(BaseConst.RadarList.Select(r => (object)r.CurrentDistance));
                 Array itemValues = values.ToArray(), errors;
-                this.OpcGroup.SyncWrite(this.OpcItemNames.Length, ref this.ServerHandles, ref itemValues, out errors);
+                this.OpcGroup.SyncWrite(this.OpcItemNames.Count, ref this.ServerHandles, ref itemValues, out errors);
             }
             catch (Exception ex)
             {
@@ -413,6 +421,7 @@ namespace ARS408.Forms
         #region 事件
         private void FormMonitor_FormClosing(object sender, FormClosingEventArgs e)
         {
+            this.StartOrEnd(false);
             this.OpcHelper.Epilogue();
         }
 
@@ -444,15 +453,14 @@ namespace ARS408.Forms
 
         private void Button_StartOrEnd_Click(object sender, EventArgs e)
         {
-            bool flag = this.button_StartOrEnd.Text.Equals("开始");
-            foreach (FormDisplay form in BaseConst.DictForms.Values)
-            {
-                try { form.StartOrEndReceiving(flag); }
-#pragma warning disable CS0168 // 声明了变量“ex”，但从未使用过
-                catch (Exception ex) { }
-#pragma warning restore CS0168 // 声明了变量“ex”，但从未使用过
-            }
-            this.button_StartOrEnd.Text = flag ? "结束" : "开始";
+            this.StartOrEnd(this.button_StartOrEnd.Text.Equals("开始"));
+            //bool flag = this.button_StartOrEnd.Text.Equals("开始");
+            //foreach (FormDisplay form in BaseConst.DictForms.Values)
+            //{
+            //    try { form.StartOrEndReceiving(flag); }
+            //    catch (Exception ex) { }
+            //}
+            //this.button_StartOrEnd.Text = flag ? "结束" : "开始";
         }
 
         private void Button_Info_Click(object sender, EventArgs e)

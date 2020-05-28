@@ -13,7 +13,8 @@ namespace ARS408.Core
     /// </summary>
     public class DataService_GroupType
     {
-        private readonly SqliteProvider provider = new SqliteProvider();
+        //private readonly SqliteProvider provider = new SqliteProvider();
+        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
 
         /// <summary>
         /// 获取所有组类型，按ID排序

@@ -1,6 +1,4 @@
 ﻿using ARS408.Core;
-using ARS408.Model;
-//using ARS408.Model.Serializable;
 using CarServer;
 using CommonLib.Clients;
 using CommonLib.Function;
@@ -24,12 +22,13 @@ namespace ARS408.Forms
     public partial class FormMain : Form
     {
         #region 私有变量
-        private FormMonitor first_monitor;
-        private DataService_Shiploader DataService_Shiploader = new DataService_Shiploader();
+        //private FormMonitor first_monitor;
+        private List<FormMonitor> list_monitors = new List<FormMonitor>();
+        private readonly DataService_Shiploader DataService_Shiploader = new DataService_Shiploader();
         private string tcp_info_error = string.Empty;
         private string tcp_info_state = string.Empty;
         private string tcp_info_receive = string.Empty;
-        private readonly CommonLib.Clients.Object.FileClient file_client = new CommonLib.Clients.Object.FileClient("Logs\\tcp_server_watchdog", "tcp_server_log.txt");
+        private readonly FileClient file_client_dog = new FileClient("logs\\tcp_server_watchdog", "tcp_server_log.txt");
         #endregion
 
         /// <summary>
@@ -40,6 +39,13 @@ namespace ARS408.Forms
             InitializeComponent();
             this.Init_Watchdog();
             BaseFunc.UpdateRadarList();
+            //this.InitializeMonitors();
+
+            this.toolStripMenu_AutoConnect.Checked = BaseConst.AutoConnect;
+            ////假如勾选自动开始监视，打开监视页面
+            //if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
+            //    this.ShowMonitors();
+            BaseConst.Log.WriteLogsToFile("程序主体初始化完成");
         }
 
         /// <summary>
@@ -51,8 +57,15 @@ namespace ARS408.Forms
         {
             //假如勾选自动开始监视，打开监视页面
             if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
-                this.StartMonitor();
+                this.ShowMonitors();
         }
+
+        //private void MonitorStartup()
+        //{
+        //    //假如勾选自动开始监视，打开监视页面
+        //    if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
+        //        this.StartMonitor();
+        //}
 
         /// <summary>
         /// 窗体关闭事件
@@ -70,7 +83,13 @@ namespace ARS408.Forms
             {
                 form.Finalizing();
                 form.Close();
+                form.Dispose();
             });
+            //this.list_monitors.ForEach(form =>
+            //{
+            //    form.Close();
+            //    form.Dispose();
+            //});
         }
 
         #region 功能
@@ -85,18 +104,43 @@ namespace ARS408.Forms
             this.tcpServer_Watchdog.HeartBeatPacket = BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatString");
             this.tcpServer_Watchdog.CheckTime = int.Parse(BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatInterval"));
             this.tcpServer_Watchdog.Start();
+            BaseConst.Log.WriteLogsToFile("看门狗兼下发服务启动");
+        }
+
+        /// <summary>
+        /// 监视页面对象初始化
+        /// </summary>
+        private void InitializeMonitors()
+        {
+            BaseConst.Log.WriteLogsToFile("开始刷新监视页面列表...");
+            DataTable table = this.DataService_Shiploader.GetAllShiploadersOrderbyId();
+            if (table == null || table.Rows.Count == 0)
+                return;
+
+            this.list_monitors = table.Rows.Cast<DataRow>().Select(row => new FormMonitor(int.Parse(row["shiploader_id"].ToString()))).ToList();
+            //table.Rows.Cast<DataRow>().ToList().ForEach(row => this.ShowForm(this.first_monitor = new FormMonitor(int.Parse(row["shiploader_id"].ToString())), DockStyle.Fill));
+            BaseConst.Log.WriteLogsToFile("监视页面列表刷新完成");
         }
 
         /// <summary>
         /// 打开监视页面
         /// </summary>
-        private void StartMonitor()
+        private void ShowMonitors()
         {
-            DataTable table = this.DataService_Shiploader.GetAllShiploadersOrderbyId();
-            if (table == null || table.Rows.Count == 0)
-                return;
+            this.InitializeMonitors();
+            this.list_monitors.ForEach(monitor => this.ShowForm(monitor, DockStyle.Fill));
+            BaseConst.Log.WriteLogsToFile("已显示所有监视页面");
+        }
 
-            table.Rows.Cast<DataRow>().ToList().ForEach(row => this.ShowForm(this.first_monitor = new FormMonitor(int.Parse(row["shiploader_id"].ToString())), DockStyle.Fill));
+        /// <summary>
+        /// 关闭所有监视页面
+        /// </summary>
+        private void CloseMonitors()
+        {
+            foreach (TabPage page in this.tabControl_Main.TabPages)
+                if (page.Controls[0] is FormMonitor)
+                    this.DisposeTabPage(page);
+            BaseConst.Log.WriteLogsToFile("已关闭所有监视页面");
         }
 
         /// <summary>
@@ -157,6 +201,18 @@ namespace ARS408.Forms
                 return;
             if (page.Controls.Count > 0)
             {
+                //Control control = page.Controls[0];
+                //if (control is FormMonitor)
+                //    page.Controls.Remove(control);
+                //else
+                //{
+                //    Form form = (Form)control;
+                //    if (form != null)
+                //    {
+                //        form.Close();
+                //        form.Dispose();
+                //    }
+                //}
                 Form form = (Form)page.Controls[0];
                 if (form != null)
                 {
@@ -227,7 +283,9 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Monitor_Click(object sender, EventArgs e)
         {
-            this.StartMonitor();
+            this.CloseMonitors();
+            //this.InitializeMonitors();
+            this.ShowMonitors();
         }
 
         /// <summary>
@@ -298,7 +356,7 @@ namespace ARS408.Forms
                     this.tcp_info_state = message;
                     break;
             }
-            this.file_client.WriteLineToFile(message);
+            this.file_client_dog.WriteLineToFile(message);
         }
 
         /// <summary>
@@ -347,6 +405,11 @@ namespace ARS408.Forms
         private void ToolStripMenu_AutoMonitor_CheckedChanged(object sender, EventArgs e)
         {
             BaseConst.IniHelper.WriteData("Main", "AutoMonitor", this.toolStripMenu_AutoMonitor.Checked ? "1" : "0");
+        }
+
+        private void ToolStripMenu_AutoConnect_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("Main", "AutoConnect", this.toolStripMenu_AutoConnect.Checked ? "1" : "0");
         }
         #endregion
     }

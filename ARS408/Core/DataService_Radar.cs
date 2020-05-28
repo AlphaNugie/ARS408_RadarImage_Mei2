@@ -14,7 +14,8 @@ namespace ARS408.Core
     /// </summary>
     public class DataService_Radar
     {
-        private readonly SqliteProvider provider = new SqliteProvider();
+        //private readonly SqliteProvider provider = new SqliteProvider();
+        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
 
         #region 查询
         /// <summary>

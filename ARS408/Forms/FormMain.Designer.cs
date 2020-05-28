@@ -35,6 +35,7 @@
             this.toolStripMenu_Monitor = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenu_AutoMonitor = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenu_AutoConnect = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenu_Exit = new System.Windows.Forms.ToolStripMenuItem();
             this.字典ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenu_Shiploaders = new System.Windows.Forms.ToolStripMenuItem();
@@ -73,6 +74,7 @@
             this.toolStripMenu_Monitor,
             this.toolStripSeparator1,
             this.toolStripMenu_AutoMonitor,
+            this.toolStripMenu_AutoConnect,
             this.toolStripMenu_Exit});
             this.文件ToolStripMenuItem.Name = "文件ToolStripMenuItem";
             this.文件ToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
@@ -81,27 +83,34 @@
             // toolStripMenu_Monitor
             // 
             this.toolStripMenu_Monitor.Name = "toolStripMenu_Monitor";
-            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Monitor.Text = "打开监视页面";
             this.toolStripMenu_Monitor.Click += new System.EventHandler(this.ToolStripMenu_Monitor_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(179, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
             // 
             // toolStripMenu_AutoMonitor
             // 
             this.toolStripMenu_AutoMonitor.CheckOnClick = true;
             this.toolStripMenu_AutoMonitor.Name = "toolStripMenu_AutoMonitor";
-            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_AutoMonitor.Text = "自动开始监视";
             this.toolStripMenu_AutoMonitor.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoMonitor_CheckedChanged);
+            // 
+            // toolStripMenu_AutoConnect
+            // 
+            this.toolStripMenu_AutoConnect.Name = "toolStripMenu_AutoConnect";
+            this.toolStripMenu_AutoConnect.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenu_AutoConnect.Text = "自动连接";
+            this.toolStripMenu_AutoConnect.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoConnect_CheckedChanged);
             // 
             // toolStripMenu_Exit
             // 
             this.toolStripMenu_Exit.Name = "toolStripMenu_Exit";
-            this.toolStripMenu_Exit.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_Exit.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Exit.Text = "退出";
             this.toolStripMenu_Exit.Click += new System.EventHandler(this.ToolStripMenu_Exit_Click);
             // 
@@ -285,5 +294,6 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenu_AutoMonitor;
         private System.Windows.Forms.ToolStripMenuItem toolStrip_CoorsLimitConfig;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenu_AutoConnect;
     }
 }

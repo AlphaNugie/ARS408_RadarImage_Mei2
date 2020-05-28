@@ -69,7 +69,7 @@ namespace ARS408.Forms
             this.label_RadarCount.Text = BaseConst.RadarList.Count.ToString();
             this.label_DistThres.Text = BaseConst.BorderDistThres.ToString();
             this.RefreshRadarInfos();
-            this.textBox_Info.Text = this.monitor.GetInfoString();
+            this.textBox_Info.Text = BaseFunc.GetInfoString();
         }
 
         private void RefreshRadarInfos()

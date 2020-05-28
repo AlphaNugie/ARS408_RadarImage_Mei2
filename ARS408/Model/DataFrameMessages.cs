@@ -385,8 +385,11 @@ namespace ARS408.Model
             //不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
             if (this.Radar != null)
             {
-                this.ListBuffer.Sort((a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder)); //根据距检测区的最短距离排序
-                this.ListBuffer_Other.Sort((a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z)); //根据Z轴坐标排序
+                //this.ListBuffer.Sort((a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder)); //根据距检测区的最短距离排序
+                //this.ListBuffer_Other.Sort((a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z)); //根据Z轴坐标排序
+                this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
+                //this.ListBuffer.Sort(this.Radar.GroupType == RadarGroupType.Wheel ? SensorGeneral.AngleDistComparison : SensorGeneral.DistanceComparison); //根据角度、距检测区的最短距离排序
+                this.ListBuffer_Other.Sort(SensorGeneral.HeightComparison); //根据Z轴坐标排序
                 this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null; //找出距离最小的点
                 this.GeneralHighest = this.ListBuffer_Other.Count() > 0 ? this.ListBuffer_Other.Last() : null; //找出Z轴坐标最大的点（最高的点）
             }

@@ -23,7 +23,7 @@ namespace ARS408.Forms
     {
         #region 私有变量
         private bool finalized = false;
-        private readonly Regex pattern = new Regex(BaseConst.Pattern_WrappedStatus, RegexOptions.Compiled);
+        //private readonly Regex pattern = new Regex(BaseConst.Pattern_WrappedStatus, RegexOptions.Compiled);
         private readonly DataService_Sqlite dataService = new DataService_Sqlite();
         private readonly DataService_Radar dataService_Radar = new DataService_Radar();
         private List<SensorGeneral> list_general = null;
@@ -502,7 +502,18 @@ namespace ARS408.Forms
 
             try
             {
-                var binding = new BindingList<SensorGeneral>(this.list_general.ToList());
+                dynamic list_new, binding;
+                if (this.Infos.CurrentSensorMode == SensorMode.Cluster)
+                {
+                    list_new = this.list_general.Cast<ClusterGeneral>().ToList();
+                    binding = new BindingList<ClusterGeneral>(list_new);
+                }
+                else
+                {
+                    list_new = this.list_general.Cast<ObjectGeneral>().ToList();
+                    binding = new BindingList<ObjectGeneral>(list_new);
+                }
+                //var binding = new BindingList<SensorGeneral>(this.list_general.ToList());
                 this.dataGridView_Output.DataSource = null;
                 this.dataGridView_Output.DataSource = binding;
             }

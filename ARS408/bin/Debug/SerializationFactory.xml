@@ -4,6 +4,36 @@
         <name>SerializationFactory</name>
     </assembly>
     <members>
+        <member name="T:SerializationFactory.Coordinate">
+            <summary>
+            坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.Coordinate.XPrime">
+            <summary>
+            本地X
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.Coordinate.YPrime">
+            <summary>
+            本地Y
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.Coordinate.XClaimer">
+            <summary>
+            单机X
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.Coordinate.YClaimer">
+            <summary>
+            单机Y
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.Coordinate.Z">
+            <summary>
+            Z坐标
+            </summary>
+        </member>
         <member name="T:SerializationFactory.ProtoInfoType">
             <summary>
             通过ProtobufNet传输的消息类型
@@ -22,6 +52,36 @@
         <member name="F:SerializationFactory.ProtoInfoType.RADAR_DETAIL">
             <summary>
             雷达详细信息
+            </summary>
+        </member>
+        <member name="T:SerializationFactory.SolutionType">
+            <summary>
+            定位解算状态
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.SolutionType.Invalid">
+            <summary>
+            定位不可用或无解
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.SolutionType.Single">
+            <summary>
+            单点定位
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.SolutionType.Float">
+            <summary>
+            浮点解
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.SolutionType.Fixed">
+            <summary>
+            固定解
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.SolutionType.Other">
+            <summary>
+            其它情况
             </summary>
         </member>
         <member name="T:SerializationFactory.GnssProtoInfo">
@@ -44,6 +104,11 @@
             臂架顶端本地Z坐标
             </summary>
         </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.PileHeight">
+            <summary>
+            该点煤堆高度
+            </summary>
+        </member>
         <member name="P:SerializationFactory.GnssProtoInfo.WalkingPosition">
             <summary>
             行走位置
@@ -57,6 +122,21 @@
         <member name="P:SerializationFactory.GnssProtoInfo.YawAngle">
             <summary>
             回转角
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.Working">
+            <summary>
+            是否收到数据
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.IsFixed">
+            <summary>
+            是否为固定解
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.PositionQuality">
+            <summary>
+            定位质量
             </summary>
         </member>
         <member name="T:SerializationFactory.RadarInfoDetail">

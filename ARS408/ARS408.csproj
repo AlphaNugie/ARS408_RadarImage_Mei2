@@ -39,6 +39,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\CommonLib\CommonLib\CommonLib\bin\Debug\CommonLib.dll</HintPath>
     </Reference>
+    <Reference Include="CommonLib.DataUtil.SqliteProviderLib">
+      <HintPath>..\..\..\CommonLib\CommonLib\CommonLib.DataUtil.SqliteProviderLib\bin\Debug\CommonLib.DataUtil.SqliteProviderLib.dll</HintPath>
+    </Reference>
     <Reference Include="Interop.OPCAutomation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -85,6 +88,7 @@
     <Compile Include="Core\DataService_Sqlite.cs" />
     <Compile Include="Core\DataService_ThreatLevel.cs" />
     <Compile Include="Core\Enums.cs" />
+    <Compile Include="Core\OpcConst.cs" />
     <Compile Include="Forms\FormCoorsLimitationConfig.cs">
       <SubType>Form</SubType>
     </Compile>

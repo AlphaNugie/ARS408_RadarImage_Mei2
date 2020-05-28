@@ -85,7 +85,6 @@
             this.textBox_ItemName_Stream = new System.Windows.Forms.TextBox();
             this.textBox_ItemName_BeltSpeed = new System.Windows.Forms.TextBox();
             this.dataGridView = new System.Windows.Forms.DataGridView();
-            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.Column_Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Name = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Address = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -93,6 +92,7 @@
             this.Column_ItemNameCollisionState = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_ItemNameCollisionState2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Changed = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
@@ -323,7 +323,7 @@
             this.label_WalkingPos.Name = "label_WalkingPos";
             this.label_WalkingPos.Size = new System.Drawing.Size(69, 20);
             this.label_WalkingPos.TabIndex = 23;
-            this.label_WalkingPos.Text = "行走位置";
+            this.label_WalkingPos.Text = "北斗行走";
             // 
             // label10
             // 
@@ -332,7 +332,7 @@
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(69, 20);
             this.label10.TabIndex = 23;
-            this.label10.Text = "大臂俯仰";
+            this.label10.Text = "北斗俯仰";
             // 
             // button_SaveItemInfo
             // 
@@ -351,7 +351,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(69, 20);
             this.label3.TabIndex = 23;
-            this.label3.Text = "伸缩距离";
+            this.label3.Text = "北斗回转";
             // 
             // comboBox_TopicName_BucketPitch
             // 
@@ -393,11 +393,11 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(25, 135);
+            this.label4.Location = new System.Drawing.Point(10, 136);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(69, 20);
+            this.label4.Size = new System.Drawing.Size(84, 20);
             this.label4.TabIndex = 23;
-            this.label4.Text = "溜桶俯仰";
+            this.label4.Text = "编码行走左";
             // 
             // groupBox2
             // 
@@ -534,7 +534,7 @@
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(69, 20);
             this.label19.TabIndex = 23;
-            this.label19.Text = "瞬时流量";
+            this.label19.Text = "编码回转";
             // 
             // label11
             // 
@@ -543,16 +543,16 @@
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(69, 20);
             this.label11.TabIndex = 23;
-            this.label11.Text = "皮带速度";
+            this.label11.Text = "编码俯仰";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(25, 167);
+            this.label5.Location = new System.Drawing.Point(10, 165);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(69, 20);
+            this.label5.Size = new System.Drawing.Size(84, 20);
             this.label5.TabIndex = 23;
-            this.label5.Text = "溜桶回转";
+            this.label5.Text = "编码行走右";
             // 
             // button_GetValue_Stream
             // 
@@ -687,23 +687,6 @@
             this.dataGridView.TabIndex = 25;
             this.dataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
             // 
-            // tableLayoutPanel1
-            // 
-            this.tableLayoutPanel1.ColumnCount = 1;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 0, 0);
-            this.tableLayoutPanel1.Controls.Add(this.dataGridView, 0, 2);
-            this.tableLayoutPanel1.Controls.Add(this.groupBox2, 0, 1);
-            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 3;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 81F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 312F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 158F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1056, 745);
-            this.tableLayoutPanel1.TabIndex = 26;
-            // 
             // Column_Id
             // 
             this.Column_Id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -768,7 +751,24 @@
             this.Column_Changed.MinimumWidth = 6;
             this.Column_Changed.Name = "Column_Changed";
             this.Column_Changed.Visible = false;
-            this.Column_Changed.Width = 98;
+            this.Column_Changed.Width = 125;
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.ColumnCount = 1;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.groupBox1, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.dataGridView, 0, 2);
+            this.tableLayoutPanel1.Controls.Add(this.groupBox2, 0, 1);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 81F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 312F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 158F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1056, 745);
+            this.tableLayoutPanel1.TabIndex = 26;
             // 
             // FormOpcConfig
             // 

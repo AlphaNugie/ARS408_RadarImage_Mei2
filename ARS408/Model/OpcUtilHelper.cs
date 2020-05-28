@@ -45,40 +45,40 @@ namespace ARS408.Model
         /// </summary>
         public string[] OpcItemNames { get; set; }
 
-        /// <summary>
-        /// 行走位置
-        /// </summary>
-        public double WalkingPosition { get; set; }
+        ///// <summary>
+        ///// 行走位置
+        ///// </summary>
+        //public double WalkingPosition { get; set; }
 
-        /// <summary>
-        /// 大臂俯仰角（°）
-        /// </summary>
-        public double PitchAngle { get; set; }
+        ///// <summary>
+        ///// 大臂俯仰角（°）
+        ///// </summary>
+        //public double PitchAngle { get; set; }
 
-        /// <summary>
-        /// 大臂伸缩长度
-        /// </summary>
-        public double StretchLength { get; set; }
+        ///// <summary>
+        ///// 大臂回转角度
+        ///// </summary>
+        //public double YawAngle { get; set; }
 
-        /// <summary>
-        /// 溜桶俯仰
-        /// </summary>
-        public double BucketPitch { get; set; }
+        ///// <summary>
+        ///// 溜桶俯仰
+        ///// </summary>
+        //public double WalkingLeft_Plc { get; set; }
 
-        /// <summary>
-        /// 溜桶回转
-        /// </summary>
-        public double BucketYaw { get; set; }
+        ///// <summary>
+        ///// 溜桶回转
+        ///// </summary>
+        //public double WalkingRight_Plc { get; set; }
 
-        /// <summary>
-        /// 皮带速度
-        /// </summary>
-        public double BeltSpeed { get; set; }
+        ///// <summary>
+        ///// 皮带速度
+        ///// </summary>
+        //public double Pitch_Plc { get; set; }
 
-        /// <summary>
-        /// 瞬时流量
-        /// </summary>
-        public double Stream { get; set; }
+        ///// <summary>
+        ///// 瞬时流量
+        ///// </summary>
+        //public double Yaw_Plc { get; set; }
 
         /// <summary>
         /// 行走位置单位对应的系数（例如，毫米为1，厘米为10）
@@ -320,16 +320,15 @@ namespace ARS408.Model
                 {
                     string info = string.Format("未找到任何OPC项的值. shiploader_id: {0}, ip_address: {1}", this.Shiploader.Id, this.Shiploader.OpcServerIp);
                     FileClient.WriteFailureInfo(info);
-                    //this.ArmPosition = 0xFFFFFFFF;
                     return;
                 }
-                this.WalkingPosition = double.Parse(itemValues.GetValue(1).ToString());
-                this.PitchAngle = double.Parse(itemValues.GetValue(2).ToString());
-                this.StretchLength = double.Parse(itemValues.GetValue(3).ToString());
-                this.BucketPitch = double.Parse(itemValues.GetValue(4).ToString());
-                this.BucketYaw = double.Parse(itemValues.GetValue(5).ToString());
-                this.BeltSpeed = double.Parse(itemValues.GetValue(6).ToString());
-                this.Stream = double.Parse(itemValues.GetValue(7).ToString());
+                OpcConst.WalkingPosition = double.Parse(itemValues.GetValue(1).ToString());
+                OpcConst.PitchAngle = double.Parse(itemValues.GetValue(2).ToString());
+                OpcConst.YawAngle = double.Parse(itemValues.GetValue(3).ToString());
+                OpcConst.WalkingLeft_Plc = double.Parse(itemValues.GetValue(4).ToString());
+                OpcConst.WalkingRight_Plc = double.Parse(itemValues.GetValue(5).ToString());
+                OpcConst.Pitch_Plc = double.Parse(itemValues.GetValue(6).ToString());
+                OpcConst.Yaw_Plc = double.Parse(itemValues.GetValue(7).ToString());
             }
             catch (Exception ex)
             {

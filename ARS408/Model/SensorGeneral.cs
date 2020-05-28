@@ -1,5 +1,4 @@
 ﻿using ARS408.Core;
-using CommonLib.Enums;
 using CommonLib.Extensions;
 using System;
 using System.Collections.Generic;
@@ -16,12 +15,31 @@ namespace ARS408.Model
     public abstract class SensorGeneral : SensorMessage
     {
         private DynProp prop = new DynProp();
-        private double rcs = 0, dist_long = 0, dist_lat = 0, distance_border = 0;
+        private double rcs = 0, dist_long = 0, dist_lat = 0;
+
+        /// <summary>
+        /// 根据角度、距检测区的最短距离排序
+        /// </summary>
+        public static Comparison<SensorGeneral> AngleDistComparison = (a, b) =>
+        {
+            //bool close_enough = Math.Floor(Math.Abs(a.Angle - b.Angle)) == 0; //是否两个角度足够接近（相差小于1°）
+            //int result = a.AngleVert.CompareTo(b.AngleVert); //比较角度与俯仰角的差的绝对值的大小
+            ////假如上文中绝对值不同且两个角度并不足够接近，直接返回绝对值比较结果，否则返回距离比较结果
+            //return result != 0 && !close_enough ? result : a.DistanceToBorder.CompareTo(b.DistanceToBorder);
+            int result = a.AngleLevel.CompareTo(b.AngleLevel); //比较角度与俯仰角的差的绝对值的层次
+            //假如上文中绝对值不同且两个角度并不足够接近，直接返回绝对值比较结果，否则返回距离比较结果
+            return result != 0 ? result : a.DistanceToBorder.CompareTo(b.DistanceToBorder);
+        };
 
         /// <summary>
         /// 根据距检测区的最短距离排序
         /// </summary>
-        public static Comparison<ClusterGeneral> Comparison = (a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder);
+        public static Comparison<SensorGeneral> DistanceComparison = (a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder);
+
+        /// <summary>
+        /// 根据转换后Z坐标的大小排序
+        /// </summary>
+        public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z);
 
         #region 属性
         /// <summary>
@@ -38,6 +56,7 @@ namespace ARS408.Model
             set
             {
                 this.dist_long = value;
+                this.CalculateAngle();
                 this.CalculateConvertedCoors();
                 this.CheckIfWithinLimits();
             }
@@ -52,10 +71,26 @@ namespace ARS408.Model
             set
             {
                 this.dist_lat = value;
+                this.CalculateAngle();
                 this.CalculateConvertedCoors();
                 this.CheckIfWithinLimits();
             }
         }
+
+        /// <summary>
+        /// 角度
+        /// </summary>
+        public double Angle { get; set; }
+
+        /// <summary>
+        /// 与竖直向下的角度的差值
+        /// </summary>
+        public double AngleVert { get { return Math.Abs(this.Angle - OpcConst.PitchAngle); } }
+
+        /// <summary>
+        /// 与竖直向下的角度的差值的层次（越靠近竖直角度层次越小，每个层次差1°）
+        /// </summary>
+        public double AngleLevel { get { return Math.Floor(Math.Abs(this.Angle - OpcConst.PitchAngle) / 1); } }
 
         /// <summary>
         /// 纵向的相对速度（x），米/秒
@@ -133,11 +168,7 @@ namespace ARS408.Model
         /// <summary>
         /// 距检测边界的距离，与检测方式（点线面）与雷达朝向（海北陆南）有关
         /// </summary>
-        public double DistanceToBorder
-        {
-            get { return this.distance_border; }
-            set { this.distance_border = value; }
-        }
+        public double DistanceToBorder { get; set; }
         #endregion
 
         /// <summary>
@@ -160,6 +191,14 @@ namespace ARS408.Model
         /// </summary>
         /// <param name="binary"></param>
         protected abstract override void DataConvert(string binary);
+
+        /// <summary>
+        /// 根据横纵坐标计算角度
+        /// </summary>
+        public void CalculateAngle()
+        {
+            this.Angle = this.dist_long == 0 ? 90 : Math.Atan(this.dist_lat / this.dist_long) * 180 / Math.PI;
+        }
 
         /// <summary>
         /// 计算转换后坐标
