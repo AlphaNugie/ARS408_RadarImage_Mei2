@@ -18,7 +18,6 @@ namespace ARS408.Model
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
         internal double _current;
-        internal int _threat_level = 0;
         internal string _threat_level_binary = "00";
 
         #region 属性
@@ -59,6 +58,7 @@ namespace ARS408.Model
             set { this._current = value; }
         }
 
+        internal int _threat_level = 0;
         /// <summary>
         /// 报警级数
         /// </summary>

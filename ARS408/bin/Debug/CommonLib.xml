@@ -181,12 +181,17 @@
         </member>
         <member name="P:CommonLib.Clients.DataFilterClient.Wing">
             <summary>
-            邻域翼展（半径）
+            邻域翼展（半径），默认为3
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DataFilterClient.DoubleWinged">
+            <summary>
+            是否为双翼（从中心向两侧延伸），假如为false则为单翼（从中心向左侧延伸），默认为true
             </summary>
         </member>
         <member name="P:CommonLib.Clients.DataFilterClient.Neighbours">
             <summary>
-            邻域大小，应为奇数
+            邻域大小，假如为双翼，则应为奇数
             </summary>
         </member>
         <member name="P:CommonLib.Clients.DataFilterClient.Type">
@@ -204,20 +209,14 @@
             最新的错误信息
             </summary>
         </member>
-        <member name="M:CommonLib.Clients.DataFilterClient.#ctor(System.Byte,CommonLib.Clients.FilterType)">
+        <member name="M:CommonLib.Clients.DataFilterClient.#ctor(System.UInt16,CommonLib.Clients.FilterType,System.Double,System.Boolean)">
             <summary>
             构造器
             </summary>
-            <param name="wing">邻域翼展（半径），假如邻域长度为7，则半径应为3</param>
+            <param name="wing">邻域翼展（半径），假如半径为3，当领域为双翼时邻域长度为7，否则邻域长度为4</param>
             <param name="type">滤波类型</param>
-        </member>
-        <member name="M:CommonLib.Clients.DataFilterClient.#ctor(System.Byte,CommonLib.Clients.FilterType,System.Double)">
-            <summary>
-            构造器
-            </summary>
-            <param name="wing">邻域翼展（半径），假如邻域长度为7，则半径应为3</param>
-            <param name="type">滤波类型</param>
-            <param name="sigma">高斯分布标准差</param>
+            <param name="sigma">高斯分布标准差，标准差越大，数据分布越分散，反之数据分布越集中</param>
+            <param name="double_winged">样本中心两侧是双翼还是单翼</param>
         </member>
         <member name="M:CommonLib.Clients.DataFilterClient.GetFilteredSamples(System.Collections.Generic.IEnumerable{System.Double})">
             <summary>
@@ -246,6 +245,14 @@
             根据高斯分布（中心样本为中心点）求各位置样本系数并加权平均
             </summary>
             <param name="samples">样本</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Clients.DataFilterClient.GetGaussianValue(System.Collections.Generic.IEnumerable{System.Double},System.Collections.Generic.List{System.Double}@)">
+            <summary>
+            根据高斯分布（中心样本为中心点）求各位置样本系数并加权平均
+            </summary>
+            <param name="samples">样本</param>
+            <param name="ratios">计算结束后返回的每个样本根据高斯分布得出的系数</param>
             <returns></returns>
         </member>
         <member name="T:CommonLib.Clients.FilterType">
@@ -293,7 +300,7 @@
             数据接收事件
             </summary>
         </member>
-        <member name="F:CommonLib.Clients.DerivedUdpClient.baseClient">
+        <member name="F:CommonLib.Clients.DerivedUdpClient.autoReceive">
             <summary>
             UdpClient对象
             </summary>
@@ -526,31 +533,31 @@
         </member>
         <member name="T:CommonLib.Clients.GaussianCalculator">
             <summary>
-            一维高斯分布计算器
+            一维高斯分布计算器（高斯分布亦称为正态分布，期望为0、标准差为1时为标准正态分布）
             </summary>
         </member>
         <member name="P:CommonLib.Clients.GaussianCalculator.Amplitude">
             <summary>
-            幅值，高斯分布最高点的值，当 A=1/(sigma*pow(2*pi,0.5)) 时高斯分布积分为1
+            幅值，高斯分布最高点/中心的y值，当 A=1/(σ*√2π) 时高斯分布积分为1
             </summary>
         </member>
         <member name="P:CommonLib.Clients.GaussianCalculator.Expected">
             <summary>
-            高斯分布的期望（一般为0）
+            高斯分布的期望，一般为0（即平均值，以μ表示，高斯分布最高点/中心的x值，期望减小或增大时将左右平移）
             </summary>
         </member>
         <member name="P:CommonLib.Clients.GaussianCalculator.Sigma">
             <summary>
-            标准差
+            标准差，以σ表示，σ越大，数据分布越分散，σ越小，数据分布越集中
             </summary>
         </member>
         <member name="M:CommonLib.Clients.GaussianCalculator.#ctor(System.Double,System.Double,System.Double)">
             <summary>
-            一维高斯分布构造器
+            一维高斯分布构造器（期望为0、标准差为1时为标准正态分布）
             </summary>
-            <param name="amplitude">幅值，高斯分布最高点的值，当 A=1/(sigma*pow(2*pi,0.5)) 时高斯分布积分为1</param>
-            <param name="expected">高斯分布的期望（一般为0）</param>
-            <param name="sigma">标准差</param>
+            <param name="amplitude">幅值，高斯分布最高点的值，当 A=1/(σ*√2π) 时高斯分布积分为1</param>
+            <param name="expected">高斯分布的期望，一般为0（即平均值，以μ表示，高斯分布最高点/中心的x值，期望减小或增大时将左右平移）</param>
+            <param name="sigma">标准差，以σ表示，σ越大，数据分布越分散，σ越小，数据分布越集中</param>
         </member>
         <member name="M:CommonLib.Clients.GaussianCalculator.Calc(System.Double)">
             <summary>
@@ -1195,6 +1202,11 @@
             是否已连接
             </summary>
         </member>
+        <member name="P:CommonLib.Clients.ConnClient.TcpClient">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:CommonLib.Clients.ConnClient.Connect(System.String,System.String,CommonLib.Enums.ConnTypes)">
             <summary>
             通讯连接
@@ -1215,6 +1227,7 @@
             发送指令
             </summary>
             <param name="command">指令字符串</param>
+            <param name="connType"></param>
         </member>
         <member name="M:CommonLib.Clients.ConnClient.SendCommand(System.String)">
             <summary>
@@ -1534,6 +1547,27 @@
             <param name="encryptString">待加密的字符串</param>
             <returns>加密成功返回加密后的字符串，失败返回源串</returns>
         </member>
+        <member name="M:CommonLib.Clients.EncryptionClient.DecryptAES(System.String)">
+            <summary>
+            AES解密字符串，按默认密钥与加密向量
+            </summary>
+            <param name="decryptString">待解密的字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Clients.EncryptionClient.EncryptDES(System.String)">
+            <summary>
+            DES加密字符串
+            </summary>
+            <param name="encryptString">待加密的字符串</param>
+            <returns>加密成功返回加密后的字符串，失败返回源串</returns>
+        </member>
+        <member name="M:CommonLib.Clients.EncryptionClient.DecryptDES(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="decryptString"></param>
+            <returns></returns>
+        </member>
         <member name="M:CommonLib.Clients.EncryptionClient.EncryptAES(System.String,System.String,System.String)">
             <summary>
             AES加密字符串
@@ -1543,28 +1577,14 @@
             <param name="encryptIV">加密向量，要求为16位</param>
             <returns>加密成功返回加密后的字符串，失败返回源串</returns>
         </member>
-        <member name="M:CommonLib.Clients.EncryptionClient.DecryptAES(System.String)">
-            <summary>
-            AES解密字符串，按默认密钥与加密向量
-            </summary>
-            <param name="decryptString">待解密的字符串</param>
-            <returns></returns>
-        </member>
         <member name="M:CommonLib.Clients.EncryptionClient.DecryptAES(System.String,System.String,System.String)">
             <summary>
             AES解密字符串
             </summary>
             <param name="decryptString">待解密的字符串</param>
             <param name="decryptKey">解密密钥，要求为32位，和加密密钥相同</param>
-            <param name="encryptIV">解密向量，要求为16位，和加密向量相同</param>
+            <param name="decryptIV">解密向量，要求为16位，和加密向量相同</param>
             <returns>解密成功返回解密后的字符串，失败返源串</returns>
-        </member>
-        <member name="M:CommonLib.Clients.EncryptionClient.EncryptDES(System.String)">
-            <summary>
-            DES加密字符串
-            </summary>
-            <param name="encryptString">待加密的字符串</param>
-            <returns>加密成功返回加密后的字符串，失败返回源串</returns>
         </member>
         <member name="M:CommonLib.Clients.EncryptionClient.EncryptDES(System.String,System.String,System.String)">
             <summary>
@@ -1575,20 +1595,13 @@
             <param name="encryptIV">加密向量，要求为8位</param>
             <returns>加密成功返回加密后的字符串，失败返回源串</returns>
         </member>
-        <member name="M:CommonLib.Clients.EncryptionClient.DecryptDES(System.String)">
-            <summary>
-            
-            </summary>
-            <param name="decryptString"></param>
-            <returns></returns>
-        </member>
         <member name="M:CommonLib.Clients.EncryptionClient.DecryptDES(System.String,System.String,System.String)">
             <summary>
             DES解密字符串
             </summary>
             <param name="decryptString">待解密的字符串</param>
             <param name="decryptKey">解密密钥，要求为8位，和加密密钥相同</param>
-            <param name="encryptIV">加密向量，要求为8位，和加密向量相同</param>
+            <param name="decryptIV">解密向量，要求为8位，和加密向量相同</param>
             <returns>解密成功返回解密后的字符串，失败返源串</returns>
         </member>
         <member name="T:CommonLib.DataUtil.AccessProvider">
@@ -2318,6 +2331,59 @@
         <member name="P:CommonLib.Extensions.EnumAliasAttribute.Alias">
             <summary>
             枚举注释
+            </summary>
+        </member>
+        <member name="T:CommonLib.Extensions.Property.PropertyMapperExtension">
+            <summary>
+            PropertyMapper扩展类
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperExtension.CopyPropertyValueTo``1(System.Object,``0@)">
+            <summary>
+            获取源实体中每个属性的PropertyMapper特性，根据特性值在目标实体中寻找对应属性并为该属性赋值（可由'.'符号指定子属性）
+            </summary>
+            <typeparam name="Target">目标实体类型参数</typeparam>
+            <param name="source">源实体</param>
+            <param name="target">目标实体</param>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperExtension.CopyPropertyValueFrom``1(System.Object,``0)">
+            <summary>
+            获取源实体中每个属性的PropertyMapper特性，根据特性值在目标实体中获取对应属性的值并赋给源实体中的属性（可由'.'符号指定子属性）
+            </summary>
+            <typeparam name="Target">目标实体类型参数</typeparam>
+            <param name="source">源实体</param>
+            <param name="target">目标实体</param>
+        </member>
+        <member name="T:CommonLib.Extensions.Property.PropertyMapperToAttribute">
+            <summary>
+            为添加此特性的属性在其它实体中寻找符合指定名称的属性，以向其进行赋值
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperToAttribute.#ctor(System.String)">
+            <summary>
+            以指定Mapper名称初始化特性
+            </summary>
+            <param name="mapper">目标属性的名称，可由'.'符号指定子属性</param>
+        </member>
+        <member name="P:CommonLib.Extensions.Property.PropertyMapperToAttribute.PropertyMapper">
+            <summary>
+            特性的目标属性名称，可由'.'符号指定子属性
+            </summary>
+        </member>
+        <member name="T:CommonLib.Extensions.Property.PropertyMapperFromAttribute">
+            <summary>
+            为添加此特性的属性在其它实体中寻找符合指定名称的属性，以从该属性获取值
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperFromAttribute.#ctor(System.String)">
+            <summary>
+            以指定Mapper名称初始化特性
+            </summary>
+            <param name="mapper">目标属性的名称，可由'.'符号指定子属性</param>
+        </member>
+        <member name="P:CommonLib.Extensions.Property.PropertyMapperFromAttribute.PropertyMapper">
+            <summary>
+            特性的目标属性名称，可由'.'符号指定子属性
             </summary>
         </member>
         <member name="T:CommonLib.Extensions.ExtensionClass">
@@ -3631,7 +3697,7 @@
             <summary>
             热键取消注册
             </summary>
-            <param name="hWnd">窗口句柄</param>
+            <param name="winHandle">窗口句柄</param>
             <param name="id">已注册热键的识别ID</param>
             <returns>假如取消注册成功，返回true，否则返回false</returns>
         </member>

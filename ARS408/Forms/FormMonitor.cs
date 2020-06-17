@@ -421,6 +421,7 @@ namespace ARS408.Forms
         #region 事件
         private void FormMonitor_FormClosing(object sender, FormClosingEventArgs e)
         {
+            this.DisposeTabPages_all();
             this.StartOrEnd(false);
             this.OpcHelper.Epilogue();
         }
@@ -445,7 +446,7 @@ namespace ARS408.Forms
                 this.DisposeTabPages_all();
                 this.ShowForm(radar);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 MessageBox.Show("初始化未完成", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }

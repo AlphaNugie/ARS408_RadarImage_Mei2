@@ -89,6 +89,51 @@
             用于GNSS数据传输的protobuf数据实体类
             </summary>
         </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.Working">
+            <summary>
+            是否收到数据
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.IsFixed">
+            <summary>
+            是否为固定解
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.PositionQuality">
+            <summary>
+            定位质量
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.Latitude">
+            <summary>
+            纬度
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.Longitude">
+            <summary>
+            经度
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.Altitude">
+            <summary>
+            海拔
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Antex">
+            <summary>
+            定位天线本地X坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Antey">
+            <summary>
+            定位天线本地Y坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Antez">
+            <summary>
+            定位天线本地Z坐标
+            </summary>
+        </member>
         <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Tipx">
             <summary>
             臂架顶端本地X坐标
@@ -104,11 +149,6 @@
             臂架顶端本地Z坐标
             </summary>
         </member>
-        <member name="P:SerializationFactory.GnssProtoInfo.PileHeight">
-            <summary>
-            该点煤堆高度
-            </summary>
-        </member>
         <member name="P:SerializationFactory.GnssProtoInfo.WalkingPosition">
             <summary>
             行走位置
@@ -122,21 +162,6 @@
         <member name="P:SerializationFactory.GnssProtoInfo.YawAngle">
             <summary>
             回转角
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.GnssProtoInfo.Working">
-            <summary>
-            是否收到数据
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.GnssProtoInfo.IsFixed">
-            <summary>
-            是否为固定解
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.GnssProtoInfo.PositionQuality">
-            <summary>
-            定位质量
             </summary>
         </member>
         <member name="T:SerializationFactory.RadarInfoDetail">
@@ -212,6 +237,11 @@
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelDiff">
             <summary>
             两侧斗轮距离的差值（绝对值）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistBelt">
+            <summary>
+            皮带料流雷达下方距离
             </summary>
         </member>
         <member name="P:SerializationFactory.RadarProtoInfo.RadarList">

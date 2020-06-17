@@ -281,26 +281,21 @@ namespace ARS408.Model
             Flags[2] = this.ParentForm != null && !general.RCS.Between(this.ParentForm.RcsMinimum, this.ParentForm.RcsMaximum); //RCS值是否不在范围内
             if (this.Radar != null)
             {
-                Flags[1] = (BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres); //距边界距离是否小于0（溜桶雷达）或超出阈值
-                //Flags[1] = (this.Radar.GroupType == RadarGroupType.Wheel && g.DistanceToBorder < 0) || (BaseConst.BorderDistThres > 0 && g.DistanceToBorder > BaseConst.BorderDistThres); //距边界距离是否小于0（溜桶雷达）或超出阈值
-                //Flags[3] = this.Radar.GroupType == RadarGroupType.Arm && !z.Between(0 - BaseConst.BucketHeight, BaseConst.BucketUpLimit); //溜桶雷达Z方向坐标是否低于大铲最低点，或高于检测高度上限
-                //Flags[5] = below.Between(0, BaseConst.ObsBelowThres) && g.DistanceToBorder < BaseConst.ObsBelowFrontier; //障碍物在溜桶下方的距离在阈值(ObsBelowThres)内，且距边界距离不超过1米(ObsBelowFrontier)
+                Flags[1] = (BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres); //距边界距离是否小于0或超出阈值
                 Flags[7] = !this.Radar.RadarCoorsLimited || general.WithinRadarLimits; //雷达坐标系坐标的限制
                 Flags[8] = !this.Radar.ClaimerCoorsLimited || general.WithinClaimerLimits; //单机坐标系坐标的限制
-                //Flags[7] = !this.Radar.RadarCoorsLimited || (lon.Between(this.Radar.RadarxMin, this.Radar.RadarxMax) && lat.Between(this.Radar.RadaryMin, this.Radar.RadaryMax)); //雷达坐标系坐标的限制
-                //Flags[8] = !this.Radar.ClaimerCoorsLimited || (x.Between(this.Radar.ClaimerxMin, this.Radar.ClaimerxMax) && y.Between(this.Radar.ClaimeryMin, this.Radar.ClaimeryMax) && z.Between(this.Radar.ClaimerzMin, this.Radar.ClaimerzMax)); //单机坐标系坐标的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
             bool save2list = !Flags[2] && Flags[7] && Flags[8], save2other = false;
-            ////非皮带雷达额外判断
-            //if (!this.IsBelt)
-            //{
-            //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内，溜桶雷达Z方向坐标不低于大铲最低点
-            save2list = save2list && !(Flags[1] || Flags[3]);
-            //TODO (臂架下方)过滤条件Lv2：RCS值在范围内，障碍物在溜桶下方的距离在阈值内、且距边界距离不超过1米
+            //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内
+            save2list = save2list && !(Flags[1]);
+            //假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
+            if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
+                save2list = general.Angle.Between(-12, 11);
+            //TODO (其余数据)过滤条件Lv2：RCS值在范围内
             if (!save2list)
-                save2other = !Flags[2] && Flags[5];
-            //}
+                save2other = false;
+                //save2other = !Flags[2];
             #region 旧判断逻辑
             //if (this.IsShore)
             //    save2list = !Flags[2] && z.Between(-1, 1) && x.Between(-5, 5);

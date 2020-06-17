@@ -28,6 +28,13 @@ namespace ARS408
             #region 测试
             #endregion
 
+            int threat = BaseFunc.GetThreatLevelByValue(3);
+            threat = BaseFunc.GetThreatLevelByValue(2);
+            threat = BaseFunc.GetThreatLevelByValue(1.7);
+            threat = BaseFunc.GetThreatLevelByValue(1.5);
+            threat = BaseFunc.GetThreatLevelByValue(1.3);
+            threat = BaseFunc.GetThreatLevelByValue(1);
+            threat = BaseFunc.GetThreatLevelByValue(0.5);
             //string test = new string("12345".ToCharArray().Reverse().ToArray());
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
