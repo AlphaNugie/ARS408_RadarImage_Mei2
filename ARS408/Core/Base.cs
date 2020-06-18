@@ -396,6 +396,12 @@ property float rcs";
             BaseConst.RadarInfo.DistWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
             BaseConst.RadarInfo.DistWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
             BaseConst.RadarInfo.DistWheelMin = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮最近距离
+            BaseConst.RadarInfo.DistBelt = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Belt).Select(r => r.CurrentDistance).MinExceptZero(); //皮带料流距离
+            BaseConst.RadarInfo.DistArmLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //臂架左侧距离
+            BaseConst.RadarInfo.DistArmRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //臂架右侧距离
+            BaseConst.RadarInfo.DistArmBelow = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Down).Select(r => r.CurrentDistance).MinExceptZero(); //臂架下方距离
+            BaseConst.RadarInfo.DistCounterLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //配重左侧距离
+            BaseConst.RadarInfo.DistCounterRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //配重右侧距离
             BaseConst.RadarInfo.RadarList.Clear();
             BaseConst.RadarInfo.RadarList.AddRange(BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)));
         }
