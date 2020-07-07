@@ -1,5 +1,6 @@
 ﻿using ARS408.Core;
 using CommonLib.Extensions;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,11 +13,12 @@ namespace ARS408.Model
     /// <summary>
     /// 传感器消息一般消息基础类
     /// </summary>
+    [ProtoContract]
+    [ProtoInclude(1, typeof(ClusterGeneral))]
+    [ProtoInclude(2, typeof(ObjectGeneral))]
     public abstract class SensorGeneral : SensorMessage
     {
-        private DynProp prop = new DynProp();
-        private double rcs = 0, dist_long = 0, dist_lat = 0;
-
+        #region static
         /// <summary>
         /// 根据角度、距检测区的最短距离排序
         /// </summary>
@@ -39,7 +41,9 @@ namespace ARS408.Model
         /// <summary>
         /// 根据转换后Z坐标的大小排序
         /// </summary>
-        public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z);
+        //public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z);
+        public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.Z.CompareTo(b.Z);
+        #endregion
 
         #region 属性
         /// <summary>
@@ -47,32 +51,36 @@ namespace ARS408.Model
         /// </summary>
         public byte Id { get; set; }
 
+        private double _dist_long;
         /// <summary>
         /// 纵向（x）坐标，米
         /// </summary>
+        [ProtoMember(3)]
         public double DistLong
         {
-            get { return this.dist_long; }
+            get { return this._dist_long; }
             set
             {
-                this.dist_long = value;
-                this.CalculateAngle();
+                this._dist_long = value;
                 this.CalculateConvertedCoors();
+                this.CalculateAngle();
                 this.CheckIfWithinLimits();
             }
         }
 
+        private double _dist_lat;
         /// <summary>
         /// 横向（y）坐标，米
         /// </summary>
+        [ProtoMember(4)]
         public double DistLat
         {
-            get { return this.dist_lat; }
+            get { return this._dist_lat; }
             set
             {
-                this.dist_lat = value;
-                this.CalculateAngle();
+                this._dist_lat = value;
                 this.CalculateConvertedCoors();
+                this.CalculateAngle();
                 this.CheckIfWithinLimits();
             }
         }
@@ -81,6 +89,11 @@ namespace ARS408.Model
         /// 角度
         /// </summary>
         public double Angle { get; set; }
+
+        /// <summary>
+        /// 当前点在单机YOZ平面内的角度，自Y轴正向转向Z轴正向为正，反之为负
+        /// </summary>
+        public double AngleYoz { get; set; }
 
         /// <summary>
         /// 与竖直向下的角度的差值
@@ -103,9 +116,40 @@ namespace ARS408.Model
         public double VrelLat { get; set; }
 
         /// <summary>
-        /// 转换后坐标
+        /// 转换后的最原始坐标
         /// </summary>
         public ModifiedCoordinates ModiCoors { get; set; }
+
+        /// <summary>
+        /// 转换后的X坐标（经过偏移处理）
+        /// </summary>
+        [ProtoMember(6)]
+        public double X
+        {
+            get { return this.ModiCoors.X + this.Radar.XOffset; }
+            set { this.ModiCoors.X = value - this.Radar.XOffset; }
+        }
+
+        /// <summary>
+        /// 转换后的Y坐标（经过偏移处理）
+        /// </summary>
+        [ProtoMember(7)]
+        public double Y
+        {
+            get { return this.ModiCoors.Y + this.Radar.YOffset; }
+            set { this.ModiCoors.Y = value - this.Radar.YOffset; }
+        }
+
+        /// <summary>
+        /// 转换后的Z坐标（经过偏移处理）
+        /// </summary>
+        [ProtoMember(8)]
+        public double Z
+        {
+            get { return this.ModiCoors.Z + this.Radar.ZOffset; }
+            set { this.ModiCoors.Z = value - this.Radar.ZOffset; }
+        }
+
 
         /// <summary>
         /// 是否处于雷达坐标限制范围内
@@ -118,16 +162,22 @@ namespace ARS408.Model
         public bool WithinClaimerLimits { get; set; }
 
         /// <summary>
+        /// 是否位于角度限制范围内
+        /// </summary>
+        public bool WithinAngleLimits { get; set; }
+
+        private DynProp _prop = new DynProp();
+        /// <summary>
         /// 动态属性，指示是否在移动或是否已停止等属性
         /// </summary>
         public DynProp DynProp
         {
-            get { return this.prop; }
+            get { return this._prop; }
             set
             {
-                this.prop = value;
-                this.DynPropString = this.prop.GetDescription();
-                this.Color = BaseFunc.GetColorByDynProp(this.prop, this.Color);
+                this._prop = value;
+                this.DynPropString = this._prop.GetDescription();
+                this.Color = BaseFunc.GetColorByDynProp(this._prop, this.Color);
             }
         }
 
@@ -141,17 +191,19 @@ namespace ARS408.Model
         /// </summary>
         public Color Color { get; set; }
 
+        private double _rcs = 0;
         /// <summary>
         /// 雷达散射截面(Radar Crossing Section)，单位 dBm2（分贝，转换为平米：10^(0.1*dB)，例如，-10分贝为0.1平方米）
         /// </summary>
+        [ProtoMember(5)]
         public double RCS
         {
-            get { return this.rcs; }
+            get { return this._rcs; }
             set
             {
-                this.rcs = value;
-                this.RCS_M2 = Math.Pow(10, 0.1 * this.rcs);
-                this.Color = BaseFunc.GetColorByRcs(this.rcs, this.Color);
+                this._rcs = value;
+                this.RCS_M2 = Math.Pow(10, 0.1 * this._rcs);
+                this.Color = BaseFunc.GetColorByRcs(this._rcs, this.Color);
             }
         }
 
@@ -160,10 +212,20 @@ namespace ARS408.Model
         /// </summary>
         public double RCS_M2 { get; set; }
 
+        private Radar _radar = null;
         /// <summary>
         /// 对应雷达信息
         /// </summary>
-        public Radar Radar { get; set; }
+        public Radar Radar
+        {
+            get { return this._radar; }
+            set
+            {
+                _radar = value;
+                if (_radar == null)
+                    _radar = new Radar();
+            }
+        }
 
         /// <summary>
         /// 距检测边界的距离，与检测方式（点线面）与雷达朝向（海北陆南）有关
@@ -197,7 +259,8 @@ namespace ARS408.Model
         /// </summary>
         public void CalculateAngle()
         {
-            this.Angle = this.dist_long == 0 ? 90 : Math.Atan(this.dist_lat / this.dist_long) * 180 / Math.PI;
+            this.Angle = this._dist_long == 0 ? Math.Sign(this._dist_lat) * 90 : Math.Atan(this._dist_lat / this._dist_long) * 180 / Math.PI;
+            this.AngleYoz = this.Y == 0 ? Math.Sign(this.Z) * 90 : Math.Atan(this.Z / this.Y) * 180 / Math.PI;
         }
 
         /// <summary>
@@ -212,7 +275,8 @@ namespace ARS408.Model
                 this.ModiCoors.Y = this.Radar.YmodifiedRatios.Xratio * this.DistLong + this.Radar.YmodifiedRatios.Yratio * this.DistLat;
                 this.ModiCoors.Z = this.Radar.ZmodifiedRatios.Xratio * this.DistLong + this.Radar.ZmodifiedRatios.Yratio * this.DistLat;
                 bool northsouth = dir == Directions.Left || dir == Directions.Right; //是否朝向北或南
-                double x = northsouth ? this.ModiCoors.X : this.ModiCoors.Y, y = northsouth ? this.ModiCoors.Y : this.ModiCoors.X, z = this.ModiCoors.Z; //根据方向调换X/Y的值
+                //double x = northsouth ? this.ModiCoors.X : this.ModiCoors.Y, y = northsouth ? this.ModiCoors.Y : this.ModiCoors.X, z = this.ModiCoors.Z; //根据方向调换X/Y的值
+                double x = northsouth ? this.X : this.Y, y = northsouth ? this.Y : this.X, z = this.Z; //根据方向调换X/Y的值
                 int m = this.Radar.DefenseMode; //防御模式：1 点，2 线，3 面
                 //d = (a*x^2+b*z^2+c*y^2)^0.5，其中a, b, c由4-m, 3-m, 2-m的值决定，假如大于0则为1，小于等于0为0（公式形如Math.Sign(4 - m) == 1 ? 1 : 0）
                 //含义：面模式，a=1,b=c=0；线模式，a=b=1,c=0；点模式，a=b=c=1
@@ -226,15 +290,17 @@ namespace ARS408.Model
         }
 
         /// <summary>
-        /// 判断纵横坐标与
+        /// 判断纵横坐标、转换后的XYZ坐标与角度是否在给定范围内
         /// </summary>
         public void CheckIfWithinLimits()
         {
             if (this.Radar == null || this.Radar.Id < 0)
                 return;
 
-            this.WithinRadarLimits = this.dist_long.Between(this.Radar.RadarxMin, this.Radar.RadarxMax) && this.dist_lat.Between(this.Radar.RadaryMin, this.Radar.RadaryMax);
-            this.WithinClaimerLimits = this.ModiCoors.X.Between(this.Radar.ClaimerxMin, this.Radar.ClaimerxMax) && this.ModiCoors.Y.Between(this.Radar.ClaimeryMin, this.Radar.ClaimeryMax) && this.ModiCoors.Z.Between(this.Radar.ClaimerzMin, this.Radar.ClaimerzMax);
+            this.WithinRadarLimits = this._dist_long.Between(this.Radar.RadarxMin, this.Radar.RadarxMax) && this._dist_lat.Between(this.Radar.RadaryMin, this.Radar.RadaryMax);
+            //this.WithinClaimerLimits = this.ModiCoors.X.Between(this.Radar.ClaimerxMin, this.Radar.ClaimerxMax) && this.ModiCoors.Y.Between(this.Radar.ClaimeryMin, this.Radar.ClaimeryMax) && this.ModiCoors.Z.Between(this.Radar.ClaimerzMin, this.Radar.ClaimerzMax);
+            this.WithinClaimerLimits = this.X.Between(this.Radar.ClaimerxMin, this.Radar.ClaimerxMax) && this.Y.Between(this.Radar.ClaimeryMin, this.Radar.ClaimeryMax) && this.Z.Between(this.Radar.ClaimerzMin, this.Radar.ClaimerzMax);
+            this.WithinAngleLimits = this.Angle.Between(this.Radar.AngleMin, this.Radar.AngleMax);
         }
 
         /// <summary>

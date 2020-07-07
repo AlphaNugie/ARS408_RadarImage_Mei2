@@ -58,6 +58,7 @@ namespace ARS408.Forms
                     Radar radar = DataGridViewUtil.ConvertDataGridViewRow2Obect<Radar>(row, false); //不抛出异常
                     radar.RadarCoorsLimited = row.Cells["Column_RadarCoorsLimited"].Value.ToString().Equals("1");
                     radar.ClaimerCoorsLimited = row.Cells["Column_ClaimerCoorsLimited"].Value.ToString().Equals("1");
+                    radar.AngleLimited = row.Cells["Column_AngleLimited"].Value.ToString().Equals("1");
                     list.Add(radar);
                 }
 

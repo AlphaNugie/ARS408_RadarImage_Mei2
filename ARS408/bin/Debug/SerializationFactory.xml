@@ -4,36 +4,6 @@
         <name>SerializationFactory</name>
     </assembly>
     <members>
-        <member name="T:SerializationFactory.Coordinate">
-            <summary>
-            坐标
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.Coordinate.XPrime">
-            <summary>
-            本地X
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.Coordinate.YPrime">
-            <summary>
-            本地Y
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.Coordinate.XClaimer">
-            <summary>
-            单机X
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.Coordinate.YClaimer">
-            <summary>
-            单机Y
-            </summary>
-        </member>
-        <member name="P:SerializationFactory.Coordinate.Z">
-            <summary>
-            Z坐标
-            </summary>
-        </member>
         <member name="T:SerializationFactory.ProtoInfoType">
             <summary>
             通过ProtobufNet传输的消息类型
@@ -164,6 +134,41 @@
             回转角
             </summary>
         </member>
+        <member name="T:SerializationFactory.RadarCoor">
+            <summary>
+            雷达坐标实体类
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.DistLong">
+            <summary>
+            纵向距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.DistLat">
+            <summary>
+            横向距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.Rcs">
+            <summary>
+            雷达散射截面
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.X">
+            <summary>
+            X坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.Y">
+            <summary>
+            Y坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarCoor.Z">
+            <summary>
+            Z坐标
+            </summary>
+        </member>
         <member name="T:SerializationFactory.RadarInfoDetail">
             <summary>
             每台雷达的基础信息
@@ -244,9 +249,44 @@
             皮带料流雷达下方距离
             </summary>
         </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistArmLeft">
+            <summary>
+            臂架左侧
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistArmRight">
+            <summary>
+            臂架右侧距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistArmBelow">
+            <summary>
+            臂架下方距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistCounterLeft">
+            <summary>
+            配重左侧距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistCounterRight">
+            <summary>
+            配重右侧距离
+            </summary>
+        </member>
         <member name="P:SerializationFactory.RadarProtoInfo.RadarList">
             <summary>
             雷达基础信息列表
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.WheelLeftCoorList">
+            <summary>
+            斗轮左侧雷达坐标列表
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.WheelRightCoorList">
+            <summary>
+            斗轮右侧雷达坐标列表
             </summary>
         </member>
         <member name="M:SerializationFactory.RadarProtoInfo.#ctor">

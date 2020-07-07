@@ -50,6 +50,9 @@
             this.Column_Direction = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.Column_DefenseMode = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.Column_Offset = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_XOffset = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_YOffset = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_ZOffset = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RcsMinimum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RcsMaximum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RadarHeight = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -111,6 +114,9 @@
             this.Column_Direction,
             this.Column_DefenseMode,
             this.Column_Offset,
+            this.Column_XOffset,
+            this.Column_YOffset,
+            this.Column_ZOffset,
             this.Column_RcsMinimum,
             this.Column_RcsMaximum,
             this.Column_RadarHeight,
@@ -154,15 +160,17 @@
             // 
             // Column_Id
             // 
+            this.Column_Id.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Id.DataPropertyName = "RADAR_ID";
             this.Column_Id.HeaderText = "ID";
             this.Column_Id.MinimumWidth = 6;
             this.Column_Id.Name = "Column_Id";
             this.Column_Id.Visible = false;
-            this.Column_Id.Width = 125;
+            this.Column_Id.Width = 53;
             // 
             // Column_Name
             // 
+            this.Column_Name.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Name.DataPropertyName = "RADAR_NAME";
             this.Column_Name.HeaderText = "雷达名称";
             this.Column_Name.MinimumWidth = 125;
@@ -171,6 +179,7 @@
             // 
             // Column_IpAddress
             // 
+            this.Column_IpAddress.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_IpAddress.DataPropertyName = "IP_ADDRESS";
             this.Column_IpAddress.HeaderText = "模块IP";
             this.Column_IpAddress.MinimumWidth = 125;
@@ -179,6 +188,7 @@
             // 
             // Column_Port
             // 
+            this.Column_Port.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Port.DataPropertyName = "PORT";
             this.Column_Port.HeaderText = "端口";
             this.Column_Port.MinimumWidth = 70;
@@ -187,6 +197,7 @@
             // 
             // Column_OwnerGroupId
             // 
+            this.Column_OwnerGroupId.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_OwnerGroupId.DataPropertyName = "OWNER_GROUP_ID";
             this.Column_OwnerGroupId.HeaderText = "雷达组";
             this.Column_OwnerGroupId.MinimumWidth = 90;
@@ -196,6 +207,7 @@
             // 
             // Column_ConnectionMode
             // 
+            this.Column_ConnectionMode.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_ConnectionMode.DataPropertyName = "CONN_MODE_ID";
             this.Column_ConnectionMode.HeaderText = "模式";
             this.Column_ConnectionMode.MinimumWidth = 75;
@@ -205,6 +217,7 @@
             // 
             // Column_UsingLocal
             // 
+            this.Column_UsingLocal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_UsingLocal.DataPropertyName = "USING_LOCAL";
             this.Column_UsingLocal.FalseValue = "0";
             this.Column_UsingLocal.HeaderText = "本地";
@@ -216,6 +229,7 @@
             // 
             // Column_IpAddressLocal
             // 
+            this.Column_IpAddressLocal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_IpAddressLocal.DataPropertyName = "IP_ADDRESS_LOCAL";
             this.Column_IpAddressLocal.HeaderText = "本地IP";
             this.Column_IpAddressLocal.MinimumWidth = 125;
@@ -225,38 +239,42 @@
             // 
             // Column_PortLocal
             // 
+            this.Column_PortLocal.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_PortLocal.DataPropertyName = "PORT_LOCAL";
             this.Column_PortLocal.HeaderText = "本地端口";
             this.Column_PortLocal.MinimumWidth = 100;
             this.Column_PortLocal.Name = "Column_PortLocal";
-            this.Column_PortLocal.Width = 125;
             // 
             // Column_DegreeYoz
             // 
+            this.Column_DegreeYoz.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_DegreeYoz.DataPropertyName = "DEGREE_YOZ";
             this.Column_DegreeYoz.HeaderText = "YOZ";
             this.Column_DegreeYoz.MinimumWidth = 55;
             this.Column_DegreeYoz.Name = "Column_DegreeYoz";
-            this.Column_DegreeYoz.Width = 55;
+            this.Column_DegreeYoz.Width = 68;
             // 
             // Column_DegreeXoy
             // 
+            this.Column_DegreeXoy.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_DegreeXoy.DataPropertyName = "DEGREE_XOY";
             this.Column_DegreeXoy.HeaderText = "XOY";
             this.Column_DegreeXoy.MinimumWidth = 55;
             this.Column_DegreeXoy.Name = "Column_DegreeXoy";
-            this.Column_DegreeXoy.Width = 55;
+            this.Column_DegreeXoy.Width = 69;
             // 
             // Column_DegreeXoz
             // 
+            this.Column_DegreeXoz.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_DegreeXoz.DataPropertyName = "DEGREE_XOZ";
             this.Column_DegreeXoz.HeaderText = "XOZ";
             this.Column_DegreeXoz.MinimumWidth = 55;
             this.Column_DegreeXoz.Name = "Column_DegreeXoz";
-            this.Column_DegreeXoz.Width = 55;
+            this.Column_DegreeXoz.Width = 69;
             // 
             // Column_DegreeGeneral
             // 
+            this.Column_DegreeGeneral.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_DegreeGeneral.DataPropertyName = "DEGREE_GENERAL";
             this.Column_DegreeGeneral.HeaderText = "偏转";
             this.Column_DegreeGeneral.MinimumWidth = 70;
@@ -265,6 +283,7 @@
             // 
             // Column_Direction
             // 
+            this.Column_Direction.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Direction.DataPropertyName = "DIRECTION_ID";
             this.Column_Direction.HeaderText = "朝向";
             this.Column_Direction.MinimumWidth = 70;
@@ -274,6 +293,7 @@
             // 
             // Column_DefenseMode
             // 
+            this.Column_DefenseMode.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_DefenseMode.DataPropertyName = "DEFENSE_MODE_ID";
             this.Column_DefenseMode.HeaderText = "防御";
             this.Column_DefenseMode.MinimumWidth = 70;
@@ -283,52 +303,87 @@
             // 
             // Column_Offset
             // 
+            this.Column_Offset.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Offset.DataPropertyName = "OFFSET";
             this.Column_Offset.HeaderText = "校正";
             this.Column_Offset.MinimumWidth = 70;
             this.Column_Offset.Name = "Column_Offset";
             this.Column_Offset.Width = 70;
             // 
+            // Column_XOffset
+            // 
+            this.Column_XOffset.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_XOffset.DataPropertyName = "X_OFFSET";
+            this.Column_XOffset.HeaderText = "X偏";
+            this.Column_XOffset.MinimumWidth = 6;
+            this.Column_XOffset.Name = "Column_XOffset";
+            this.Column_XOffset.Width = 63;
+            // 
+            // Column_YOffset
+            // 
+            this.Column_YOffset.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_YOffset.DataPropertyName = "Y_OFFSET";
+            this.Column_YOffset.HeaderText = "Y偏";
+            this.Column_YOffset.MinimumWidth = 6;
+            this.Column_YOffset.Name = "Column_YOffset";
+            this.Column_YOffset.Width = 62;
+            // 
+            // Column_ZOffset
+            // 
+            this.Column_ZOffset.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_ZOffset.DataPropertyName = "Z_OFFSET";
+            this.Column_ZOffset.HeaderText = "Z偏";
+            this.Column_ZOffset.MinimumWidth = 6;
+            this.Column_ZOffset.Name = "Column_ZOffset";
+            this.Column_ZOffset.Width = 62;
+            // 
             // Column_RcsMinimum
             // 
+            this.Column_RcsMinimum.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_RcsMinimum.DataPropertyName = "RCS_MIN";
             this.Column_RcsMinimum.HeaderText = "RCS小";
             this.Column_RcsMinimum.MinimumWidth = 80;
             this.Column_RcsMinimum.Name = "Column_RcsMinimum";
-            this.Column_RcsMinimum.Width = 80;
+            this.Column_RcsMinimum.Width = 82;
             // 
             // Column_RcsMaximum
             // 
+            this.Column_RcsMaximum.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_RcsMaximum.DataPropertyName = "RCS_MAX";
             this.Column_RcsMaximum.HeaderText = "RCS大";
             this.Column_RcsMaximum.MinimumWidth = 80;
             this.Column_RcsMaximum.Name = "Column_RcsMaximum";
-            this.Column_RcsMaximum.Width = 80;
+            this.Column_RcsMaximum.Width = 82;
             // 
             // Column_RadarHeight
             // 
+            this.Column_RadarHeight.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_RadarHeight.DataPropertyName = "RADAR_HEIGHT";
             this.Column_RadarHeight.HeaderText = "高度";
             this.Column_RadarHeight.MinimumWidth = 70;
             this.Column_RadarHeight.Name = "Column_RadarHeight";
+            this.Column_RadarHeight.Visible = false;
             this.Column_RadarHeight.Width = 70;
             // 
             // Column_Remark
             // 
+            this.Column_Remark.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Remark.DataPropertyName = "REMARK";
             this.Column_Remark.HeaderText = "备注";
             this.Column_Remark.MinimumWidth = 145;
             this.Column_Remark.Name = "Column_Remark";
+            this.Column_Remark.Visible = false;
             this.Column_Remark.Width = 145;
             // 
             // Column_Changed
             // 
+            this.Column_Changed.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             this.Column_Changed.DataPropertyName = "CHANGED";
             this.Column_Changed.HeaderText = "是否改变";
             this.Column_Changed.MinimumWidth = 6;
             this.Column_Changed.Name = "Column_Changed";
             this.Column_Changed.Visible = false;
-            this.Column_Changed.Width = 125;
+            this.Column_Changed.Width = 98;
             // 
             // FormRadar
             // 
@@ -340,6 +395,7 @@
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "FormRadar";
             this.Text = "雷达字典";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormRadar_FormClosed);
             this.Load += new System.EventHandler(this.FormRadar_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Main)).EndInit();
             this.tableLayoutPanel_Main.ResumeLayout(false);
@@ -372,6 +428,9 @@
         private System.Windows.Forms.DataGridViewComboBoxColumn Column_Direction;
         private System.Windows.Forms.DataGridViewComboBoxColumn Column_DefenseMode;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Offset;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_XOffset;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_YOffset;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_ZOffset;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMinimum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMaximum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RadarHeight;

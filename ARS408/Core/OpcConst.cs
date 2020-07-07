@@ -17,32 +17,32 @@ namespace ARS408.Core
         public static double WalkingPosition { get; set; }
 
         /// <summary>
-        /// 大臂俯仰角（°）
+        /// 俯仰角度
         /// </summary>
         public static double PitchAngle { get; set; }
 
         /// <summary>
-        /// 大臂回转角度
+        /// 回转角度
         /// </summary>
         public static double YawAngle { get; set; }
 
         /// <summary>
-        /// 溜桶俯仰
+        /// 行走位置左（PLC）
         /// </summary>
         public static double WalkingLeft_Plc { get; set; }
 
         /// <summary>
-        /// 溜桶回转
+        /// 行走位置右（PLC）
         /// </summary>
         public static double WalkingRight_Plc { get; set; }
 
         /// <summary>
-        /// 皮带速度
+        /// 俯仰角度（PLC）
         /// </summary>
         public static double Pitch_Plc { get; set; }
 
         /// <summary>
-        /// 瞬时流量
+        /// 回转角度（PLC）
         /// </summary>
         public static double Yaw_Plc { get; set; }
     }

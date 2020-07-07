@@ -39,13 +39,13 @@ namespace ARS408.Forms
         /// <summary>
         /// 标题栏原始标题
         /// </summary>
-        //public string Title { get { return this.Radar == null ? "ARS408-21" : this.Radar.Name; } }
         public string Title { get { return this.Radar.Name; } }
 
         /// <summary>
         /// 帧消息处理类
         /// </summary>
-        public DataFrameMessages Infos { get; private set; }
+        public DataFrameMessages Infos { get { return this.Radar.Infos; } }
+        //public DataFrameMessages Infos { get; private set; }
 
         /// <summary>
         /// 雷达信息对象，假如为null，则代表为单雷达显示模式
@@ -112,8 +112,8 @@ namespace ARS408.Forms
         /// </summary>
         public bool IsShown { get; set; }
 
-        private int rcsMinimum = -64;
-        private int rcsMaximum = 64;
+        //private int _rcsMinimum = -64;
+        //private int _rcsMaximum = 64;
 
         /// <summary>
         /// RCS最小值
@@ -121,15 +121,15 @@ namespace ARS408.Forms
         public int RcsMinimum
         {
             //是否使用公共RCS值范围
-            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : this.rcsMinimum; }
+            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : this.Infos.RcsMinimum; }
             set
             {
                 if (BaseConst.UsePublicRcsRange)
                     BaseConst.RcsMinimum = value;
                 else
                 {
-                    this.rcsMinimum = value;
-                    this.dataService_Radar.UpdateRadarRcsMinById(this.rcsMinimum, this.Radar.Id); //向数据库保存RCS值最小值
+                    this.Infos.RcsMinimum = value;
+                    this.dataService_Radar.UpdateRadarRcsMinById(this.Infos.RcsMinimum, this.Radar.Id); //向数据库保存RCS值最小值
                 }
             }
         }
@@ -139,18 +139,55 @@ namespace ARS408.Forms
         /// </summary>
         public int RcsMaximum
         {
-            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : this.rcsMaximum; }
+            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : this.Infos.RcsMaximum; }
             set
             {
                 if (BaseConst.UsePublicRcsRange)
                     BaseConst.RcsMaximum = value;
                 else
                 {
-                    this.rcsMaximum = value;
-                    this.dataService_Radar.UpdateRadarRcsMaxById(this.rcsMaximum, this.Radar.Id); //向数据库保存RCS值最小值
+                    this.Infos.RcsMaximum = value;
+                    this.dataService_Radar.UpdateRadarRcsMaxById(this.Infos.RcsMaximum, this.Radar.Id); //向数据库保存RCS值最小值
                 }
             }
         }
+
+        ///// <summary>
+        ///// RCS最小值
+        ///// </summary>
+        //public int RcsMinimum
+        //{
+        //    //是否使用公共RCS值范围
+        //    get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : this._rcsMinimum; }
+        //    set
+        //    {
+        //        if (BaseConst.UsePublicRcsRange)
+        //            BaseConst.RcsMinimum = value;
+        //        else
+        //        {
+        //            this._rcsMinimum = value;
+        //            this.dataService_Radar.UpdateRadarRcsMinById(this._rcsMinimum, this.Radar.Id); //向数据库保存RCS值最小值
+        //        }
+        //    }
+        //}
+
+        ///// <summary>
+        ///// RCS最大值
+        ///// </summary>
+        //public int RcsMaximum
+        //{
+        //    get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : this._rcsMaximum; }
+        //    set
+        //    {
+        //        if (BaseConst.UsePublicRcsRange)
+        //            BaseConst.RcsMaximum = value;
+        //        else
+        //        {
+        //            this._rcsMaximum = value;
+        //            this.dataService_Radar.UpdateRadarRcsMaxById(this._rcsMaximum, this.Radar.Id); //向数据库保存RCS值最小值
+        //        }
+        //    }
+        //}
         #endregion
 
         /// <summary>
@@ -166,10 +203,10 @@ namespace ARS408.Forms
             this.InitControls();
         }
 
-        /// <summary>
-        /// 默认构造器
-        /// </summary>
-        public FormDisplay() : this(null) { }
+        ///// <summary>
+        ///// 默认构造器
+        ///// </summary>
+        //public FormDisplay() : this(null) { }
 
         /// <summary>
         /// 窗体加载后
@@ -200,11 +237,11 @@ namespace ARS408.Forms
             this.UsingLocal = this.Radar.UsingLocal;
             this.IpAddress_Local = BaseConst.IpAddress_Local;
             this.Port_Local = this.Radar.PortLocal;
-            this.rcsMinimum = this.Radar.RcsMinimum;
-            this.rcsMaximum = this.Radar.RcsMaximum;
+            //this.Infos.RcsMinimum = this.Radar.RcsMinimum;
+            //this.Infos.RcsMaximum = this.Radar.RcsMaximum;
 
             this.column_width = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
-            this.Infos = new DataFrameMessages(this, this.Radar);
+            //this.Infos = new DataFrameMessages(/*this, */this.Radar);
             this.list_general = this.Infos.ListTrigger;
             this.Name = this.Title;
             this.Text = this.Title;

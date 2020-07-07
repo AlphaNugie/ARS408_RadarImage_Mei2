@@ -25,13 +25,15 @@ namespace ARS408.Model
         private int _count = 0;
         private readonly int limit_factor = 1;
         private double _new, _assumed, _diff, _diff1;
+        //TODO 斗轮雷达按俯仰角取点时的范围厚度（一半）
+        private readonly double thickness = 2;
         #endregion
 
         #region 属性
-        /// <summary>
-        /// 父窗体
-        /// </summary>
-        public FormDisplay ParentForm { get; set; }
+        ///// <summary>
+        ///// 父窗体
+        ///// </summary>
+        //public FormDisplay ParentForm { get; set; }
 
         /// <summary>
         /// 雷达信息对象
@@ -47,6 +49,26 @@ namespace ARS408.Model
         /// 雷达目标点的过滤条件
         /// </summary>
         private List<bool> Flags { get; set; }
+
+        private int _rcsMinimum = -64;
+        /// <summary>
+        /// RCS最小值
+        /// </summary>
+        public int RcsMinimum
+        {
+            get { return this._rcsMinimum; }
+            set { this._rcsMinimum = value; }
+        }
+
+        private int _rcsMaximum = 64;
+        /// <summary>
+        /// RCS最大值
+        /// </summary>
+        public int RcsMaximum
+        {
+            get { return this._rcsMaximum; }
+            set { this._rcsMaximum = value; }
+        }
 
         /// <summary>
         /// 雷达状态信息
@@ -86,6 +108,11 @@ namespace ARS408.Model
         /// 正式数据
         /// </summary>
         public List<SensorGeneral> ListTrigger { get; set; }
+
+        /// <summary>
+        /// 待发送列表
+        /// </summary>
+        public List<SensorGeneral> ListToSend { get; set; }
 
         /// <summary>
         /// 最具有威胁的集群或目标点
@@ -141,33 +168,34 @@ namespace ARS408.Model
         }
         #endregion
 
-        /// <summary>
-        /// 默认构造器
-        /// </summary>
-        public DataFrameMessages() : this(null, null) { }
+        ///// <summary>
+        ///// 默认构造器
+        ///// </summary>
+        //public DataFrameMessages() : this(/*null, */null) { }
 
-        /// <summary>
-        /// 构造器
-        /// </summary>
-        /// <param name="form">父窗体</param>
-        public DataFrameMessages(FormDisplay form) : this(form, null) { }
+        ///// <summary>
+        ///// 构造器
+        ///// </summary>
+        ///// <param name="form">父窗体</param>
+        //public DataFrameMessages(FormDisplay form) : this(form, null) { }
 
         /// <summary>
         /// 构造器
         /// </summary>
         /// <param name="form">父窗体</param>
         /// <param name="radar">雷达信息对象</param>
-        public DataFrameMessages(FormDisplay form, Radar radar)
+        public DataFrameMessages(/*FormDisplay form, */Radar radar)
         {
-            this.ParentForm = form;
+            //this.ParentForm = form;
             //this.Radar = radar;
             this.Radar = radar == null ? new Radar() : radar;
-            this.Flags = new List<bool>() { false, false, false, false, false, false, false, true, true };
+            this.Flags = new List<bool>() { false, false, false, false, false, false, false, true, true, true };
             this.limit_factor = this.Radar.GroupType == RadarGroupType.Feet ? 10 : 1;
             this.CurrentSensorMode = SensorMode.Cluster;
             this.ListBuffer = new List<SensorGeneral>();
             this.ListBuffer_Other = new List<SensorGeneral>();
             this.ListTrigger = new List<SensorGeneral>();
+            this.ListToSend = new List<SensorGeneral>();
             this.ThreadCheck = new Thread(new ThreadStart(this.CheckIfRadarsWorking)) { IsBackground = true };
 
             if (this.Radar != null)
@@ -278,12 +306,14 @@ namespace ARS408.Model
         public void DataPush<T>(T general) where T : SensorGeneral
         {
             #region 目标点的过滤
-            Flags[2] = this.ParentForm != null && !general.RCS.Between(this.ParentForm.RcsMinimum, this.ParentForm.RcsMaximum); //RCS值是否不在范围内
+            //Flags[2] = this.ParentForm != null && !general.RCS.Between(this.ParentForm.RcsMinimum, this.ParentForm.RcsMaximum); //RCS值是否不在范围内
+            Flags[2] = !general.RCS.Between(this.RcsMinimum, this.RcsMaximum); //RCS值是否不在范围内
             if (this.Radar != null)
             {
                 Flags[1] = (BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres); //距边界距离是否小于0或超出阈值
                 Flags[7] = !this.Radar.RadarCoorsLimited || general.WithinRadarLimits; //雷达坐标系坐标的限制
                 Flags[8] = !this.Radar.ClaimerCoorsLimited || general.WithinClaimerLimits; //单机坐标系坐标的限制
+                Flags[9] = !this.Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
             bool save2list = !Flags[2] && Flags[7] && Flags[8], save2other = false;
@@ -291,11 +321,16 @@ namespace ARS408.Model
             save2list = save2list && !(Flags[1]);
             //假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
             if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
-                save2list = general.Angle.Between(-12, 11);
+                save2list = general.Angle.Between(-20, 20);
+            //TODO 目标点限制在斗轮角度前下侧90°范围内（前提是通过XYZ坐标偏移使中心从雷达移到斗轮中心）
+            else if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+                //save2list = general.AngleYoz.Between(-90, 0);
+                save2list = general.AngleYoz.Between(OpcConst.Pitch_Plc * -1 - thickness, OpcConst.Pitch_Plc * -1 + thickness);
             //TODO (其余数据)过滤条件Lv2：RCS值在范围内
             if (!save2list)
-                save2other = false;
-                //save2other = !Flags[2];
+                //save2other = false;
+                //save2other = BaseConst.ShowDesertedPoints && !Flags[2];
+                save2other = !Flags[2];
             #region 旧判断逻辑
             //if (this.IsShore)
             //    save2list = !Flags[2] && z.Between(-1, 1) && x.Between(-5, 5);
@@ -389,8 +424,12 @@ namespace ARS408.Model
                 this.GeneralHighest = this.ListBuffer_Other.Count() > 0 ? this.ListBuffer_Other.Last() : null; //找出Z轴坐标最大的点（最高的点）
             }
             this.ListTrigger.Clear();
+            this.ListToSend.Clear();
             this.ListTrigger.AddRange(this.ListBuffer);
-            this.ListTrigger.AddRange(this.ListBuffer_Other);
+            this.ListToSend.AddRange(this.ListBuffer);
+            if (BaseConst.ShowDesertedPoints)
+                this.ListTrigger.AddRange(this.ListBuffer_Other);
+            this.ListToSend.AddRange(this.ListBuffer_Other);
             this.ListBuffer.Clear();
             this.ListBuffer_Other.Clear();
             this.ActualSize = 0;

@@ -1,5 +1,6 @@
 ﻿using ARS408.Core;
 using CommonLib.Extensions;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +13,7 @@ namespace ARS408.Model
     /// <summary>
     /// 目标基本信息实体类
     /// </summary>
+    [ProtoContract]
     public class ObjectGeneral : SensorGeneral
     {
         private MeasState meas_state = MeasState.New;

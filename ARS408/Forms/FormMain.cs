@@ -42,6 +42,8 @@ namespace ARS408.Forms
             //this.InitializeMonitors();
 
             this.toolStripMenu_AutoConnect.Checked = BaseConst.AutoConnect;
+            this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1");
+            this.toolStrip_ShowDeserted.Checked = BaseConst.ShowDesertedPoints;
             ////假如勾选自动开始监视，打开监视页面
             //if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
             //    this.ShowMonitors();
@@ -56,7 +58,7 @@ namespace ARS408.Forms
         private void FormMain_Load(object sender, EventArgs e)
         {
             //假如勾选自动开始监视，打开监视页面
-            if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
+            if (this.toolStripMenu_AutoMonitor.Checked/* = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1")*/)
                 this.ShowMonitors();
         }
 
@@ -411,6 +413,16 @@ namespace ARS408.Forms
         {
             BaseConst.IniHelper.WriteData("Main", "AutoConnect", this.toolStripMenu_AutoConnect.Checked ? "1" : "0");
         }
+
+        private void ToolStrip_Preferences_Click(object sender, EventArgs e)
+        {
+            new FormPreferences().Show();
+        }
         #endregion
+
+        private void ToolStrip_ShowDeserted_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", this.toolStrip_ShowDeserted.Checked ? "1" : "0");
+        }
     }
 }

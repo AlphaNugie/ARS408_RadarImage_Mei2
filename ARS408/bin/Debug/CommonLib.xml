@@ -2092,6 +2092,47 @@
             <param name="parameters">存储过程输入参数</param>
             <returns>返回Command对象</returns>
         </member>
+        <member name="T:CommonLib.DataUtil.Record">
+            <summary>
+            数据记录基础类
+            </summary>
+        </member>
+        <member name="P:CommonLib.DataUtil.Record.Id">
+            <summary>
+            记录ID
+            </summary>
+        </member>
+        <member name="P:CommonLib.DataUtil.Record.ViewName">
+            <summary>
+            显示的名称
+            </summary>
+        </member>
+        <member name="P:CommonLib.DataUtil.Record.Checked">
+            <summary>
+            是否选中
+            </summary>
+        </member>
+        <member name="P:CommonLib.DataUtil.Record.RoutineStatus">
+            <summary>
+            记录状态
+            </summary>
+        </member>
+        <member name="E:CommonLib.DataUtil.Record.PropertyChanged">
+            <summary>
+            属性改变事件
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.Record.#ctor">
+            <summary>
+            构造器
+            </summary>
+        </member>
+        <member name="M:CommonLib.DataUtil.Record.NotifyPropertyChanged(System.String)">
+            <summary>
+            通知属性改变
+            </summary>
+            <param name="propertyName"></param>
+        </member>
         <member name="T:CommonLib.DataUtil.SqlProvider">
             <summary>
             SQL Server数据库基础操作类

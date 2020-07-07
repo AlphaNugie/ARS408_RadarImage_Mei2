@@ -22,6 +22,11 @@ namespace ARS408.Model
 
         #region 属性
         /// <summary>
+        /// 帧消息处理类
+        /// </summary>
+        public DataFrameMessages Infos { get; private set; }
+
+        /// <summary>
         /// ID
         /// </summary>
         [ProtoMember(1)]
@@ -229,17 +234,50 @@ namespace ARS408.Model
         /// <summary>
         /// 距离校正值，以此值校正距防御边界的距离
         /// </summary>
-        public double Offset { get; set; }
+        public double Offset { get; private set; }
 
+        /// <summary>
+        /// X坐标校正值
+        /// </summary>
+        public double XOffset { get; private set; }
+
+        /// <summary>
+        /// Y坐标校正值
+        /// </summary>
+        public double YOffset { get; private set; }
+
+        /// <summary>
+        /// Z坐标校正值
+        /// </summary>
+        public double ZOffset { get; private set; }
+
+        private int _rcsMinimum;
         /// <summary>
         /// RCS最小值
         /// </summary>
-        public int RcsMinimum { get; set; }
+        public int RcsMinimum
+        {
+            get { return this._rcsMinimum; }
+            set
+            {
+                this._rcsMinimum = value;
+                this.Infos.RcsMinimum = this._rcsMinimum;
+            }
+        }
 
+        private int _rcsMaximum;
         /// <summary>
         /// RCS最大值
         /// </summary>
-        public int RcsMaximum { get; set; }
+        public int RcsMaximum
+        {
+            get { return this._rcsMaximum; }
+            set
+            {
+                this._rcsMaximum = value;
+                this.Infos.RcsMinimum = this._rcsMinimum;
+            }
+        }
 
         /// <summary>
         /// 雷达所在高度，一般只有门腿雷达此项有意义
@@ -309,6 +347,23 @@ namespace ARS408.Model
         public double ClaimerzMax { get; set; }
         #endregion
 
+        #region 角度限制
+        /// <summary>
+        /// 是否限制角度
+        /// </summary>
+        public bool AngleLimited { get; set; }
+
+        /// <summary>
+        /// 角度最小值
+        /// </summary>
+        public double AngleMin { get; set; }
+
+        /// <summary>
+        /// 角度最大值
+        /// </summary>
+        public double AngleMax { get; set; }
+        #endregion
+
         /// <summary>
         /// 备注
         /// </summary>
@@ -342,6 +397,7 @@ namespace ARS408.Model
         public Radar()
         {
             this.RadarHeight = 0;
+            this.Infos = new DataFrameMessages(this);
             this.State = new RadarState();
             this.Id = -1;
             this.Name = "ARS408-21";
@@ -383,6 +439,9 @@ namespace ARS408.Model
             this.Direction = (Directions)int.Parse(row["direction_id"].ToString());
             this.DefenseMode = int.Parse(row["defense_mode_id"].ToString());
             this.Offset = double.Parse(row["offset"].ToString());
+            this.XOffset = double.Parse(row["x_offset"].ToString());
+            this.YOffset = double.Parse(row["y_offset"].ToString());
+            this.ZOffset = double.Parse(row["z_offset"].ToString());
             this.Remark = row["remark"].ToString();
             this.ItemNameRadarState = row["item_name_radar_state"].ToString();
             this.ItemNameCollisionState = row["item_name_collision_state"].ToString();
@@ -402,6 +461,9 @@ namespace ARS408.Model
             this.ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
             this.ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
             this.ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
+            this.AngleLimited = row["angle_limited"].ToString().Equals("1");
+            this.AngleMin = double.Parse(row["angle_min"].ToString());
+            this.AngleMax = double.Parse(row["angle_max"].ToString());
         }
         #endregion
 

@@ -3,6 +3,8 @@ using ARS408.Forms;
 using ARS408.Model;
 using CommonLib.Enums;
 using CommonLib.Function;
+using ProtoBuf;
+using SerializationFactory;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -26,16 +28,18 @@ namespace ARS408
         {
             BaseFunc.InitConfigs(); //配置初始化
             #region 测试
+            //int threat = BaseFunc.GetThreatLevelByValue(3);
+            //threat = BaseFunc.GetThreatLevelByValue(2);
+            //threat = BaseFunc.GetThreatLevelByValue(1.7);
+            //threat = BaseFunc.GetThreatLevelByValue(1.5);
+            //threat = BaseFunc.GetThreatLevelByValue(1.3);
+            //threat = BaseFunc.GetThreatLevelByValue(1);
+            //threat = BaseFunc.GetThreatLevelByValue(0.5);
+            //string test = new string("12345".ToCharArray().Reverse().ToArray());
+            //SensorGeneral g = new ClusterGeneral();
+            //RadarCoor coor = Serializer.ChangeType<SensorGeneral, RadarCoor>(g);
             #endregion
 
-            int threat = BaseFunc.GetThreatLevelByValue(3);
-            threat = BaseFunc.GetThreatLevelByValue(2);
-            threat = BaseFunc.GetThreatLevelByValue(1.7);
-            threat = BaseFunc.GetThreatLevelByValue(1.5);
-            threat = BaseFunc.GetThreatLevelByValue(1.3);
-            threat = BaseFunc.GetThreatLevelByValue(1);
-            threat = BaseFunc.GetThreatLevelByValue(0.5);
-            //string test = new string("12345".ToCharArray().Reverse().ToArray());
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             string argstring = args == null ? string.Empty : ";" + string.Join(";", args).ToUpper() + ";";

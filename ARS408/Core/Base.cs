@@ -202,6 +202,11 @@ property float rcs";
         /// 绘点时点的粗细（直径，像素）
         /// </summary>
         public static float T = 2;
+
+        /// <summary>
+        /// 是否显示已被过滤掉的点（除RCS值的过滤外）
+        /// </summary>
+        public static bool ShowDesertedPoints = false;
         #endregion
 
         #region 检测
@@ -335,6 +340,7 @@ property float rcs";
                     BaseConst.PlyFileClient.FileName = BaseConst.IniHelper.ReadData("Main", "PlyFileName");
                     BaseConst.R = double.Parse(BaseConst.IniHelper.ReadData("Main", "PixelRadarRatio"));
                     BaseConst.T = float.Parse(BaseConst.IniHelper.ReadData("Main", "Thickness"));
+                    BaseConst.ShowDesertedPoints = BaseConst.IniHelper.ReadData("Main", "ShowDesertedPoints").Equals("1");
                     BaseConst.Save2Database = BaseConst.IniHelper.ReadData("Main", "Save2Database").Equals("1");
                     BaseConst.BorderDistThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BorderDistThres"));
                     //BaseConst.ProbOfExistMinimum = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ProbOfExistMinimum"));
@@ -403,7 +409,22 @@ property float rcs";
             BaseConst.RadarInfo.DistCounterLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //配重左侧距离
             BaseConst.RadarInfo.DistCounterRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //配重右侧距离
             BaseConst.RadarInfo.RadarList.Clear();
-            BaseConst.RadarInfo.RadarList.AddRange(BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)));
+            BaseConst.RadarInfo.WheelLeftCoorList.Clear();
+            BaseConst.RadarInfo.WheelRightCoorList.Clear();
+            //BaseConst.RadarInfo.RadarList.AddRange(BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)));
+            BaseConst.RadarList.ForEach(radar =>
+            {
+                BaseConst.RadarInfo.RadarList.Add(Serializer.ChangeType<Radar, RadarInfoDetail>(radar));
+                if (radar.GroupType != RadarGroupType.Wheel || !radar.Name.Contains("斗轮"))
+                    return;
+                List<SensorGeneral> olist = radar.Infos.ListToSend.ToList();
+                List<RadarCoor> list = new List<RadarCoor>(olist.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+                //list.AddRange(radar.Infos.ListBuffer_Other.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+                if (radar.Name.Contains("左"))
+                    BaseConst.RadarInfo.WheelLeftCoorList.AddRange(list);
+                else if (radar.Name.Contains("右"))
+                    BaseConst.RadarInfo.WheelRightCoorList.AddRange(list);
+            });
         }
 
         /// <summary>
@@ -414,12 +435,14 @@ property float rcs";
         public static string GetRadarString(Radar radar, out double distance)
         {
             string result = string.Empty;
-            FormDisplay display;
+            //FormDisplay display;
             DataFrameMessages infos;
             distance = 0;
-            if (radar != null && (display = BaseConst.DictForms[radar]) != null && (infos = display.Infos) != null)
+            //if (radar != null && (display = BaseConst.DictForms[radar]) != null && (infos = display.Infos) != null)
+            if (radar != null && (infos = radar.Infos) != null)
             {
-                double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.ModiCoors.Z;
+                //double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.ModiCoors.Z;
+                double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.Z;
                 distance = infos.CurrentDistance;
                 result = string.Format(@"  ""radar_{0}"": [
   ""effective"": {1},

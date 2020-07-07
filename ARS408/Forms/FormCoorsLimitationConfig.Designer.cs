@@ -47,6 +47,9 @@
             this.Column_ClaimeryMax = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_ClaimerzMin = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_ClaimerzMax = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_AngleLimited = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Column_AngleMin = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_AngleMax = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Changed = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView)).BeginInit();
@@ -66,7 +69,7 @@
             this.tableLayoutPanel1.RowCount = 2;
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(1133, 664);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1187, 664);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // dataGridView
@@ -91,13 +94,16 @@
             this.Column_ClaimeryMax,
             this.Column_ClaimerzMin,
             this.Column_ClaimerzMax,
+            this.Column_AngleLimited,
+            this.Column_AngleMin,
+            this.Column_AngleMax,
             this.Column_Changed});
             this.dataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView.Location = new System.Drawing.Point(3, 53);
             this.dataGridView.Name = "dataGridView";
             this.dataGridView.RowHeadersWidth = 51;
             this.dataGridView.RowTemplate.Height = 27;
-            this.dataGridView.Size = new System.Drawing.Size(1127, 608);
+            this.dataGridView.Size = new System.Drawing.Size(1181, 608);
             this.dataGridView.TabIndex = 26;
             this.dataGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
             // 
@@ -108,7 +114,7 @@
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 4);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(1127, 42);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(1181, 42);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // button_Save
@@ -265,6 +271,35 @@
             this.Column_ClaimerzMax.Name = "Column_ClaimerzMax";
             this.Column_ClaimerzMax.Width = 58;
             // 
+            // Column_AngleLimited
+            // 
+            this.Column_AngleLimited.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_AngleLimited.DataPropertyName = "angle_limited";
+            this.Column_AngleLimited.FalseValue = "0";
+            this.Column_AngleLimited.HeaderText = "限制角度";
+            this.Column_AngleLimited.MinimumWidth = 6;
+            this.Column_AngleLimited.Name = "Column_AngleLimited";
+            this.Column_AngleLimited.TrueValue = "1";
+            this.Column_AngleLimited.Width = 75;
+            // 
+            // Column_AngleMin
+            // 
+            this.Column_AngleMin.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_AngleMin.DataPropertyName = "angle_min";
+            this.Column_AngleMin.HeaderText = "A-";
+            this.Column_AngleMin.MinimumWidth = 6;
+            this.Column_AngleMin.Name = "Column_AngleMin";
+            this.Column_AngleMin.Width = 55;
+            // 
+            // Column_AngleMax
+            // 
+            this.Column_AngleMax.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_AngleMax.DataPropertyName = "angle_max";
+            this.Column_AngleMax.HeaderText = "A+";
+            this.Column_AngleMax.MinimumWidth = 6;
+            this.Column_AngleMax.Name = "Column_AngleMax";
+            this.Column_AngleMax.Width = 60;
+            // 
             // Column_Changed
             // 
             this.Column_Changed.DataPropertyName = "CHANGED";
@@ -278,7 +313,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1133, 664);
+            this.ClientSize = new System.Drawing.Size(1187, 664);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -312,6 +347,9 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_ClaimeryMax;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_ClaimerzMin;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_ClaimerzMax;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn Column_AngleLimited;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_AngleMin;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_AngleMax;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Changed;
     }
 }

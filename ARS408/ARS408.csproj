@@ -125,6 +125,12 @@
     <Compile Include="Forms\FormOpcConfig.designer.cs">
       <DependentUpon>FormOpcConfig.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FormPreferences.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormPreferences.Designer.cs">
+      <DependentUpon>FormPreferences.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FormRadar.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -183,6 +189,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormOpcConfig.resx">
       <DependentUpon>FormOpcConfig.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FormPreferences.resx">
+      <DependentUpon>FormPreferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormRadar.resx">
       <DependentUpon>FormRadar.cs</DependentUpon>
