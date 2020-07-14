@@ -415,15 +415,15 @@ property float rcs";
             BaseConst.RadarList.ForEach(radar =>
             {
                 BaseConst.RadarInfo.RadarList.Add(Serializer.ChangeType<Radar, RadarInfoDetail>(radar));
-                if (radar.GroupType != RadarGroupType.Wheel || !radar.Name.Contains("斗轮"))
-                    return;
-                List<SensorGeneral> olist = radar.Infos.ListToSend.ToList();
-                List<RadarCoor> list = new List<RadarCoor>(olist.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
-                //list.AddRange(radar.Infos.ListBuffer_Other.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
-                if (radar.Name.Contains("左"))
-                    BaseConst.RadarInfo.WheelLeftCoorList.AddRange(list);
-                else if (radar.Name.Contains("右"))
-                    BaseConst.RadarInfo.WheelRightCoorList.AddRange(list);
+                //if (radar.GroupType != RadarGroupType.Wheel || !radar.Name.Contains("斗轮"))
+                //    return;
+                //List<SensorGeneral> olist = radar.Infos.ListToSend.ToList();
+                //List<RadarCoor> list = new List<RadarCoor>(olist.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+                ////list.AddRange(radar.Infos.ListBuffer_Other.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+                //if (radar.Name.Contains("左"))
+                //    BaseConst.RadarInfo.WheelLeftCoorList.AddRange(list);
+                //else if (radar.Name.Contains("右"))
+                //    BaseConst.RadarInfo.WheelRightCoorList.AddRange(list);
             });
         }
 

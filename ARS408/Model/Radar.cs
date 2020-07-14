@@ -54,6 +54,16 @@ namespace ARS408.Model
         public RadarState State { get; set; }
 
         /// <summary>
+        /// 是否应用集群或目标过滤器
+        /// </summary>
+        public bool ApplyFilter { get; set; }
+
+        /// <summary>
+        /// 是否应用迭代
+        /// </summary>
+        public bool ApplyIteration { get; set; }
+
+        /// <summary>
         /// 当前障碍物距离
         /// </summary>
         [ProtoMember(4)]
@@ -409,6 +419,8 @@ namespace ARS408.Model
             this.PortLocal = BaseConst.Port_Local;
             this.RcsMinimum = BaseConst.RcsMinimum;
             this.RcsMinimum = BaseConst.RcsMaximum;
+            this.ApplyFilter = true;
+            this.ApplyIteration = true;
         }
 
         /// <summary>
@@ -442,6 +454,8 @@ namespace ARS408.Model
             this.XOffset = double.Parse(row["x_offset"].ToString());
             this.YOffset = double.Parse(row["y_offset"].ToString());
             this.ZOffset = double.Parse(row["z_offset"].ToString());
+            this.ApplyFilter = row["apply_filter"].ToString().Equals("1");
+            this.ApplyIteration = row["apply_iteration"].ToString().Equals("1");
             this.Remark = row["remark"].ToString();
             this.ItemNameRadarState = row["item_name_radar_state"].ToString();
             this.ItemNameCollisionState = row["item_name_collision_state"].ToString();

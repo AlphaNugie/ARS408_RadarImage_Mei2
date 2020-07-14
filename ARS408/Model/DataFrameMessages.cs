@@ -321,11 +321,13 @@ namespace ARS408.Model
             save2list = save2list && !(Flags[1]);
             //假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
             if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
-                save2list = general.Angle.Between(-20, 20);
-            //TODO 目标点限制在斗轮角度前下侧90°范围内（前提是通过XYZ坐标偏移使中心从雷达移到斗轮中心）
+                save2list = general.Angle.Between(-40, 40);
+            //YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
             else if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
-                //save2list = general.AngleYoz.Between(-90, 0);
-                save2list = general.AngleYoz.Between(OpcConst.Pitch_Plc * -1 - thickness, OpcConst.Pitch_Plc * -1 + thickness);
+                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(-30, 0);
+            //目标点限制在斗轮角度前下侧90°范围内（前提是通过XYZ坐标偏移使中心从雷达移到斗轮中心）
+            //save2list = general.AngleYoz.Between(-90, 0);
+            //save2list = general.AngleYoz.Between(OpcConst.Pitch_Plc * -1 - thickness, OpcConst.Pitch_Plc * -1 + thickness);
             //TODO (其余数据)过滤条件Lv2：RCS值在范围内
             if (!save2list)
                 //save2other = false;
@@ -383,7 +385,7 @@ namespace ARS408.Model
                     general.InvalidState = quality.InvalidState;
                     general.AmbigState = quality.AmbigState;
                     //TODO 集群模式输出结果过滤条件2：（过滤器启用、过滤器不为空）不在集群/不确定性/有效性过滤器内
-                    if (BaseConst.ClusterFilterEnabled && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
+                    if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
                         (ClusterQuality.AmbigStateFilter.Count > 0 && !ClusterQuality.AmbigStateFilter.Contains(general.AmbigState)) ||
                         (ClusterQuality.InvalidStateFilter.Count > 0 && !ClusterQuality.InvalidStateFilter.Contains(general.InvalidState))))
                         list.Remove(general);
@@ -395,7 +397,7 @@ namespace ARS408.Model
                     general.MeasState = quality.MeasState;
                     general.ProbOfExist = quality.ProbOfExist;
                     //TODO 目标模式输出结果过滤条件2：（假如过滤器启用）判断存在概率的可能最小值是否小于允许的最低值
-                    if (BaseConst.ObjectFilterEnabled && ((ObjectQuality.MeasStateFilter.Count > 0 && !ObjectQuality.MeasStateFilter.Contains(general.MeasState)) ||
+                    if (BaseConst.ObjectFilterEnabled && this.Radar.ApplyFilter && ((ObjectQuality.MeasStateFilter.Count > 0 && !ObjectQuality.MeasStateFilter.Contains(general.MeasState)) ||
                         (ObjectQuality.ProbOfExistFilter.Count > 0 && !ObjectQuality.ProbOfExistFilter.Contains(general.ProbOfExist))))
                         list.Remove(general);
                 }
@@ -445,7 +447,7 @@ namespace ARS408.Model
             _diff = Math.Abs(_new - this.Radar._current); //新值与当前值的差
             _diff1 = Math.Abs(_new - _assumed); //新值与假定值的差
             //假如未启用迭代 / 当前值为0 / 新值与当前值的差不超过距离限定值：计数置0，用新值取代现有值
-            if (!BaseConst.IterationEnabled || _diff <= BaseConst.IteDistLimit * this.limit_factor)
+            if (!(BaseConst.IterationEnabled && this.Radar.ApplyIteration) || _diff <= BaseConst.IteDistLimit * this.limit_factor)
             {
                 _count = 0;
                 this.Radar._current = _new;

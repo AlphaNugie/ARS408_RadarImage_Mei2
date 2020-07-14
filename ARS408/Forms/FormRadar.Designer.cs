@@ -56,6 +56,8 @@
             this.Column_RcsMinimum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RcsMaximum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RadarHeight = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_ApplyFilter = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Column_ApplyIteration = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Column_Remark = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Changed = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_Main)).BeginInit();
@@ -120,6 +122,8 @@
             this.Column_RcsMinimum,
             this.Column_RcsMaximum,
             this.Column_RadarHeight,
+            this.Column_ApplyFilter,
+            this.Column_ApplyIteration,
             this.Column_Remark,
             this.Column_Changed});
             this.dataGridView_Main.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -365,6 +369,30 @@
             this.Column_RadarHeight.Visible = false;
             this.Column_RadarHeight.Width = 70;
             // 
+            // Column_ApplyFilter
+            // 
+            this.Column_ApplyFilter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_ApplyFilter.DataPropertyName = "apply_filter";
+            this.Column_ApplyFilter.FalseValue = "0";
+            this.Column_ApplyFilter.HeaderText = "过滤";
+            this.Column_ApplyFilter.MinimumWidth = 6;
+            this.Column_ApplyFilter.Name = "Column_ApplyFilter";
+            this.Column_ApplyFilter.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.Column_ApplyFilter.TrueValue = "1";
+            this.Column_ApplyFilter.Width = 68;
+            // 
+            // Column_ApplyIteration
+            // 
+            this.Column_ApplyIteration.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_ApplyIteration.DataPropertyName = "apply_iteration";
+            this.Column_ApplyIteration.FalseValue = "0";
+            this.Column_ApplyIteration.HeaderText = "迭代";
+            this.Column_ApplyIteration.MinimumWidth = 6;
+            this.Column_ApplyIteration.Name = "Column_ApplyIteration";
+            this.Column_ApplyIteration.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.Column_ApplyIteration.TrueValue = "1";
+            this.Column_ApplyIteration.Width = 68;
+            // 
             // Column_Remark
             // 
             this.Column_Remark.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -434,6 +462,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMinimum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMaximum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RadarHeight;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn Column_ApplyFilter;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn Column_ApplyIteration;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Remark;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Changed;
     }
