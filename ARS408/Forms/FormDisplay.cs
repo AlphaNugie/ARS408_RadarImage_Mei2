@@ -523,7 +523,7 @@ namespace ARS408.Forms
                     #endregion
                 }
                 catch (Exception) { }
-                Thread.Sleep(BaseConst.RefreshInterval);
+                Thread.Sleep(BaseConst.UsePublicInterval ? BaseConst.RefreshInterval : this.Radar.RefreshInterval);
             }
         }
         #endregion

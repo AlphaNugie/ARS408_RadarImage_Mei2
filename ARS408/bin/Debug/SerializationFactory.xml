@@ -221,12 +221,12 @@
         </member>
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelLeft">
             <summary>
-            斗轮左侧距离
+            斗轮左侧测距（假如为堆料机则为落料口左侧测距）
             </summary>
         </member>
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelRight">
             <summary>
-            斗轮右侧距离
+            斗轮右侧测距（假如为堆料机则为落料口右侧测距）
             </summary>
         </member>
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelAverage">

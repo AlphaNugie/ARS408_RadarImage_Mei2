@@ -56,6 +56,7 @@
             this.Column_RcsMinimum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RcsMaximum = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_RadarHeight = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_RefreshInterval = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_ApplyFilter = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Column_ApplyIteration = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Column_Remark = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -122,6 +123,7 @@
             this.Column_RcsMinimum,
             this.Column_RcsMaximum,
             this.Column_RadarHeight,
+            this.Column_RefreshInterval,
             this.Column_ApplyFilter,
             this.Column_ApplyIteration,
             this.Column_Remark,
@@ -369,6 +371,15 @@
             this.Column_RadarHeight.Visible = false;
             this.Column_RadarHeight.Width = 70;
             // 
+            // Column_RefreshInterval
+            // 
+            this.Column_RefreshInterval.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_RefreshInterval.DataPropertyName = "REFRESH_INTERVAL";
+            this.Column_RefreshInterval.HeaderText = "刷新(ms)";
+            this.Column_RefreshInterval.MinimumWidth = 6;
+            this.Column_RefreshInterval.Name = "Column_RefreshInterval";
+            this.Column_RefreshInterval.Width = 99;
+            // 
             // Column_ApplyFilter
             // 
             this.Column_ApplyFilter.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -462,6 +473,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMinimum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RcsMaximum;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_RadarHeight;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_RefreshInterval;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Column_ApplyFilter;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Column_ApplyIteration;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Remark;

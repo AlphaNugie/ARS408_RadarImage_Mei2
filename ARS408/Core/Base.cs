@@ -177,6 +177,11 @@ property float rcs";
         public static int ReceiveRestTime = 0;
 
         /// <summary>
+        /// 所有雷达处理时是否使用统一的时间间隔
+        /// </summary>
+        public static bool UsePublicInterval = true;
+
+        /// <summary>
         /// 处理时间间隔
         /// </summary>
         public static int RefreshInterval = 250;
@@ -351,6 +356,7 @@ property float rcs";
                     BaseConst.FeetFilterHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "FeetFilterHeight"));
                     BaseConst.UsePublicRcsRange = BaseConst.IniHelper.ReadData("Detection", "UsePublicRcsRange").Equals("1");
                     BaseConst.ReceiveRestTime = int.Parse(BaseConst.IniHelper.ReadData("Connection", "ReceiveRestTime"));
+                    BaseConst.UsePublicInterval = BaseConst.IniHelper.ReadData("Main", "UsePublicInterval").Equals("1");
                     BaseConst.RefreshInterval = int.Parse(BaseConst.IniHelper.ReadData("Main", "RefreshInterval"));
                     BaseConst.WriteItemValue = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
                     BaseConst.ClusterFilterEnabled = BaseConst.IniHelper.ReadData("Detection", "ClusterFilterEnabled").Equals("1"); //集群过滤器是否启用

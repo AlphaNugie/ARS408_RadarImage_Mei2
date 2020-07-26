@@ -5,3 +5,6 @@ dotnet_diagnostic.CA1031.severity = none
 
 # IDE0069: 应释放可释放的字段
 dotnet_diagnostic.IDE0069.severity = none
+
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = none

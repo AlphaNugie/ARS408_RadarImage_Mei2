@@ -54,6 +54,11 @@ namespace ARS408.Model
         public RadarState State { get; set; }
 
         /// <summary>
+        /// 刷新时间间隔
+        /// </summary>
+        public int RefreshInterval { get; set; }
+
+        /// <summary>
         /// 是否应用集群或目标过滤器
         /// </summary>
         public bool ApplyFilter { get; set; }
@@ -411,6 +416,7 @@ namespace ARS408.Model
             this.State = new RadarState();
             this.Id = -1;
             this.Name = "ARS408-21";
+            this.RefreshInterval = BaseConst.RefreshInterval;
             this.GroupType = RadarGroupType.None;
             this.IpAddress = BaseConst.IpAddress;
             this.Port = BaseConst.Port;
@@ -434,6 +440,7 @@ namespace ARS408.Model
 
             this.Id = int.Parse(row["radar_id"].ToString());
             this.Name = row["radar_name"].ToString();
+            this.RefreshInterval = int.Parse(row["refresh_interval"].ToString());
             this.IpAddress = row["ip_address"].ToString();
             this.Port = ushort.Parse(row["port"].ToString());
             this.ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());

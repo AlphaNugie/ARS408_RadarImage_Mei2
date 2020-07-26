@@ -324,7 +324,7 @@ namespace ARS408.Model
                 save2list = general.Angle.Between(-40, 40);
             //YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
             else if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
-                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(-30, 0);
+                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(this.Radar.Name.Contains("左") ? -30 : -30, 0); //左侧水平以下30°，右侧水平以下30°
             //目标点限制在斗轮角度前下侧90°范围内（前提是通过XYZ坐标偏移使中心从雷达移到斗轮中心）
             //save2list = general.AngleYoz.Between(-90, 0);
             //save2list = general.AngleYoz.Between(OpcConst.Pitch_Plc * -1 - thickness, OpcConst.Pitch_Plc * -1 + thickness);
