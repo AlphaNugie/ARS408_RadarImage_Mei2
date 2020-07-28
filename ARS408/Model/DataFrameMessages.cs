@@ -25,11 +25,18 @@ namespace ARS408.Model
         private int _count = 0;
         private readonly int limit_factor = 1;
         private double _new, _assumed, _diff, _diff1;
-        //TODO 斗轮雷达按俯仰角取点时的范围厚度（一半）
-        private readonly double thickness = 2;
+        //private readonly int _pushf_max_count = 1; //push finalization的最大次数
+        private int _pushf_counter = 0; //计算push finalization的次数
+        ////TODO 斗轮雷达按俯仰角取点时的范围厚度（一半）
+        //private readonly double thickness = 2;
+
+        /// <summary>
+        /// push finalization的最大次数
+        /// </summary>
+        private int PushfMaxCount { get { return this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; } }
         #endregion
 
-        #region 属性
+        #region 公共属性
         ///// <summary>
         ///// 父窗体
         ///// </summary>
@@ -189,6 +196,7 @@ namespace ARS408.Model
             //this.ParentForm = form;
             //this.Radar = radar;
             this.Radar = radar == null ? new Radar() : radar;
+            //this._pushf_max_count = this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; //皮带料流雷达push finalization最大次数为5（统计5帧的点）
             this.Flags = new List<bool>() { false, false, false, false, false, false, false, true, true, true };
             this.limit_factor = this.Radar.GroupType == RadarGroupType.Feet ? 10 : 1;
             this.CurrentSensorMode = SensorMode.Cluster;
@@ -316,7 +324,7 @@ namespace ARS408.Model
                 Flags[9] = !this.Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
-            bool save2list = !Flags[2] && Flags[7] && Flags[8], save2other = false;
+            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9], save2other = false;
             //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内
             save2list = save2list && !(Flags[1]);
             //假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
@@ -388,7 +396,10 @@ namespace ARS408.Model
                     if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
                         (ClusterQuality.AmbigStateFilter.Count > 0 && !ClusterQuality.AmbigStateFilter.Contains(general.AmbigState)) ||
                         (ClusterQuality.InvalidStateFilter.Count > 0 && !ClusterQuality.InvalidStateFilter.Contains(general.InvalidState))))
+                    {
                         list.Remove(general);
+                        this.ListBuffer_Other.Add(general);
+                    }
                 }
                 else
                 {
@@ -399,7 +410,10 @@ namespace ARS408.Model
                     //TODO 目标模式输出结果过滤条件2：（假如过滤器启用）判断存在概率的可能最小值是否小于允许的最低值
                     if (BaseConst.ObjectFilterEnabled && this.Radar.ApplyFilter && ((ObjectQuality.MeasStateFilter.Count > 0 && !ObjectQuality.MeasStateFilter.Contains(general.MeasState)) ||
                         (ObjectQuality.ProbOfExistFilter.Count > 0 && !ObjectQuality.ProbOfExistFilter.Contains(general.ProbOfExist))))
+                    {
                         list.Remove(general);
+                        this.ListBuffer_Other.Add(general);
+                    }
                 }
             }
             catch (Exception) { }
@@ -414,26 +428,51 @@ namespace ARS408.Model
             if (this.BufferSize != 0 && this.ActualSize == 0)
                 return;
 
-            //不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
-            if (this.Radar != null)
+            if (++_pushf_counter >= this.PushfMaxCount)
             {
-                //this.ListBuffer.Sort((a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder)); //根据距检测区的最短距离排序
-                //this.ListBuffer_Other.Sort((a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z)); //根据Z轴坐标排序
-                this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
-                //this.ListBuffer.Sort(this.Radar.GroupType == RadarGroupType.Wheel ? SensorGeneral.AngleDistComparison : SensorGeneral.DistanceComparison); //根据角度、距检测区的最短距离排序
-                this.ListBuffer_Other.Sort(SensorGeneral.HeightComparison); //根据Z轴坐标排序
-                this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null; //找出距离最小的点
-                this.GeneralHighest = this.ListBuffer_Other.Count() > 0 ? this.ListBuffer_Other.Last() : null; //找出Z轴坐标最大的点（最高的点）
+                bool is_belt = this.Radar.GroupType == RadarGroupType.Belt;
+                //不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
+                if (this.Radar != null)
+                {
+                    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
+                    //对于非皮带料流雷达：找出距离最小的点
+                    if (!is_belt)
+                        this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
+                }
+                this.ListTrigger.Clear();
+                this.ListToSend.Clear();
+                this.ListTrigger.AddRange(this.ListBuffer);
+                //对于皮带料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
+                if (is_belt)
+                    this.CurrentDistance = this.ListTrigger.Count > 0 ? Math.Round(this.ListTrigger.Select(g => g.DistLong).Average(), 3) : 0;
+                this.ListToSend.AddRange(this.ListBuffer);
+                if (BaseConst.ShowDesertedPoints)
+                    this.ListTrigger.AddRange(this.ListBuffer_Other);
+                this.ListToSend.AddRange(this.ListBuffer_Other);
+                this.ListBuffer.Clear();
+                this.ListBuffer_Other.Clear();
+                _pushf_counter = 0;
             }
-            this.ListTrigger.Clear();
-            this.ListToSend.Clear();
-            this.ListTrigger.AddRange(this.ListBuffer);
-            this.ListToSend.AddRange(this.ListBuffer);
-            if (BaseConst.ShowDesertedPoints)
-                this.ListTrigger.AddRange(this.ListBuffer_Other);
-            this.ListToSend.AddRange(this.ListBuffer_Other);
-            this.ListBuffer.Clear();
-            this.ListBuffer_Other.Clear();
+            ////不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
+            //if (this.Radar != null)
+            //{
+            //    //this.ListBuffer.Sort((a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder)); //根据距检测区的最短距离排序
+            //    //this.ListBuffer_Other.Sort((a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z)); //根据Z轴坐标排序
+            //    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
+            //    //this.ListBuffer.Sort(this.Radar.GroupType == RadarGroupType.Wheel ? SensorGeneral.AngleDistComparison : SensorGeneral.DistanceComparison); //根据角度、距检测区的最短距离排序
+            //    //this.ListBuffer_Other.Sort(SensorGeneral.HeightComparison); //根据Z轴坐标排序
+            //    this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null; //找出距离最小的点
+            //    //this.GeneralHighest = this.ListBuffer_Other.Count() > 0 ? this.ListBuffer_Other.Last() : null; //找出Z轴坐标最大的点（最高的点）
+            //}
+            //this.ListTrigger.Clear();
+            //this.ListToSend.Clear();
+            //this.ListTrigger.AddRange(this.ListBuffer);
+            //this.ListToSend.AddRange(this.ListBuffer);
+            //if (BaseConst.ShowDesertedPoints)
+            //    this.ListTrigger.AddRange(this.ListBuffer_Other);
+            //this.ListToSend.AddRange(this.ListBuffer_Other);
+            //this.ListBuffer.Clear();
+            //this.ListBuffer_Other.Clear();
             this.ActualSize = 0;
         }
 
