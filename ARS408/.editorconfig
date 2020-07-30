@@ -8,3 +8,12 @@ dotnet_diagnostic.IDE0069.severity = none
 
 # CA1815: Override equals and operator equals on value types
 dotnet_diagnostic.CA1815.severity = none
+
+# IDE0029: 使用 COALESCE 表达式
+dotnet_style_coalesce_expression = true:none
+
+# IDE0067: 丢失范围之前释放对象
+dotnet_diagnostic.IDE0067.severity = none
+
+# IDE0060: 删除未使用的参数
+dotnet_code_quality_unused_parameters = non_public:none

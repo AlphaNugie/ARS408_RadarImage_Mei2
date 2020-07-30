@@ -4013,12 +4013,12 @@
             <param name="control"></param>
             <param name="handler"></param>
         </member>
-        <member name="T:CommonLib.UIControlUtil.ControlExtentionClass">
+        <member name="T:CommonLib.UIControlUtil.ControlUtil">
             <summary>
             控件扩展基础类
             </summary>
         </member>
-        <member name="M:CommonLib.UIControlUtil.ControlExtentionClass.SafeInvoke(System.Windows.Forms.Control,CommonLib.UIControlUtil.TaskDelegate)">
+        <member name="M:CommonLib.UIControlUtil.ControlUtil.SafeInvoke(System.Windows.Forms.Control,CommonLib.UIControlUtil.TaskDelegate)">
             <summary>
             控件线程安全访问
             .Net2.0中线程安全访问控件扩展方法，可以获取返回值，可能还有其它问题
@@ -4044,7 +4044,7 @@
             <param name="control">控件对象</param>
             <param name="handler">控件访问的委托方法</param>
         </member>
-        <member name="M:CommonLib.UIControlUtil.ControlExtentionClass.GetButtonCount(System.Windows.Forms.Control)">
+        <member name="M:CommonLib.UIControlUtil.ControlUtil.GetButtonCount(System.Windows.Forms.Control)">
             <summary>
             获取控件中Button控件的数量
             </summary>
@@ -4092,17 +4092,46 @@
             <param name="gridView">DataGridView对象</param>
             <returns>返回List</returns>
         </member>
-        <member name="T:CommonLib.UIControlUtil.TreeViewUtil">
+        <member name="M:CommonLib.UIControlUtil.TabControlUtil.ShowForm(System.Windows.Forms.TabControl,System.Windows.Forms.Form)">
             <summary>
-            TreeView相关方法
+            在TabControl页集合中加载窗体对象，停靠方式默认为填充(Fill)，假如已存在名称(Name)相同的TabPage则放弃操作
             </summary>
+            <param name="tabControl">需加载Form窗体的TabControl控件</param>
+            <param name="form">需在TabPage页中加载或显示的窗体对象</param>
         </member>
-        <member name="T:CommonLib.UIControlUtil.TreeViewExtentionClass">
+        <member name="M:CommonLib.UIControlUtil.TabControlUtil.ShowForm(System.Windows.Forms.TabControl,System.Windows.Forms.Form,System.Nullable{System.Windows.Forms.DockStyle})">
+            <summary>
+            在TabControl页集合中加载窗体对象，指定停靠方式，假如已存在名称(Name)相同的TabPage则放弃操作
+            </summary>
+            <param name="tabControl">需加载Form窗体的TabControl控件</param>
+            <param name="form">需在TabPage页中加载或显示的窗体对象</param>
+            <param name="dock">停靠方式，假如为null则不停靠</param>
+        </member>
+        <member name="M:CommonLib.UIControlUtil.TabControlUtil.DisposeTabPage(System.Windows.Forms.TabControl,System.Windows.Forms.TabPage)">
+            <summary>
+            释放TabControl的TabPage资源
+            </summary>
+            <param name="tabControl">需释放TabPage资源的TabControl控件</param>
+            <param name="page">TabPage对象</param>
+        </member>
+        <member name="M:CommonLib.UIControlUtil.TabControlUtil.DisposeAllTabPages(System.Windows.Forms.TabControl)">
+            <summary>
+            释放TabControl的所有TabPage资源
+            </summary>
+            <param name="tabControl">需释放所有TabPage资源的TabControl控件</param>
+        </member>
+        <member name="M:CommonLib.UIControlUtil.TabControlUtil.DisposeSelectedTabPage(System.Windows.Forms.TabControl)">
+            <summary>
+            释放TabControl的选中TabPage资源
+            </summary>
+            <param name="tabControl">需释放选中TabPage资源的TabControl控件</param>
+        </member>
+        <member name="T:CommonLib.UIControlUtil.TreeViewUtil">
             <summary>
             扩展方法类
             </summary>
         </member>
-        <member name="M:CommonLib.UIControlUtil.TreeViewExtentionClass.BindTreeViewDataSource(System.Windows.Forms.TreeView,System.Data.DataTable,System.String,System.String,System.String)">
+        <member name="M:CommonLib.UIControlUtil.TreeViewUtil.BindTreeViewDataSource(System.Windows.Forms.TreeView,System.Data.DataTable,System.String,System.String,System.String)">
             <summary>
             为TreeView绑定数据源
             </summary>
@@ -4112,7 +4141,7 @@
             <param name="keyField">绑定节点的字段</param>
             <param name="displayField">显示为文本的字段</param>
         </member>
-        <member name="M:CommonLib.UIControlUtil.TreeViewExtentionClass.FillTree(System.Windows.Forms.TreeNode,System.Data.DataTable,System.String,System.String,System.String)">
+        <member name="M:CommonLib.UIControlUtil.TreeViewUtil.FillTree(System.Windows.Forms.TreeNode,System.Data.DataTable,System.String,System.String,System.String)">
             <summary>
             为TreeNode填充子节点
             </summary>
@@ -4122,7 +4151,7 @@
             <param name="keyField">绑定节点的字段</param>
             <param name="displayMember">显示为文本的字段</param>
         </member>
-        <member name="M:CommonLib.UIControlUtil.TreeViewExtentionClass.FindRootNode(System.Windows.Forms.TreeNode)">
+        <member name="M:CommonLib.UIControlUtil.TreeViewUtil.FindRootNode(System.Windows.Forms.TreeNode)">
             <summary>
             寻找某一节点的根节点
             </summary>

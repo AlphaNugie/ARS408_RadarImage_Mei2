@@ -15,7 +15,7 @@ namespace ARS408.Model
         /// <summary>
         /// 目标ID（编号）
         /// </summary>
-        public byte Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// 纵向（x）坐标的标准差，米

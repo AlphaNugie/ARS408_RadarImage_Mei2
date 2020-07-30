@@ -49,7 +49,7 @@ namespace ARS408.Model
         /// <summary>
         /// 消息ID（编号）
         /// </summary>
-        public byte Id { get; set; }
+        public int Id { get; set; }
 
         private double _dist_long;
         /// <summary>

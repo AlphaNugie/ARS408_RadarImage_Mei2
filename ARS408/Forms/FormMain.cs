@@ -2,6 +2,7 @@
 using CarServer;
 using CommonLib.Clients;
 using CommonLib.Function;
+using CommonLib.UIControlUtil;
 using ProtobufNetLibrary;
 using SerializationFactory;
 using SocketHelper;
@@ -39,14 +40,10 @@ namespace ARS408.Forms
             InitializeComponent();
             this.Init_Watchdog();
             BaseFunc.UpdateRadarList();
-            //this.InitializeMonitors();
 
             this.toolStripMenu_AutoConnect.Checked = BaseConst.AutoConnect;
             this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1");
             this.toolStrip_ShowDeserted.Checked = BaseConst.ShowDesertedPoints;
-            ////假如勾选自动开始监视，打开监视页面
-            //if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
-            //    this.ShowMonitors();
             BaseConst.Log.WriteLogsToFile("程序主体初始化完成");
         }
 
@@ -58,16 +55,9 @@ namespace ARS408.Forms
         private void FormMain_Load(object sender, EventArgs e)
         {
             //假如勾选自动开始监视，打开监视页面
-            if (this.toolStripMenu_AutoMonitor.Checked/* = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1")*/)
+            if (this.toolStripMenu_AutoMonitor.Checked)
                 this.ShowMonitors();
         }
-
-        //private void MonitorStartup()
-        //{
-        //    //假如勾选自动开始监视，打开监视页面
-        //    if (this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1"))
-        //        this.StartMonitor();
-        //}
 
         /// <summary>
         /// 窗体关闭事件
@@ -76,8 +66,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            foreach (TabPage page in this.tabControl_Main.TabPages)
-                this.DisposeTabPage(page);
+            this.tabControl_Main.DisposeAllTabPages();
             this.tcpServer_Watchdog.Stop();
             this.timer1.Stop();
 
@@ -87,11 +76,6 @@ namespace ARS408.Forms
                 form.Close();
                 form.Dispose();
             });
-            //this.list_monitors.ForEach(form =>
-            //{
-            //    form.Close();
-            //    form.Dispose();
-            //});
         }
 
         #region 功能
@@ -130,7 +114,7 @@ namespace ARS408.Forms
         private void ShowMonitors()
         {
             this.InitializeMonitors();
-            this.list_monitors.ForEach(monitor => this.ShowForm(monitor, DockStyle.Fill));
+            this.list_monitors.ForEach(monitor => this.tabControl_Main.ShowForm(monitor, DockStyle.Fill));
             BaseConst.Log.WriteLogsToFile("已显示所有监视页面");
         }
 
@@ -141,89 +125,8 @@ namespace ARS408.Forms
         {
             foreach (TabPage page in this.tabControl_Main.TabPages)
                 if (page.Controls[0] is FormMonitor)
-                    this.DisposeTabPage(page);
+                    this.tabControl_Main.DisposeTabPage(page);
             BaseConst.Log.WriteLogsToFile("已关闭所有监视页面");
-        }
-
-        /// <summary>
-        /// 在TabPage页中加载窗体对象，默认不停靠TabPage
-        /// </summary>
-        /// <param name="form">需在TabPage页中加载或显示的窗体对象</param>
-        private void ShowForm(Form form)
-        {
-            this.ShowForm(form, null);
-        }
-
-        /// <summary>
-        /// 在TabPage页中加载窗体对象
-        /// </summary>
-        /// <param name="form">需在TabPage页中加载或显示的窗体对象</param>
-        /// <param name="dock">停靠方式，假如为null则不停靠</param>
-        private void ShowForm(Form form, DockStyle? dock)
-        {
-            if (form == null)
-            {
-                MessageBox.Show("无法显示空窗体", "提示消息", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            //假如Tab页已存在，选中该页面
-            foreach (TabPage tabPage in this.tabControl_Main.TabPages)
-                if (tabPage.Name == form.Name)
-                {
-                    this.tabControl_Main.SelectedTab = tabPage;
-                    return;
-                }
-
-            //在TabControl中显示包含该页面的TabPage
-            form.TopLevel = false; //不置顶
-            if (dock != null)
-                form.Dock = dock.Value; //控件停靠方式
-            form.FormBorderStyle = FormBorderStyle.None; //页面无边框
-            TabPage page = new TabPage();
-            page.Controls.Add(form);
-            page.Text = form.Text;
-            page.Name = form.Name;
-            page.AutoScroll = true;
-            this.Invoke(new MethodInvoker(delegate
-            {
-                this.tabControl_Main.TabPages.Add(page);
-                this.tabControl_Main.SelectedTab = page;
-                form.Show();
-            }));
-        }
-
-        /// <summary>
-        /// 释放TabPage的资源
-        /// </summary>
-        /// <param name="page"></param>
-        private void DisposeTabPage(TabPage page)
-        {
-            if (page == null)
-                return;
-            if (page.Controls.Count > 0)
-            {
-                //Control control = page.Controls[0];
-                //if (control is FormMonitor)
-                //    page.Controls.Remove(control);
-                //else
-                //{
-                //    Form form = (Form)control;
-                //    if (form != null)
-                //    {
-                //        form.Close();
-                //        form.Dispose();
-                //    }
-                //}
-                Form form = (Form)page.Controls[0];
-                if (form != null)
-                {
-                    form.Close();
-                    form.Dispose();
-                }
-            }
-
-            page.Dispose();
         }
         #endregion
 
@@ -245,7 +148,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Shiploaders_Click(object sender, EventArgs e)
         {
-            this.ShowForm(new FormShiploader());
+            this.tabControl_Main.ShowForm(new FormShiploader());
         }
 
         /// <summary>
@@ -255,7 +158,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_RadarGroup_Click(object sender, EventArgs e)
         {
-            this.ShowForm(new FormRadarGroup());
+            this.tabControl_Main.ShowForm(new FormRadarGroup());
         }
 
         /// <summary>
@@ -265,7 +168,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Radar_Click(object sender, EventArgs e)
         {
-            this.ShowForm(new FormRadar(), DockStyle.Fill);
+            this.tabControl_Main.ShowForm(new FormRadar(), DockStyle.Fill);
         }
 
         /// <summary>
@@ -275,7 +178,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void TabControl_Main_DoubleClick(object sender, EventArgs e)
         {
-            this.DisposeTabPage(this.tabControl_Main.SelectedTab);
+            this.tabControl_Main.DisposeSelectedTabPage();
         }
 
         /// <summary>
@@ -286,7 +189,6 @@ namespace ARS408.Forms
         private void ToolStripMenu_Monitor_Click(object sender, EventArgs e)
         {
             this.CloseMonitors();
-            //this.InitializeMonitors();
             this.ShowMonitors();
         }
 
@@ -297,7 +199,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStrip_ThreatLevels_Click(object sender, EventArgs e)
         {
-            this.ShowForm(new FormThreatLevels());
+            this.tabControl_Main.ShowForm(new FormThreatLevels());
         }
 
         /// <summary>
@@ -307,8 +209,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStrip_OpcConfig_Click(object sender, EventArgs e)
         {
-            FormOpcConfig form = new FormOpcConfig();
-            form.StartPosition = FormStartPosition.CenterScreen;
+            FormOpcConfig form = new FormOpcConfig { StartPosition = FormStartPosition.CenterScreen };
             form.ShowDialog();
         }
 
@@ -319,8 +220,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStrip_CoorsLimitConfig_Click(object sender, EventArgs e)
         {
-            FormCoorsLimitationConfig form = new FormCoorsLimitationConfig();
-            form.StartPosition = FormStartPosition.CenterScreen;
+            FormCoorsLimitationConfig form = new FormCoorsLimitationConfig { StartPosition = FormStartPosition.CenterScreen };
             form.ShowDialog();
         }
 
@@ -390,14 +290,6 @@ namespace ARS408.Forms
         private void Timer1_Tick(object sender, EventArgs e)
         {
             BaseFunc.UpdateRadarInfo();
-            //BaseConst.RadarInfo.DistWheelLeft = -18;
-            //BaseConst.RadarInfo.DistWheelRight = 17;
-            //string s = ProtobufNetWrapper.SerializeToString(BaseConst.RadarInfo, RadarProtoInfo.RADAR_PROTO_PREFIX);
-            //byte[] buffer = ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo);
-            //RadarProtoInfo info = ProtobufNetWrapper.DeserializeFromBytes<RadarProtoInfo>(buffer);
-            //info = ProtobufNetWrapper.DeserializeFromString<RadarProtoInfo>(s, RadarProtoInfo.RADAR_PROTO_PREFIX);
-            //byte[] array = ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR);
-            //RadarProtoInfo info = ProtobufNetWrapper.DeserializeFromBytes<RadarProtoInfo>(array);
             this.tcpServer_Watchdog.SendData(ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR));
             this.label_Error.Text = this.tcp_info_error;
             this.label_State.Text = this.tcp_info_state;
@@ -418,11 +310,11 @@ namespace ARS408.Forms
         {
             new FormPreferences().Show();
         }
-        #endregion
 
         private void ToolStrip_ShowDeserted_CheckedChanged(object sender, EventArgs e)
         {
             BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", this.toolStrip_ShowDeserted.Checked ? "1" : "0");
         }
+        #endregion
     }
 }

@@ -27,6 +27,7 @@ namespace ARS408.Model
         private double _new, _assumed, _diff, _diff1;
         //private readonly int _pushf_max_count = 1; //push finalization的最大次数
         private int _pushf_counter = 0; //计算push finalization的次数
+        private readonly int _id_step = 500; //累积不同帧的点时为防止ID重复所添加的ID步长（与_pushf_counter结合使用）
         ////TODO 斗轮雷达按俯仰角取点时的范围厚度（一半）
         //private readonly double thickness = 2;
 
@@ -365,6 +366,7 @@ namespace ARS408.Model
             #endregion
 
             //TODO 溜桶下方物体检测：另外添加2个ListBuffer，分别对应cluster和object，添加点，DataPushFinalize时一起压入ListTrigger
+            general.Id += _pushf_counter * _id_step;
             if (save2list)
                 this.ListBuffer.Add(general);
             else if (save2other)
@@ -376,6 +378,7 @@ namespace ARS408.Model
             try
             {
                 List<SensorGeneral> list = this.ListBuffer;
+                q.Id += _pushf_counter * _id_step;
                 SensorGeneral g = list.Find(c => c.Id == q.Id);
                 if (g == null)
                 {
