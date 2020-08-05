@@ -47,6 +47,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip_OpcConfig = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip_CoorsLimitConfig = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStrip_RadarBehavior = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip_Preferences = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl_Main = new System.Windows.Forms.TabControl();
             this.tcpServer_Watchdog = new SocketHelper.SocketTcpServer(this.components);
@@ -163,6 +164,7 @@
             this.toolStripSeparator2,
             this.toolStrip_OpcConfig,
             this.toolStrip_CoorsLimitConfig,
+            this.toolStrip_RadarBehavior,
             this.toolStrip_Preferences});
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
             this.设置ToolStripMenuItem.Size = new System.Drawing.Size(53, 24);
@@ -172,33 +174,40 @@
             // 
             this.toolStrip_ShowDeserted.CheckOnClick = true;
             this.toolStrip_ShowDeserted.Name = "toolStrip_ShowDeserted";
-            this.toolStrip_ShowDeserted.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_ShowDeserted.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_ShowDeserted.Text = "是否显示被过滤点";
             this.toolStrip_ShowDeserted.CheckedChanged += new System.EventHandler(this.ToolStrip_ShowDeserted_CheckedChanged);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(209, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(221, 6);
             // 
             // toolStrip_OpcConfig
             // 
             this.toolStrip_OpcConfig.Name = "toolStrip_OpcConfig";
-            this.toolStrip_OpcConfig.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_OpcConfig.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_OpcConfig.Text = "OPC配置";
             this.toolStrip_OpcConfig.Click += new System.EventHandler(this.ToolStrip_OpcConfig_Click);
             // 
             // toolStrip_CoorsLimitConfig
             // 
             this.toolStrip_CoorsLimitConfig.Name = "toolStrip_CoorsLimitConfig";
-            this.toolStrip_CoorsLimitConfig.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_CoorsLimitConfig.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_CoorsLimitConfig.Text = "坐标限制";
             this.toolStrip_CoorsLimitConfig.Click += new System.EventHandler(this.ToolStrip_CoorsLimitConfig_Click);
+            // 
+            // toolStrip_RadarBehavior
+            // 
+            this.toolStrip_RadarBehavior.Name = "toolStrip_RadarBehavior";
+            this.toolStrip_RadarBehavior.Size = new System.Drawing.Size(224, 26);
+            this.toolStrip_RadarBehavior.Text = "雷达检测特性";
+            this.toolStrip_RadarBehavior.Click += new System.EventHandler(this.ToolStrip_RadarBehavior_Click);
             // 
             // toolStrip_Preferences
             // 
             this.toolStrip_Preferences.Name = "toolStrip_Preferences";
-            this.toolStrip_Preferences.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_Preferences.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_Preferences.Text = "选项";
             this.toolStrip_Preferences.Click += new System.EventHandler(this.ToolStrip_Preferences_Click);
             // 
@@ -324,5 +333,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStrip_Preferences;
         private System.Windows.Forms.ToolStripMenuItem toolStrip_ShowDeserted;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem toolStrip_RadarBehavior;
     }
 }

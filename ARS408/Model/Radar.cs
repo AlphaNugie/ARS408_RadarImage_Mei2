@@ -59,16 +59,6 @@ namespace ARS408.Model
         public int RefreshInterval { get; set; }
 
         /// <summary>
-        /// 是否应用集群或目标过滤器
-        /// </summary>
-        public bool ApplyFilter { get; set; }
-
-        /// <summary>
-        /// 是否应用迭代
-        /// </summary>
-        public bool ApplyIteration { get; set; }
-
-        /// <summary>
         /// 当前障碍物距离
         /// </summary>
         [ProtoMember(4)]
@@ -379,6 +369,123 @@ namespace ARS408.Model
         public double AngleMax { get; set; }
         #endregion
 
+        #region 检测特性
+        /// <summary>
+        /// 是否应用集群或目标过滤器
+        /// </summary>
+        public bool ApplyFilter { get; set; }
+
+        /// <summary>
+        /// 是否应用迭代
+        /// </summary>
+        public bool ApplyIteration { get; set; }
+
+        /// <summary>
+        /// push finalization的最大次数，雷达帧的累积周期
+        /// </summary>
+        public int PushfMaxCount { get; set; }
+
+        /// <summary>
+        /// 是否使用公共过滤条件
+        /// </summary>
+        public bool UsePublicFilters { get; set; }
+
+        /// <summary>
+        /// 错误警报概率过滤器
+        /// </summary>
+        public List<FalseAlarmProbability> FalseAlarmFilter { get; set; }
+
+        /// <summary>
+        /// 径向速度不确定性过滤器
+        /// </summary>
+        public List<AmbigState> AmbigStateFilter { get; set; }
+
+        /// <summary>
+        /// 有效性(有效/高概率多目标)
+        /// </summary>
+        public List<InvalidState> InvalidStateFilter { get; set; }
+
+        /// <summary>
+        /// 测量状态过滤器
+        /// </summary>
+        public List<MeasState> MeasStateFilter { get; set; }
+
+        /// <summary>
+        /// 存在概率过滤器
+        /// </summary>
+        public List<ProbOfExist> ProbOfExistFilter { get; set; }
+
+        private string false_alarm_string;
+        /// <summary>
+        /// 错误警报概率过滤器
+        /// </summary>
+        public string FalseAlarmFilterString
+        {
+            get { return false_alarm_string; }
+            set
+            {
+                false_alarm_string = value == null ? string.Empty : value;
+                this.FalseAlarmFilter = false_alarm_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
+            }
+        }
+
+        private string ambig_state_string;
+        /// <summary>
+        /// 径向速度不确定性过滤器
+        /// </summary>
+        public string AmbigStateFilterString
+        {
+            get { return ambig_state_string; }
+            set
+            {
+                ambig_state_string = value == null ? string.Empty : value;
+                this.AmbigStateFilter = ambig_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
+            }
+        }
+
+        private string invalid_state_string;
+        /// <summary>
+        /// 有效性(有效/高概率多目标)
+        /// </summary>
+        public string InvalidStateFilterString
+        {
+            get { return invalid_state_string; }
+            set
+            {
+                invalid_state_string = value == null ? string.Empty : value;
+                this.InvalidStateFilter = invalid_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
+            }
+        }
+
+        private string meas_state_string;
+        /// <summary>
+        /// 测量状态过滤器
+        /// </summary>
+        public string MeasStateFilterString
+        {
+            get { return meas_state_string; }
+            set
+            {
+                meas_state_string = value == null ? string.Empty : value;
+                this.MeasStateFilter = meas_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
+            }
+        }
+
+        private string prob_exist_string;
+        /// <summary>
+        /// 存在概率过滤器
+        /// </summary>
+        public string ProbOfExistFilterString
+        {
+            get { return prob_exist_string; }
+            set
+            {
+                prob_exist_string = value == null ? string.Empty : value;
+                this.ProbOfExistFilter = prob_exist_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
+            }
+        }
+        #endregion
+
         /// <summary>
         /// 备注
         /// </summary>
@@ -461,8 +568,6 @@ namespace ARS408.Model
             this.XOffset = double.Parse(row["x_offset"].ToString());
             this.YOffset = double.Parse(row["y_offset"].ToString());
             this.ZOffset = double.Parse(row["z_offset"].ToString());
-            this.ApplyFilter = row["apply_filter"].ToString().Equals("1");
-            this.ApplyIteration = row["apply_iteration"].ToString().Equals("1");
             this.Remark = row["remark"].ToString();
             this.ItemNameRadarState = row["item_name_radar_state"].ToString();
             this.ItemNameCollisionState = row["item_name_collision_state"].ToString();
@@ -485,6 +590,22 @@ namespace ARS408.Model
             this.AngleLimited = row["angle_limited"].ToString().Equals("1");
             this.AngleMin = double.Parse(row["angle_min"].ToString());
             this.AngleMax = double.Parse(row["angle_max"].ToString());
+            #region 检测特性
+            this.ApplyFilter = row["apply_filter"].ToString().Equals("1");
+            this.ApplyIteration = row["apply_iteration"].ToString().Equals("1");
+            this.PushfMaxCount = int.Parse(row["pushf_max_count"].ToString());
+            this.UsePublicFilters = row["use_public_filters"].ToString().Equals("1");
+            this.FalseAlarmFilterString = row["false_alarm_filter"].ToString();
+            this.AmbigStateFilterString = row["ambig_state_filter"].ToString();
+            this.InvalidStateFilterString = row["invalid_state_filter"].ToString();
+            this.MeasStateFilterString = row["meas_state_filter"].ToString();
+            this.ProbOfExistFilterString = row["prob_exist_filter"].ToString();
+            //this.FalseAlarmFilter = row["false_alarm_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
+            //this.AmbigStateFilter = row["ambig_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
+            //this.InvalidStateFilter = row["invalid_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
+            //this.MeasStateFilter = row["meas_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
+            //this.ProbOfExistFilter = row["prob_exist_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
+            #endregion
         }
         #endregion
 

@@ -137,6 +137,12 @@
     <Compile Include="Forms\FormRadar.Designer.cs">
       <DependentUpon>FormRadar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\FormRadarBehavior.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FormRadarBehavior.Designer.cs">
+      <DependentUpon>FormRadarBehavior.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\FormRadarGroup.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -195,6 +201,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormRadar.resx">
       <DependentUpon>FormRadar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FormRadarBehavior.resx">
+      <DependentUpon>FormRadarBehavior.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\FormRadarGroup.resx">
       <DependentUpon>FormRadarGroup.cs</DependentUpon>

@@ -110,6 +110,26 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
             string sql = "select t.radar_id, t.radar_name, t.ip_address||':'||t.port address, t.radar_coors_limited, t.radar_x_min, t.radar_x_max, t.radar_y_min, t.radar_y_max, t.claimer_coors_limited, t.claimer_x_min, t.claimer_x_max, t.claimer_y_min, t.claimer_y_max, t.claimer_z_min, t.claimer_z_max, t.angle_limited, t.angle_min, t.angle_max, 0 changed from t_base_radar_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
             return this.provider.Query(sql);
         }
+
+        /// <summary>
+        /// 获取所有雷达的坐标限制情况，并按ID排序
+        /// </summary>
+        /// <returns></returns>
+        public DataTable GetRadarBehaviors()
+        {
+            return this.GetRadarBehaviors("radar_id");
+        }
+
+        /// <summary>
+        /// 获取所有雷达的坐标限制情况，并按特定字段排序
+        /// </summary>
+        /// <param name="orderby">排序字段，假如为空则不排序</param>
+        /// <returns></returns>
+        public DataTable GetRadarBehaviors(string orderby)
+        {
+            string sql = "select t.radar_id, t.radar_name, t.ip_address||':'||t.port address, t.apply_filter, t.use_public_filters, t.apply_iteration, t.pushf_max_count, t.false_alarm_filter, t.ambig_state_filter, t.invalid_state_filter, t.meas_state_filter, t.prob_exist_filter, 0 changed from t_base_radar_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
+            return this.provider.Query(sql);
+        }
         #endregion
 
         /// <summary>
@@ -148,6 +168,19 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
             string sql = string.Empty;
             if (radar != null)
                 sql = string.Format("update t_base_radar_info set radar_coors_limited = {1}, radar_x_min = {2}, radar_x_max = {3}, radar_y_min = {4}, radar_y_max = {5}, claimer_coors_limited = {6}, claimer_x_min = {7}, claimer_x_max = {8}, claimer_y_min = {9}, claimer_y_max = {10}, claimer_z_min = {11}, claimer_z_max = {12}, angle_limited = {13}, angle_min = {14}, angle_max = {15} where radar_id = {0}", radar.Id, radar.RadarCoorsLimited ? 1 : 0, radar.RadarxMin, radar.RadarxMax, radar.RadaryMin, radar.RadaryMax, radar.ClaimerCoorsLimited ? 1 : 0, radar.ClaimerxMin, radar.ClaimerxMax, radar.ClaimeryMin, radar.ClaimeryMax, radar.ClaimerzMin, radar.ClaimerzMax, radar.AngleLimited ? 1 : 0, radar.AngleMin, radar.AngleMax);
+            return sql;
+        }
+
+        /// <summary>
+        /// 获取雷达SQL字符串
+        /// </summary>
+        /// <param name="radar">雷达对象</param>
+        /// <returns></returns>
+        private string GetRadarSqlString_RadarBehaviors(Radar radar)
+        {
+            string sql = string.Empty;
+            if (radar != null)
+                sql = string.Format("update t_base_radar_info set apply_filter = {1}, use_public_filters = {2}, apply_iteration = {3}, pushf_max_count = {4}, false_alarm_filter = '{5}', ambig_state_filter = '{6}', invalid_state_filter = '{7}', meas_state_filter = '{8}', prob_exist_filter = '{9}' where radar_id = {0}", radar.Id, radar.ApplyFilter ? 1 : 0, radar.UsePublicFilters ? 1 : 0, radar.ApplyIteration ? 1 : 0, radar.PushfMaxCount, radar.FalseAlarmFilterString, radar.AmbigStateFilterString, radar.InvalidStateFilterString, radar.MeasStateFilterString, radar.ProbOfExistFilterString);
             return sql;
         }
 
@@ -240,6 +273,17 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public bool SaveRadarCoorsLimitations(IEnumerable<Radar> radars)
         {
             string[] sqls = radars == null ? null : radars.Select(radar => this.GetRadarSqlString_CoorsLimitations(radar)).ToArray();
+            return this.provider.ExecuteSqlTrans(sqls);
+        }
+
+        /// <summary>
+        /// 批量保存雷达坐标点限制信息
+        /// </summary>
+        /// <param name="radars">多个雷达对象</param>
+        /// <returns></returns>
+        public bool SaveRadarBehaviors(IEnumerable<Radar> radars)
+        {
+            string[] sqls = radars == null ? null : radars.Select(radar => this.GetRadarSqlString_RadarBehaviors(radar)).ToArray();
             return this.provider.ExecuteSqlTrans(sqls);
         }
 

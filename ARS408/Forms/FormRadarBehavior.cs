@@ -13,11 +13,11 @@ using System.Windows.Forms;
 
 namespace ARS408.Forms
 {
-    public partial class FormCoorsLimitationConfig : Form
+    public partial class FormRadarBehavior : Form
     {
         private readonly DataService_Radar dataService = new DataService_Radar(); //数据库服务类
 
-        public FormCoorsLimitationConfig()
+        public FormRadarBehavior()
         {
             InitializeComponent();
             this.DataSourceRefresh();
@@ -29,7 +29,7 @@ namespace ARS408.Forms
         private void DataSourceRefresh()
         {
             DataTable table;
-            try { table = this.dataService.GetRadarCoorsLimitations(); }
+            try { table = this.dataService.GetRadarBehaviors(); }
             catch (Exception e)
             {
                 string errorMessage = "查询时出错：" + e.Message;
@@ -56,14 +56,14 @@ namespace ARS408.Forms
                 if (row.Cells["Column_Changed"].Value.ToString().Equals("1"))
                 {
                     Radar radar = DataGridViewUtil.ConvertDataGridViewRow2Obect<Radar>(row, false); //不抛出异常
-                    radar.RadarCoorsLimited = row.Cells["Column_RadarCoorsLimited"].Value.ToString().Equals("1");
-                    radar.ClaimerCoorsLimited = row.Cells["Column_ClaimerCoorsLimited"].Value.ToString().Equals("1");
-                    radar.AngleLimited = row.Cells["Column_AngleLimited"].Value.ToString().Equals("1");
+                    //radar.RadarCoorsLimited = row.Cells["Column_RadarCoorsLimited"].Value.ToString().Equals("1");
+                    //radar.ClaimerCoorsLimited = row.Cells["Column_ClaimerCoorsLimited"].Value.ToString().Equals("1");
+                    //radar.AngleLimited = row.Cells["Column_AngleLimited"].Value.ToString().Equals("1");
                     list.Add(radar);
                 }
 
             bool result;
-            try { result = this.dataService.SaveRadarCoorsLimitations(list); }
+            try { result = this.dataService.SaveRadarBehaviors(list); }
             catch (Exception ex)
             {
                 string errorMessage = "信息保存时出现问题：" + ex.Message;

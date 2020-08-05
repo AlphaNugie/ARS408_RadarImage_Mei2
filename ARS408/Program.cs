@@ -28,6 +28,7 @@ namespace ARS408
         {
             BaseFunc.InitConfigs(); //配置初始化
             #region 测试
+            //var list = "".Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
             //int threat = BaseFunc.GetThreatLevelByValue(3);
             //threat = BaseFunc.GetThreatLevelByValue(2);
             //threat = BaseFunc.GetThreatLevelByValue(1.7);

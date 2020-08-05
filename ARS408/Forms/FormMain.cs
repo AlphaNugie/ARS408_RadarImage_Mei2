@@ -306,6 +306,11 @@ namespace ARS408.Forms
             BaseConst.IniHelper.WriteData("Main", "AutoConnect", this.toolStripMenu_AutoConnect.Checked ? "1" : "0");
         }
 
+        private void ToolStrip_RadarBehavior_Click(object sender, EventArgs e)
+        {
+            new FormRadarBehavior().Show();
+        }
+
         private void ToolStrip_Preferences_Click(object sender, EventArgs e)
         {
             new FormPreferences().Show();

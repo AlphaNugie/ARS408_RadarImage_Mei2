@@ -2925,6 +2925,7 @@
             <param name="arrY">已知点的y坐标集合</param>
             <param name="length">已知点的个数</param>
             <param name="dimension">方程的最高次数</param>
+            <returns>返回一个数组，数组中包括从高次到低次每个次数的系数（最后一个系数为截距）</returns>
         </member>
         <member name="M:CommonLib.Function.CurveFitting.SumArr(System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
             <summary>
@@ -2946,7 +2947,7 @@
             <param name="length"></param>
             <returns></returns>
         </member>
-        <member name="M:CommonLib.Function.CurveFitting.ComputGauss(System.Double[0:,0:],System.Int32)">
+        <member name="M:CommonLib.Function.CurveFitting.ComputeGauss(System.Double[0:,0:],System.Int32)">
             <summary>
             根据高斯矩阵与系数个数，返回包含系数值的数组
             </summary>
