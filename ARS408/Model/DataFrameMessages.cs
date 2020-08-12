@@ -34,7 +34,8 @@ namespace ARS408.Model
         /// <summary>
         /// push finalization的最大次数
         /// </summary>
-        private int PushfMaxCount { get { return this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; } }
+        private int PushfMaxCount { get { return this.Radar.PushfMaxCount; } }
+        //private int PushfMaxCount { get { return this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; } }
         #endregion
 
         #region 公共属性
@@ -108,9 +109,14 @@ namespace ARS408.Model
         public List<SensorGeneral> ListBuffer { get; set; }
 
         /// <summary>
-        /// 接收缓冲区（其它）（存放临时数据，直到接收完一组数据再放入正式数据）
+        /// 接收缓冲区（除合格数据外的数据，不包括质量信息不合格、RCS不合格数据）（存放临时数据，直到接收完一组数据再放入正式数据）
         /// </summary>
         public List<SensorGeneral> ListBuffer_Other { get; set; }
+
+        /// <summary>
+        /// 接收缓冲区（除合格数据外其它所有数据）（存放临时数据，直到接收完一组数据再放入正式数据）
+        /// </summary>
+        public List<SensorGeneral> ListBuffer_AllOther { get; set; }
 
         /// <summary>
         /// 正式数据
@@ -203,6 +209,7 @@ namespace ARS408.Model
             this.CurrentSensorMode = SensorMode.Cluster;
             this.ListBuffer = new List<SensorGeneral>();
             this.ListBuffer_Other = new List<SensorGeneral>();
+            this.ListBuffer_AllOther = new List<SensorGeneral>();
             this.ListTrigger = new List<SensorGeneral>();
             this.ListToSend = new List<SensorGeneral>();
             this.ThreadCheck = new Thread(new ThreadStart(this.CheckIfRadarsWorking)) { IsBackground = true };
@@ -297,10 +304,10 @@ namespace ARS408.Model
             #endregion
         }
 
-        /// <summary>
-        /// 缓冲区数据长度
-        /// </summary>
-        public int ListBufferCount { get { return this.ListBuffer.Count + this.ListBuffer_Other.Count; } }
+        ///// <summary>
+        ///// 缓冲区数据长度
+        ///// </summary>
+        //public int ListBufferCount { get { return this.ListBuffer.Count + this.ListBuffer_AllOther.Count; } }
 
         /// <summary>
         /// 正式数据长度
@@ -315,7 +322,6 @@ namespace ARS408.Model
         public void DataPush<T>(T general) where T : SensorGeneral
         {
             #region 目标点的过滤
-            //Flags[2] = this.ParentForm != null && !general.RCS.Between(this.ParentForm.RcsMinimum, this.ParentForm.RcsMaximum); //RCS值是否不在范围内
             Flags[2] = !general.RCS.Between(this.RcsMinimum, this.RcsMaximum); //RCS值是否不在范围内
             if (this.Radar != null)
             {
@@ -325,23 +331,22 @@ namespace ARS408.Model
                 Flags[9] = !this.Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
-            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9], save2other = false;
+            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9], save2other = false, save2allother = false;
             //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内
             save2list = save2list && !(Flags[1]);
-            //假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
-            if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
-                save2list = general.Angle.Between(-40, 40);
+            ////假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
+            //if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
+            //    save2list = general.Angle.Between(-40, 40);
             //YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
-            else if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
-                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(this.Radar.Name.Contains("左") ? -30 : -30, 0); //左侧水平以下30°，右侧水平以下30°
-            //目标点限制在斗轮角度前下侧90°范围内（前提是通过XYZ坐标偏移使中心从雷达移到斗轮中心）
-            //save2list = general.AngleYoz.Between(-90, 0);
-            //save2list = general.AngleYoz.Between(OpcConst.Pitch_Plc * -1 - thickness, OpcConst.Pitch_Plc * -1 + thickness);
+            /*else */if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(-30, 0); //水平以下30°
             //TODO (其余数据)过滤条件Lv2：RCS值在范围内
-            if (!save2list)
-                //save2other = false;
-                //save2other = BaseConst.ShowDesertedPoints && !Flags[2];
-                save2other = !Flags[2];
+            save2other = !save2list && !Flags[2]; //过滤RCS值
+            save2allother = !save2list;
+            //if (!save2list)
+            //    //save2other = false;
+            //    //save2other = BaseConst.ShowDesertedPoints && !Flags[2];
+            //    save2allother = !Flags[2];
             #region 旧判断逻辑
             //if (this.IsShore)
             //    save2list = !Flags[2] && z.Between(-1, 1) && x.Between(-5, 5);
@@ -365,11 +370,12 @@ namespace ARS408.Model
             #endregion
             #endregion
 
-            //TODO 溜桶下方物体检测：另外添加2个ListBuffer，分别对应cluster和object，添加点，DataPushFinalize时一起压入ListTrigger
             general.Id += _pushf_counter * _id_step;
             if (save2list)
                 this.ListBuffer.Add(general);
-            else if (save2other)
+            /*else */if (save2allother)
+                this.ListBuffer_AllOther.Add(general);
+            if (save2other)
                 this.ListBuffer_Other.Add(general);
         }
 
@@ -382,7 +388,7 @@ namespace ARS408.Model
                 SensorGeneral g = list.Find(c => c.Id == q.Id);
                 if (g == null)
                 {
-                    list = this.ListBuffer_Other;
+                    list = this.ListBuffer_AllOther;
                     g = list.Find(c => c.Id == q.Id);
                 }
                 if (g == null)
@@ -395,13 +401,20 @@ namespace ARS408.Model
                     general.Pdh0 = quality.Pdh0;
                     general.InvalidState = quality.InvalidState;
                     general.AmbigState = quality.AmbigState;
+                    List<FalseAlarmProbability> listFalseAlarm = this.Radar.UsePublicFilters ? ClusterQuality.FalseAlarmFilter : this.Radar.FalseAlarmFilter;
+                    List<AmbigState> listAmbigState = this.Radar.UsePublicFilters ? ClusterQuality.AmbigStateFilter : this.Radar.AmbigStateFilter;
+                    List<InvalidState> listInvalidState = this.Radar.UsePublicFilters ? ClusterQuality.InvalidStateFilter : this.Radar.InvalidStateFilter;
                     //TODO 集群模式输出结果过滤条件2：（过滤器启用、过滤器不为空）不在集群/不确定性/有效性过滤器内
-                    if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
-                        (ClusterQuality.AmbigStateFilter.Count > 0 && !ClusterQuality.AmbigStateFilter.Contains(general.AmbigState)) ||
-                        (ClusterQuality.InvalidStateFilter.Count > 0 && !ClusterQuality.InvalidStateFilter.Contains(general.InvalidState))))
+                    //if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
+                    //    (ClusterQuality.AmbigStateFilter.Count > 0 && !ClusterQuality.AmbigStateFilter.Contains(general.AmbigState)) ||
+                    //    (ClusterQuality.InvalidStateFilter.Count > 0 && !ClusterQuality.InvalidStateFilter.Contains(general.InvalidState))))
+                    if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && (
+                        (listFalseAlarm.Count > 0 && !listFalseAlarm.Contains(general.Pdh0)) ||
+                        (listAmbigState.Count > 0 && !listAmbigState.Contains(general.AmbigState)) ||
+                        (listInvalidState.Count > 0 && !listInvalidState.Contains(general.InvalidState))))
                     {
                         list.Remove(general);
-                        this.ListBuffer_Other.Add(general);
+                        this.ListBuffer_AllOther.Add(general);
                     }
                 }
                 else
@@ -410,12 +423,17 @@ namespace ARS408.Model
                     ObjectGeneral general = g as ObjectGeneral;
                     general.MeasState = quality.MeasState;
                     general.ProbOfExist = quality.ProbOfExist;
+                    List<MeasState> listMeasState = this.Radar.UsePublicFilters ? ObjectQuality.MeasStateFilter : this.Radar.MeasStateFilter;
+                    List<ProbOfExist> listProbExist = this.Radar.UsePublicFilters ? ObjectQuality.ProbOfExistFilter : this.Radar.ProbOfExistFilter;
                     //TODO 目标模式输出结果过滤条件2：（假如过滤器启用）判断存在概率的可能最小值是否小于允许的最低值
-                    if (BaseConst.ObjectFilterEnabled && this.Radar.ApplyFilter && ((ObjectQuality.MeasStateFilter.Count > 0 && !ObjectQuality.MeasStateFilter.Contains(general.MeasState)) ||
-                        (ObjectQuality.ProbOfExistFilter.Count > 0 && !ObjectQuality.ProbOfExistFilter.Contains(general.ProbOfExist))))
+                    //if (BaseConst.ObjectFilterEnabled && this.Radar.ApplyFilter && ((ObjectQuality.MeasStateFilter.Count > 0 && !ObjectQuality.MeasStateFilter.Contains(general.MeasState)) ||
+                    //    (ObjectQuality.ProbOfExistFilter.Count > 0 && !ObjectQuality.ProbOfExistFilter.Contains(general.ProbOfExist))))
+                    if (BaseConst.ObjectFilterEnabled && this.Radar.ApplyFilter && (
+                        (listMeasState.Count > 0 && !listMeasState.Contains(general.MeasState)) ||
+                        (listProbExist.Count > 0 && !listProbExist.Contains(general.ProbOfExist))))
                     {
                         list.Remove(general);
-                        this.ListBuffer_Other.Add(general);
+                        this.ListBuffer_AllOther.Add(general);
                     }
                 }
             }
@@ -433,49 +451,41 @@ namespace ARS408.Model
 
             if (++_pushf_counter >= this.PushfMaxCount)
             {
-                bool is_belt = this.Radar.GroupType == RadarGroupType.Belt;
+                //bool is_belt = this.Radar.GroupType == RadarGroupType.Belt, is_wheel = this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"); //是否是皮带料流雷达，是否是斗轮雷达
                 //不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
-                if (this.Radar != null)
-                {
-                    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
-                    //对于非皮带料流雷达：找出距离最小的点
-                    if (!is_belt)
-                        this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
-                }
+                this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
+                //对于料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
+                if (this.Radar.GroupType == RadarGroupType.Belt)
+                    this.CurrentDistance = this.ListBuffer.Count > 0 ? Math.Round(this.ListBuffer.Select(g => g.DistLong).Average(), 3) : 0;
+                //对于非料流雷达：找出距离最小的点
+                else
+                    this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
+                //if (this.Radar != null)
+                //{
+                //    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
+                //    //对于非皮带料流雷达：找出距离最小的点
+                //    if (!is_belt)
+                //        this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
+                //}
                 this.ListTrigger.Clear();
                 this.ListToSend.Clear();
                 this.ListTrigger.AddRange(this.ListBuffer);
-                //对于皮带料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
-                if (is_belt)
-                    this.CurrentDistance = this.ListTrigger.Count > 0 ? Math.Round(this.ListTrigger.Select(g => g.DistLong).Average(), 3) : 0;
                 this.ListToSend.AddRange(this.ListBuffer);
+                ////对于皮带料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
+                //if (is_belt)
+                //    this.CurrentDistance = this.ListTrigger.Count > 0 ? Math.Round(this.ListTrigger.Select(g => g.DistLong).Average(), 3) : 0;
                 if (BaseConst.ShowDesertedPoints)
-                    this.ListTrigger.AddRange(this.ListBuffer_Other);
+                    this.ListTrigger.AddRange(this.ListBuffer_AllOther);
+                //this.ListToSend.AddRange(this.ListBuffer_AllOther);
                 this.ListToSend.AddRange(this.ListBuffer_Other);
+                //计算斗轮雷达点的1次拟合斜率，纵向坐标1~15，横向坐标-10~10，剔除10个距离其它点最远的点
+                if (this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+                    this.Radar._curve_slope = BaseFunc.GetCurveSlope(this.ListToSend, 1, 15, -10, 10, 10);
                 this.ListBuffer.Clear();
                 this.ListBuffer_Other.Clear();
+                this.ListBuffer_AllOther.Clear();
                 _pushf_counter = 0;
             }
-            ////不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
-            //if (this.Radar != null)
-            //{
-            //    //this.ListBuffer.Sort((a, b) => a.DistanceToBorder.CompareTo(b.DistanceToBorder)); //根据距检测区的最短距离排序
-            //    //this.ListBuffer_Other.Sort((a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z)); //根据Z轴坐标排序
-            //    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
-            //    //this.ListBuffer.Sort(this.Radar.GroupType == RadarGroupType.Wheel ? SensorGeneral.AngleDistComparison : SensorGeneral.DistanceComparison); //根据角度、距检测区的最短距离排序
-            //    //this.ListBuffer_Other.Sort(SensorGeneral.HeightComparison); //根据Z轴坐标排序
-            //    this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null; //找出距离最小的点
-            //    //this.GeneralHighest = this.ListBuffer_Other.Count() > 0 ? this.ListBuffer_Other.Last() : null; //找出Z轴坐标最大的点（最高的点）
-            //}
-            //this.ListTrigger.Clear();
-            //this.ListToSend.Clear();
-            //this.ListTrigger.AddRange(this.ListBuffer);
-            //this.ListToSend.AddRange(this.ListBuffer);
-            //if (BaseConst.ShowDesertedPoints)
-            //    this.ListTrigger.AddRange(this.ListBuffer_Other);
-            //this.ListToSend.AddRange(this.ListBuffer_Other);
-            //this.ListBuffer.Clear();
-            //this.ListBuffer_Other.Clear();
             this.ActualSize = 0;
         }
 

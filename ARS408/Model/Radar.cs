@@ -17,7 +17,7 @@ namespace ARS408.Model
     {
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
-        internal double _current;
+        internal double _current, _curve_slope; //当前距离，当前斜率
         internal string _threat_level_binary = "00";
 
         #region 属性
@@ -66,6 +66,15 @@ namespace ARS408.Model
         {
             get { return this._current; }
             set { this._current = value; }
+        }
+
+        /// <summary>
+        /// 当前一次拟合斜率
+        /// </summary>
+        public double CurveSlope
+        {
+            get { return this._curve_slope; }
+            set { this._curve_slope = value; }
         }
 
         internal int _threat_level = 0;
@@ -534,6 +543,9 @@ namespace ARS408.Model
             this.RcsMinimum = BaseConst.RcsMaximum;
             this.ApplyFilter = true;
             this.ApplyIteration = true;
+            this.PushfMaxCount = 1;
+            this.UsePublicFilters = true;
+            this.FalseAlarmFilterString = this.AmbigStateFilterString = this.InvalidStateFilterString = this.MeasStateFilterString = this.ProbOfExistFilterString = string.Empty;
         }
 
         /// <summary>
