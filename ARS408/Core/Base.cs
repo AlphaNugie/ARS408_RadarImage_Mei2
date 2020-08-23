@@ -1,10 +1,10 @@
 ﻿using ARS408.Forms;
 using ARS408.Model;
 using CommonLib.Clients;
-//using ARS408.Model.Serializable;
 using CommonLib.Clients.Object;
 using CommonLib.Extensions;
 using CommonLib.Function;
+using CommonLib.Function.Fitting;
 using ProtoBuf;
 using SerializationFactory;
 using System;
@@ -380,6 +380,7 @@ property float rcs";
         }
         #endregion
 
+        #region 基础信息
         /// <summary>
         /// 刷新雷达数据源
         /// </summary>
@@ -407,7 +408,11 @@ property float rcs";
 
             BaseConst.RadarInfo.DistWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
             BaseConst.RadarInfo.DistWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
-            BaseConst.RadarInfo.DistWheelMin = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮最近距离
+            BaseConst.RadarInfo.SlopeWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurveSlope).MinExceptZero(); //斗轮左侧斜率
+            BaseConst.RadarInfo.SlopeWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurveSlope).MinExceptZero(); //斗轮右侧斜率
+            BaseConst.RadarInfo.SurfaceAngleWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮左侧拟合平面角度
+            BaseConst.RadarInfo.SurfaceAngleWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮右侧拟合平面角度
+            //BaseConst.RadarInfo.DistWheelMin = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮最近距离
             BaseConst.RadarInfo.DistBelt = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Belt).Select(r => r.CurrentDistance).MinExceptZero(); //皮带料流距离
             BaseConst.RadarInfo.DistArmLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //臂架左侧距离
             BaseConst.RadarInfo.DistArmRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //臂架右侧距离
@@ -484,8 +489,114 @@ property float rcs";
 ]", OpcConst.WalkingPosition, OpcConst.PitchAngle, OpcConst.YawAngle, OpcConst.WalkingRight_Plc, OpcConst.WalkingLeft_Plc, OpcConst.Pitch_Plc, OpcConst.Yaw_Plc, BaseConst.RadarInfo.DistWheelLeft/*this.DictDistances["DistWheelLeft"]*/, BaseConst.RadarInfo.DistWheelRight/*this.DictDistances["DistWheelRight"]*//*, this.DictDistances["DistLand"] + this.DictDistances["DistSea"] + 2.623, this.DictDistances["DistNorth"], this.DictDistances["DistSouth"], this.DictDistances["DistNorth"] + this.DictDistances["DistSouth"] + 4.831*/).Replace('[', '{').Replace(']', '}');
             return main;
         }
+        #endregion
 
         #region 数据处理与转换
+        /// <summary>
+        /// 将所有雷达点拟合为平面，拟合斜率
+        /// </summary>
+        /// <param name="source">数据源</param>
+        /// <param name="xf">纵向坐标最小值</param>
+        /// <param name="xc">纵向坐标最大值</param>
+        /// <param name="yf">横向坐标最小值</param>
+        /// <param name="yc">横向坐标最大值</param>
+        /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        /// <returns></returns>
+        public static double GetSurfaceAngle(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, out string message)
+        {
+            double def = 90; //默认值
+            if (source == null || source.Count() == 0)
+            {
+                message = "未提供任何点的数据";
+                return def;
+            }
+            //int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(source.Count() * dist_ex_count) : (int)dist_ex_count;
+            List<SensorGeneral> sourceList = source.ToList();
+            List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+            List<Anonymous> checkList = new List<Anonymous>();
+            foreach (var gi in sourceList)
+            {
+                //排除不在特定坐标范围内的点
+                if (!gi.DistLong.Between(xf, xc) || !gi.DistLat.Between(yf, yc))
+                    continue;
+                //double dist = 0;
+                List<double> listDists = new List<double>();
+                foreach (var gj in sourceList)
+                {
+                    //排除同一个点以及不在特定坐标范围内的点
+                    if (gi == gj || !gj.DistLong.Between(xf, xc) || !gj.DistLat.Between(yf, yc))
+                        continue;
+                    listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+                }
+                //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+                listDists.Sort();
+                int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+                double dist = listDists.Take(ex_count).Average();
+                checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+            }
+            double dist_avr = checkList.Select(a => a.Dist).Average(); //求所有点的单点距离平均值的平均值，记为全局平均值
+            checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+            //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
+            foreach (var g in sourceList)
+            {
+                //排除不在特定坐标范围内的点以及距离其它点太远的点
+                if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc) || checkList.Count(c => c.Id == g.Id) > 0)
+                    continue;
+                //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+                listx.Add(g.DistLong);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
+            }
+            //double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
+            double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
+            return results == null || results.Length == 0 ? def : Math.Atan(1 / results[0]) * 180 / Math.PI;
+        }
+
+        /// <summary>
+        /// 获取雷达点的一次拟合斜率
+        /// </summary>
+        /// <param name="source">数据源</param>
+        /// <param name="xf">纵向坐标最小值</param>
+        /// <param name="xc">纵向坐标最大值</param>
+        /// <param name="yf">横向坐标最小值</param>
+        /// <param name="yc">横向坐标最大值</param>
+        /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目</param>
+        /// <returns></returns>
+        public static double GetCurveSlope(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, int dist_ex_count)
+        {
+            if (source == null || source.Count() == 0)
+                return 0;
+            List<SensorGeneral> sourceList = source.ToList();
+            List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+            List<Anonymous> checkList = new List<Anonymous>();
+            foreach (var gi in sourceList)
+            {
+                //排除不在特定坐标范围内的点
+                if (!gi.DistLong.Between(xf, xc) || !gi.DistLat.Between(yf, yc))
+                    continue;
+                double dist = 0;
+                foreach (var gj in sourceList)
+                {
+                    //排除同一个点以及不在特定坐标范围内的点
+                    if (gi == gj || !gj.DistLong.Between(xf, xc) || !gj.DistLat.Between(yf, yc))
+                        continue;
+                    dist += Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2)); //叠加与其它所有点的距离
+                }
+                checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+            }
+            checkList = checkList.OrderByDescending(a => a.Dist).Take(dist_ex_count).ToList();
+            foreach (var g in sourceList)
+            {
+                //排除不在特定坐标范围内的点以及距离其它点太远的点
+                if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc) || checkList.Count(c => c.Id == g.Id) > 0)
+                    continue;
+                listx.Add(g.DistLong);
+                listy.Add(g.DistLat);
+            }
+            double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
+            return results == null || results.Length == 0 ? 0 : results[0];
+        }
+
         /// <summary>
         /// 返回接收信息中包含的包裹消息集合
         /// </summary>
@@ -654,5 +765,12 @@ property float rcs";
                     dots.Add(string.Format(BaseConst.AddingCustomInfo ? "{0} {1} {2} {3} {4} {5}{6}" : "{0} {1} {2} {3} {4} {5}", Math.Round((!use_converted ? m.DistLat * -1 : m.ModiCoors.X) * 1000), Math.Round((!use_converted ? m.DistLong : m.ModiCoors.Y) * 1000), !use_converted ? 0 : Math.Round(m.ModiCoors.Z * 1000), m.Color.R, m.Color.G, m.Color.B, m.GetCustomInfo()));
             return BaseConst.PlyFileClient.SaveVertexes(dots);
         }
+    }
+
+    public class Anonymous
+    {
+        public int Id { get; set; }
+
+        public double Dist { get; set; }
     }
 }

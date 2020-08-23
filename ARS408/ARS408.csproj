@@ -42,10 +42,16 @@
     <Reference Include="CommonLib.DataUtil.SqliteProviderLib">
       <HintPath>..\..\..\CommonLib\CommonLib\CommonLib.DataUtil.SqliteProviderLib\bin\Debug\CommonLib.DataUtil.SqliteProviderLib.dll</HintPath>
     </Reference>
+    <Reference Include="CommonLib.Function.Fitting">
+      <HintPath>..\..\..\CommonLib\CommonLib\CommonLib.Function.Fitting\bin\Debug\CommonLib.Function.Fitting.dll</HintPath>
+    </Reference>
     <Reference Include="Interop.OPCAutomation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <HintPath>..\..\..\OPC\DLL\Interop.OPCAutomation.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.12.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.12.0\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.4.6\lib\net40\protobuf-net.dll</HintPath>
@@ -67,6 +73,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\DLL\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />

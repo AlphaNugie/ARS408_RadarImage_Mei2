@@ -1176,6 +1176,86 @@
             <param name="list"></param>
             <returns></returns>
         </member>
+        <member name="T:CommonLib.Clients.Tasks.Task">
+            <summary>
+            基础任务类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.ErrorMessage">
+            <summary>
+            错误消息
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.TaskLogs">
+            <summary>
+            任务日志
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.AllowPrintTaskLog">
+            <summary>
+            是否打印任务日志
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.Interval">
+            <summary>
+            任务循环运行间隔，毫秒
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.LoopCounter">
+            <summary>
+            任务循环次数
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.RunOnlyOnce">
+            <summary>
+            是否为一次性任务
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.#ctor">
+            <summary>
+            初始化Task类，默认任务执行间隔1000毫秒，初始状态为暂停
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.Init">
+            <summary>
+            任务初始化
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.Run">
+            <summary>
+            任务运行
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.Pause">
+            <summary>
+            任务暂停
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.Stop">
+            <summary>
+            任务停止
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.ThreadLoop">
+            <summary>
+            任务循环线程
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.LoopContent">
+            <summary>
+            循环体内部内容
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.Loop">
+            <summary>
+            循环体
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.PrintTaskLogs">
+            <summary>
+            打印任务日志
+            </summary>
+        </member>
         <member name="T:CommonLib.Clients.ConnClient">
             <summary>
             传输层连接的Client，或UDP或TCP
@@ -2911,12 +2991,12 @@
             <param name="column">列名称</param>
             <returns></returns>
         </member>
-        <member name="T:CommonLib.Function.CurveFitting">
+        <member name="T:CommonLib.Function.Fitting.CurveFitting">
             <summary>
             曲线拟合类
             </summary>
         </member>
-        <member name="M:CommonLib.Function.CurveFitting.GetCurveCoefficients(System.Collections.Generic.IEnumerable{System.Double},System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
+        <member name="M:CommonLib.Function.Fitting.CurveFitting.GetCurveCoefficients(System.Collections.Generic.IEnumerable{System.Double},System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
             <summary>
             用最小二乘法拟合二元多次曲线，获取曲线拟合函数的系数
             例如y=a0 + a1*x + a2*x^2 + ... an*x^n，方法将返回包含a0至an的的数组
@@ -2927,7 +3007,7 @@
             <param name="dimension">方程的最高次数</param>
             <returns>返回一个数组，数组中包括从高次到低次每个次数的系数（最后一个系数为截距）</returns>
         </member>
-        <member name="M:CommonLib.Function.CurveFitting.SumArr(System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
+        <member name="M:CommonLib.Function.Fitting.CurveFitting.SumArr(System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
             <summary>
             求数组元素的n次方的和
             </summary>
@@ -2936,7 +3016,7 @@
             <param name="length"></param>
             <returns></returns>
         </member>
-        <member name="M:CommonLib.Function.CurveFitting.SumArr(System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
+        <member name="M:CommonLib.Function.Fitting.CurveFitting.SumArr(System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Collections.Generic.IEnumerable{System.Double},System.Int32,System.Int32)">
             <summary>
             两数组元素n1次方与n2次方乘积的和
             </summary>
@@ -2947,7 +3027,7 @@
             <param name="length"></param>
             <returns></returns>
         </member>
-        <member name="M:CommonLib.Function.CurveFitting.ComputeGauss(System.Double[0:,0:],System.Int32)">
+        <member name="M:CommonLib.Function.Fitting.CurveFitting.ComputeGauss(System.Double[0:,0:],System.Int32)">
             <summary>
             根据高斯矩阵与系数个数，返回包含系数值的数组
             </summary>

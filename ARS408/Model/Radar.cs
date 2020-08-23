@@ -17,7 +17,7 @@ namespace ARS408.Model
     {
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
-        internal double _current, _curve_slope; //当前距离，当前斜率
+        internal double _current, _curve_slope, _surface_angle; //当前距离，当前斜率
         internal string _threat_level_binary = "00";
 
         #region 属性
@@ -75,6 +75,15 @@ namespace ARS408.Model
         {
             get { return this._curve_slope; }
             set { this._curve_slope = value; }
+        }
+
+        /// <summary>
+        /// 平面拟合后与水平面的夹角
+        /// </summary>
+        public double SurfaceAngle
+        {
+            get { return this._surface_angle; }
+            set { this._surface_angle = value; }
         }
 
         internal int _threat_level = 0;

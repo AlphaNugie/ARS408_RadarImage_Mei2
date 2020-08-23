@@ -289,6 +289,26 @@
             斗轮右侧雷达坐标列表
             </summary>
         </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.SlopeWheelLeft">
+            <summary>
+            斗轮左侧雷达一次拟合斜率
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.SlopeWheelRight">
+            <summary>
+            斗轮右侧雷达一次拟合斜率
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.SurfaceAngleWheelLeft">
+            <summary>
+            斗轮左侧雷达一次拟合斜率
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.SurfaceAngleWheelRight">
+            <summary>
+            斗轮右侧雷达一次拟合斜率
+            </summary>
+        </member>
         <member name="M:SerializationFactory.RadarProtoInfo.#ctor">
             <summary>
             构造器

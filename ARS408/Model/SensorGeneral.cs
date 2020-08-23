@@ -47,6 +47,11 @@ namespace ARS408.Model
 
         #region 属性
         /// <summary>
+        /// 所在帧累积未清除的结算(push finalization)次数
+        /// </summary>
+        public int PushfCounter { get; set; }
+
+        /// <summary>
         /// 消息ID（编号）
         /// </summary>
         public int Id { get; set; }
