@@ -79,6 +79,18 @@ namespace ARS408.Core
             private set { _radar_info = value; }
         }
 
+        #region 斗轮雷达相关
+        /// <summary>
+        /// 离群点过滤系数，标准值为1，越小越严格，为0将过滤掉所有点
+        /// </summary>
+        public static double DistFilterCoefficient { get; set; }
+
+        /// <summary>
+        /// 拟合平面角度求平均的样本数量，至少为1，值越大越平滑
+        /// </summary>
+        public static int SurfaceAngleSampleLength { get; set; }
+        #endregion
+
         #region 点云文件
         /// <summary>
         /// PLY点云文件处理器
@@ -339,6 +351,7 @@ property float rcs";
             {
                 try
                 {
+                    #region Main
                     BaseConst.AutoConnect = BaseConst.IniHelper.ReadData("Main", "AutoConnect").Equals("1");
                     BaseConst.AddingCustomInfo = BaseConst.IniHelper.ReadData("Main", "AddingCustomInfo").Equals("1");
                     BaseConst.PlyFileClient.Path = BaseConst.IniHelper.ReadData("Main", "PlyPath");
@@ -346,7 +359,15 @@ property float rcs";
                     BaseConst.R = double.Parse(BaseConst.IniHelper.ReadData("Main", "PixelRadarRatio"));
                     BaseConst.T = float.Parse(BaseConst.IniHelper.ReadData("Main", "Thickness"));
                     BaseConst.ShowDesertedPoints = BaseConst.IniHelper.ReadData("Main", "ShowDesertedPoints").Equals("1");
+                    BaseConst.UsePublicInterval = BaseConst.IniHelper.ReadData("Main", "UsePublicInterval").Equals("1");
+                    BaseConst.RefreshInterval = int.Parse(BaseConst.IniHelper.ReadData("Main", "RefreshInterval"));
                     BaseConst.Save2Database = BaseConst.IniHelper.ReadData("Main", "Save2Database").Equals("1");
+                    #endregion
+                    #region 斗轮雷达
+                    BaseConst.DistFilterCoefficient = double.Parse(BaseConst.IniHelper.ReadData("Wheel", "DistFilterCoefficient"));
+                    BaseConst.SurfaceAngleSampleLength = int.Parse(BaseConst.IniHelper.ReadData("Wheel", "SurfaceAngleSampleLength"));
+                    #endregion
+                    #region 检测
                     BaseConst.BorderDistThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BorderDistThres"));
                     //BaseConst.ProbOfExistMinimum = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ProbOfExistMinimum"));
                     BaseConst.BucketHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketHeight"));
@@ -355,10 +376,6 @@ property float rcs";
                     BaseConst.ObsBelowFrontier = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowFrontier"));
                     BaseConst.FeetFilterHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "FeetFilterHeight"));
                     BaseConst.UsePublicRcsRange = BaseConst.IniHelper.ReadData("Detection", "UsePublicRcsRange").Equals("1");
-                    BaseConst.ReceiveRestTime = int.Parse(BaseConst.IniHelper.ReadData("Connection", "ReceiveRestTime"));
-                    BaseConst.UsePublicInterval = BaseConst.IniHelper.ReadData("Main", "UsePublicInterval").Equals("1");
-                    BaseConst.RefreshInterval = int.Parse(BaseConst.IniHelper.ReadData("Main", "RefreshInterval"));
-                    BaseConst.WriteItemValue = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
                     BaseConst.ClusterFilterEnabled = BaseConst.IniHelper.ReadData("Detection", "ClusterFilterEnabled").Equals("1"); //集群过滤器是否启用
                     BaseConst.ObjectFilterEnabled = BaseConst.IniHelper.ReadData("Detection", "ObjectFilterEnabled").Equals("1"); //目标过滤器是否启用
                     //初始化集群过滤器
@@ -372,6 +389,9 @@ property float rcs";
                     BaseConst.IterationEnabled = BaseConst.IniHelper.ReadData("Detection", "IterationEnabled").Equals("1");
                     BaseConst.IteDistLimit = double.Parse(BaseConst.IniHelper.ReadData("Detection", "IteDistLimit"));
                     BaseConst.IteCountLimit = int.Parse(BaseConst.IniHelper.ReadData("Detection", "IteCountLimit"));
+                    #endregion
+                    BaseConst.ReceiveRestTime = int.Parse(BaseConst.IniHelper.ReadData("Connection", "ReceiveRestTime"));
+                    BaseConst.WriteItemValue = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
                 }
                 catch (Exception) { }
 
@@ -492,6 +512,7 @@ property float rcs";
         #endregion
 
         #region 数据处理与转换
+        //private static double coeff = 1.1;
         /// <summary>
         /// 将所有雷达点拟合为平面，拟合斜率
         /// </summary>
@@ -504,7 +525,7 @@ property float rcs";
         /// <returns></returns>
         public static double GetSurfaceAngle(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, out string message)
         {
-            double def = 90; //默认值
+            double def = 0; //默认值
             if (source == null || source.Count() == 0)
             {
                 message = "未提供任何点的数据";
@@ -531,10 +552,14 @@ property float rcs";
                 //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
                 listDists.Sort();
                 int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
-                double dist = listDists.Take(ex_count).Average();
+                ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+                listDists = listDists.Take(ex_count).ToList();
+                if (listDists.Count == 0)
+                    continue;
+                double dist = listDists.Average();
                 checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
             }
-            double dist_avr = checkList.Select(a => a.Dist).Average(); //求所有点的单点距离平均值的平均值，记为全局平均值
+            double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
             checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
             //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
             foreach (var g in sourceList)
@@ -549,7 +574,8 @@ property float rcs";
             }
             //double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
             double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
-            return results == null || results.Length == 0 ? def : Math.Atan(1 / results[0]) * 180 / Math.PI;
+            return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
+            //return results == null || results.Length == 0 ? def : (90 - Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI); //越低代表离垛边越靠近
         }
 
         /// <summary>

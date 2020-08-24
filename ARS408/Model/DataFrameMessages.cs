@@ -441,6 +441,8 @@ namespace ARS408.Model
             catch (Exception) { }
         }
 
+        private readonly Queue<double> surfaceAnglesQueue = new Queue<double>();
+        //private int max_count = 3;
         /// <summary>
         /// 结束一个阶段的数据压入，将缓冲区数据汇入正式数据
         /// </summary>
@@ -482,8 +484,18 @@ namespace ARS408.Model
                 //计算斗轮雷达点的1次拟合斜率，纵向坐标1~15，横向坐标-10~10，剔除10个距离其它点最远的点
                 string message;
                 if (this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
-                    this.Radar._surface_angle = BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 15, -10, 10, 0.2, out message);
-                    //this.Radar._curve_slope = BaseFunc.GetCurveSlope(this.ListToSend, 1, 15, -10, 10, 10);
+                {
+                    //最后处理角度为90°-返回结果-雷达XOZ倾角-PLC俯仰角（后两个角度均带正负号）
+                    //纵向坐标范围根据Y轴方向偏移决定（越靠前的范围越小）
+                    double angle = 90 - BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 11.652 - this.Radar.YOffset, -10, 10, 0.2, out message) - this.Radar.DegreeXoz - OpcConst.Pitch_Plc;
+                    surfaceAnglesQueue.Enqueue(angle);
+                    //if (surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
+                    while(surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
+                        surfaceAnglesQueue.Dequeue();
+                    this.Radar._surface_angle = surfaceAnglesQueue.Average();
+                    //this.Radar._surface_angle = BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 15, -10, 10, 0.2, out message);
+                }
+                //this.Radar._curve_slope = BaseFunc.GetCurveSlope(this.ListToSend, 1, 15, -10, 10, 10);
                 this.ListBuffer.Clear();
                 this.ListBuffer_Other.Clear();
                 this.ListBuffer_AllOther.Clear();
