@@ -70,6 +70,11 @@ namespace ARS408.Core
     public enum Directions
     {
         /// <summary>
+        /// 无归属
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// 前方
         /// </summary>
         Front = 1,

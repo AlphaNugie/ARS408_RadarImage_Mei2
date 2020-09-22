@@ -180,25 +180,29 @@ namespace ARS408.Model
             get { return this.Radar._threat_level_binary; }
             set { this.Radar._threat_level_binary = value; }
         }
+
+        private int timer = 0;
+        public int Timer
+        {
+            get { return this.timer; }
+            set
+            {
+                this.timer = value;
+                this.RadarState.Working = this.timer < 5 ? 1 : 0;
+            }
+        }
+
+        /// <summary>
+        /// 检查雷达工作状态的线程
+        /// </summary>
+        public Thread ThreadCheck { get; set; }
         #endregion
-
-        ///// <summary>
-        ///// 默认构造器
-        ///// </summary>
-        //public DataFrameMessages() : this(/*null, */null) { }
-
-        ///// <summary>
-        ///// 构造器
-        ///// </summary>
-        ///// <param name="form">父窗体</param>
-        //public DataFrameMessages(FormDisplay form) : this(form, null) { }
 
         /// <summary>
         /// 构造器
         /// </summary>
-        /// <param name="form">父窗体</param>
         /// <param name="radar">雷达信息对象</param>
-        public DataFrameMessages(/*FormDisplay form, */Radar radar)
+        public DataFrameMessages(Radar radar)
         {
             //this.ParentForm = form;
             //this.Radar = radar;
@@ -223,18 +227,7 @@ namespace ARS408.Model
             this.ThreadCheck.Start();
         }
 
-        private int timer = 0;
-        public int Timer
-        {
-            get { return this.timer; }
-            set
-            {
-                this.timer = value;
-                this.RadarState.Working = this.timer < 5 ? 1 : 0;
-            }
-        }
-
-        public Thread ThreadCheck;
+        #region 功能
         public void CheckIfRadarsWorking()
         {
             int interval = 1;
@@ -303,6 +296,7 @@ namespace ARS408.Model
             }
             #endregion
         }
+        #endregion
 
         ///// <summary>
         ///// 缓冲区数据长度
@@ -331,18 +325,18 @@ namespace ARS408.Model
                 Flags[9] = !this.Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
-            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9], save2other = false, save2allother = false;
+            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9];
             //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内
             save2list = save2list && !(Flags[1]);
             ////假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
             //if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
             //    save2list = general.Angle.Between(-40, 40);
             //YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
-            /*else */if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+            if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
                 save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(-30, 0); //水平以下30°
             //TODO (其余数据)过滤条件Lv2：RCS值在范围内
-            save2other = !save2list && !Flags[2]; //过滤RCS值
-            save2allother = !save2list;
+            bool save2other = !save2list && !Flags[2];
+            bool save2allother = !save2list;
             //if (!save2list)
             //    //save2other = false;
             //    //save2other = BaseConst.ShowDesertedPoints && !Flags[2];
@@ -406,9 +400,6 @@ namespace ARS408.Model
                     List<AmbigState> listAmbigState = this.Radar.UsePublicFilters ? ClusterQuality.AmbigStateFilter : this.Radar.AmbigStateFilter;
                     List<InvalidState> listInvalidState = this.Radar.UsePublicFilters ? ClusterQuality.InvalidStateFilter : this.Radar.InvalidStateFilter;
                     //TODO 集群模式输出结果过滤条件2：（过滤器启用、过滤器不为空）不在集群/不确定性/有效性过滤器内
-                    //if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && ((ClusterQuality.FalseAlarmFilter.Count > 0 && !ClusterQuality.FalseAlarmFilter.Contains(general.Pdh0)) ||
-                    //    (ClusterQuality.AmbigStateFilter.Count > 0 && !ClusterQuality.AmbigStateFilter.Contains(general.AmbigState)) ||
-                    //    (ClusterQuality.InvalidStateFilter.Count > 0 && !ClusterQuality.InvalidStateFilter.Contains(general.InvalidState))))
                     if (BaseConst.ClusterFilterEnabled && this.Radar.ApplyFilter && (
                         (listFalseAlarm.Count > 0 && !listFalseAlarm.Contains(general.Pdh0)) ||
                         (listAmbigState.Count > 0 && !listAmbigState.Contains(general.AmbigState)) ||
@@ -454,7 +445,6 @@ namespace ARS408.Model
 
             if (++_pushf_counter >= this.PushfMaxCount)
             {
-                //bool is_belt = this.Radar.GroupType == RadarGroupType.Belt, is_wheel = this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"); //是否是皮带料流雷达，是否是斗轮雷达
                 //不要添加this.ListBuffer_Cluster与ListBuffer_Cluster_Other数量是否均为0的判断，否则当不存在目标时无法及时反映在数据上
                 this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
                 //对于料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
@@ -474,9 +464,6 @@ namespace ARS408.Model
                 this.ListToSend.Clear();
                 this.ListTrigger.AddRange(this.ListBuffer);
                 this.ListToSend.AddRange(this.ListBuffer);
-                ////对于皮带料流雷达，计算所有点的X坐标平均值（计算到下方皮带的平均距离）
-                //if (is_belt)
-                //    this.CurrentDistance = this.ListTrigger.Count > 0 ? Math.Round(this.ListTrigger.Select(g => g.DistLong).Average(), 3) : 0;
                 if (BaseConst.ShowDesertedPoints)
                     this.ListTrigger.AddRange(this.ListBuffer_AllOther);
                 //this.ListToSend.AddRange(this.ListBuffer_AllOther);

@@ -151,6 +151,9 @@ property float rcs";
         #endregion
 
         #region 连接
+        /// <summary>
+        /// 打开监视页面后自动连接
+        /// </summary>
         public static bool AutoConnect = false;
 
         /// <summary>
@@ -247,11 +250,6 @@ property float rcs";
         /// </summary>
         public static bool UsePublicRcsRange { get; set; }
 
-        ///// <summary>
-        ///// 允许的存在概率最低值
-        ///// </summary>
-        //public static double ProbOfExistMinimum { get; set; }
-
         /// <summary>
         /// 溜桶高度，溜桶雷达安装平面距溜桶底端的最大距离
         /// </summary>
@@ -335,9 +333,7 @@ property float rcs";
                 if (table != null && table.Rows.Count > 0)
                     BaseConst.ThreatLevelValues = table.Rows.Cast<DataRow>().Select(row => double.Parse(row["LEVEL_VALUE"].ToString())).ToArray();
             }
-#pragma warning disable CS0168 // 声明了变量“e”，但从未使用过
-            catch (Exception e) { }
-#pragma warning restore CS0168 // 声明了变量“e”，但从未使用过
+            catch (Exception) { }
             //BaseFunc.RadarListUpdate();
         }
 
@@ -369,7 +365,6 @@ property float rcs";
                     #endregion
                     #region 检测
                     BaseConst.BorderDistThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BorderDistThres"));
-                    //BaseConst.ProbOfExistMinimum = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ProbOfExistMinimum"));
                     BaseConst.BucketHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketHeight"));
                     BaseConst.BucketUpLimit = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketUpLimit"));
                     BaseConst.ObsBelowThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowThres"));
@@ -408,7 +403,6 @@ property float rcs";
         {
             BaseConst.Log.WriteLogsToFile("开始刷新雷达列表...");
             DataTable radars = (new DataService_Radar()).GetAllRadars("radar_id");
-            //BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => BaseFunc.GetRadarFromDataRow(row)).ToList();
             BaseConst.RadarList = radars == null ? null : radars.Rows.Cast<DataRow>().Select(row => new Radar(row)).ToList();
 
             //排除根节点

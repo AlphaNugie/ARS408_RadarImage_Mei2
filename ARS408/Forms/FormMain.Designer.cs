@@ -87,34 +87,34 @@
             // toolStripMenu_Monitor
             // 
             this.toolStripMenu_Monitor.Name = "toolStripMenu_Monitor";
-            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Monitor.Text = "打开监视页面";
             this.toolStripMenu_Monitor.Click += new System.EventHandler(this.ToolStripMenu_Monitor_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(179, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
             // 
             // toolStripMenu_AutoMonitor
             // 
             this.toolStripMenu_AutoMonitor.CheckOnClick = true;
             this.toolStripMenu_AutoMonitor.Name = "toolStripMenu_AutoMonitor";
-            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_AutoMonitor.Text = "自动开始监视";
             this.toolStripMenu_AutoMonitor.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoMonitor_CheckedChanged);
             // 
             // toolStripMenu_AutoConnect
             // 
             this.toolStripMenu_AutoConnect.Name = "toolStripMenu_AutoConnect";
-            this.toolStripMenu_AutoConnect.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_AutoConnect.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_AutoConnect.Text = "自动连接";
             this.toolStripMenu_AutoConnect.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoConnect_CheckedChanged);
             // 
             // toolStripMenu_Exit
             // 
             this.toolStripMenu_Exit.Name = "toolStripMenu_Exit";
-            this.toolStripMenu_Exit.Size = new System.Drawing.Size(182, 26);
+            this.toolStripMenu_Exit.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Exit.Text = "退出";
             this.toolStripMenu_Exit.Click += new System.EventHandler(this.ToolStripMenu_Exit_Click);
             // 
@@ -132,28 +132,28 @@
             // toolStripMenu_Shiploaders
             // 
             this.toolStripMenu_Shiploaders.Name = "toolStripMenu_Shiploaders";
-            this.toolStripMenu_Shiploaders.Size = new System.Drawing.Size(152, 26);
+            this.toolStripMenu_Shiploaders.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Shiploaders.Text = "大机";
             this.toolStripMenu_Shiploaders.Click += new System.EventHandler(this.ToolStripMenu_Shiploaders_Click);
             // 
             // toolStripMenu_RadarGroup
             // 
             this.toolStripMenu_RadarGroup.Name = "toolStripMenu_RadarGroup";
-            this.toolStripMenu_RadarGroup.Size = new System.Drawing.Size(152, 26);
+            this.toolStripMenu_RadarGroup.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_RadarGroup.Text = "雷达组";
             this.toolStripMenu_RadarGroup.Click += new System.EventHandler(this.ToolStripMenu_RadarGroup_Click);
             // 
             // toolStripMenu_Radar
             // 
             this.toolStripMenu_Radar.Name = "toolStripMenu_Radar";
-            this.toolStripMenu_Radar.Size = new System.Drawing.Size(152, 26);
+            this.toolStripMenu_Radar.Size = new System.Drawing.Size(224, 26);
             this.toolStripMenu_Radar.Text = "雷达";
             this.toolStripMenu_Radar.Click += new System.EventHandler(this.ToolStripMenu_Radar_Click);
             // 
             // toolStrip_ThreatLevels
             // 
             this.toolStrip_ThreatLevels.Name = "toolStrip_ThreatLevels";
-            this.toolStrip_ThreatLevels.Size = new System.Drawing.Size(152, 26);
+            this.toolStrip_ThreatLevels.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_ThreatLevels.Text = "威胁级数";
             this.toolStrip_ThreatLevels.Click += new System.EventHandler(this.ToolStrip_ThreatLevels_Click);
             // 
@@ -174,40 +174,40 @@
             // 
             this.toolStrip_ShowDeserted.CheckOnClick = true;
             this.toolStrip_ShowDeserted.Name = "toolStrip_ShowDeserted";
-            this.toolStrip_ShowDeserted.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_ShowDeserted.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_ShowDeserted.Text = "是否显示被过滤点";
             this.toolStrip_ShowDeserted.CheckedChanged += new System.EventHandler(this.ToolStrip_ShowDeserted_CheckedChanged);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(209, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(221, 6);
             // 
             // toolStrip_OpcConfig
             // 
             this.toolStrip_OpcConfig.Name = "toolStrip_OpcConfig";
-            this.toolStrip_OpcConfig.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_OpcConfig.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_OpcConfig.Text = "OPC配置";
             this.toolStrip_OpcConfig.Click += new System.EventHandler(this.ToolStrip_OpcConfig_Click);
             // 
             // toolStrip_CoorsLimitConfig
             // 
             this.toolStrip_CoorsLimitConfig.Name = "toolStrip_CoorsLimitConfig";
-            this.toolStrip_CoorsLimitConfig.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_CoorsLimitConfig.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_CoorsLimitConfig.Text = "坐标限制";
             this.toolStrip_CoorsLimitConfig.Click += new System.EventHandler(this.ToolStrip_CoorsLimitConfig_Click);
             // 
             // toolStrip_RadarBehavior
             // 
             this.toolStrip_RadarBehavior.Name = "toolStrip_RadarBehavior";
-            this.toolStrip_RadarBehavior.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_RadarBehavior.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_RadarBehavior.Text = "雷达检测特性";
             this.toolStrip_RadarBehavior.Click += new System.EventHandler(this.ToolStrip_RadarBehavior_Click);
             // 
             // toolStrip_Preferences
             // 
             this.toolStrip_Preferences.Name = "toolStrip_Preferences";
-            this.toolStrip_Preferences.Size = new System.Drawing.Size(212, 26);
+            this.toolStrip_Preferences.Size = new System.Drawing.Size(224, 26);
             this.toolStrip_Preferences.Text = "选项";
             this.toolStrip_Preferences.Click += new System.EventHandler(this.ToolStrip_Preferences_Click);
             // 

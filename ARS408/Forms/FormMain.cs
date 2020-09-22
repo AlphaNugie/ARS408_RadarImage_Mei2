@@ -104,7 +104,6 @@ namespace ARS408.Forms
                 return;
 
             this.list_monitors = table.Rows.Cast<DataRow>().Select(row => new FormMonitor(int.Parse(row["shiploader_id"].ToString()))).ToList();
-            //table.Rows.Cast<DataRow>().ToList().ForEach(row => this.ShowForm(this.first_monitor = new FormMonitor(int.Parse(row["shiploader_id"].ToString())), DockStyle.Fill));
             BaseConst.Log.WriteLogsToFile("监视页面列表刷新完成");
         }
 

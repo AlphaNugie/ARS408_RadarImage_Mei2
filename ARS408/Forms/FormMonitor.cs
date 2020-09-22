@@ -311,9 +311,6 @@ namespace ARS408.Forms
                 string basic = "[" + this.Shiploader.TopicName + "]" + "{0}";
                 this.OpcItemNames = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
                 this.OpcItemNames.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
-                //List<string> names = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
-                //names.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
-                //this.OpcItemNames = names.ToArray();
 
                 int count = this.OpcItemNames.Count;
                 string[] itemIds = new string[count + 1];
@@ -372,7 +369,6 @@ namespace ARS408.Forms
             this.bucketAlarms = Convert.ToUInt32(buckets.Length > 0 ? buckets.ToString() : "0", 2);
             this.armAlarms = Convert.ToUInt32(arms.Length > 0 ? arms.ToString() : "0", 2);
             this.feetAlarms = Convert.ToUInt32(feet.Length > 0 ? feet.ToString() : "0", 2);
-
         }
 
         /// <summary>
@@ -446,7 +442,7 @@ namespace ARS408.Forms
                 this.DisposeTabPages_all();
                 this.ShowForm(radar);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 MessageBox.Show("初始化未完成", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }

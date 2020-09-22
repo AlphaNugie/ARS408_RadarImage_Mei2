@@ -523,11 +523,6 @@ namespace ARS408.Model
         /// 雷达碰撞状态标签2
         /// </summary>
         public string ItemNameCollisionState2 { get; set; }
-
-        ///// <summary>
-        ///// 存在概率最低值
-        ///// </summary>
-        //public double ProbOfExistMinimum { get; set; }
         #endregion
 
         #region 构造器
@@ -543,6 +538,7 @@ namespace ARS408.Model
             this.Name = "ARS408-21";
             this.RefreshInterval = BaseConst.RefreshInterval;
             this.GroupType = RadarGroupType.None;
+            this.Direction = Directions.None;
             this.IpAddress = BaseConst.IpAddress;
             this.Port = BaseConst.Port;
             this.ConnectionMode = BaseConst.ConnectionMode;
@@ -621,11 +617,6 @@ namespace ARS408.Model
             this.InvalidStateFilterString = row["invalid_state_filter"].ToString();
             this.MeasStateFilterString = row["meas_state_filter"].ToString();
             this.ProbOfExistFilterString = row["prob_exist_filter"].ToString();
-            //this.FalseAlarmFilter = row["false_alarm_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
-            //this.AmbigStateFilter = row["ambig_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
-            //this.InvalidStateFilter = row["invalid_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
-            //this.MeasStateFilter = row["meas_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
-            //this.ProbOfExistFilter = row["prob_exist_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
             #endregion
         }
         #endregion

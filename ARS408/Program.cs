@@ -28,6 +28,9 @@ namespace ARS408
         {
             BaseFunc.InitConfigs(); //配置初始化
             #region 测试
+            //object j = 1;
+            //int j_ = (int)j;
+            //bool result = j_ == 1;
             //double d = 2 == 2 ? 0 : 90 - 3 * 2 / (double)4;
             //List<double> list = new List<double>();
             ////list.Add(3.2);

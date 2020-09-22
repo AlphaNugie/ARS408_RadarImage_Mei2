@@ -4025,6 +4025,23 @@
             <param name="pattern">匹配模式</param>
             <returns>返回包含匹配字符串的字符串数组</returns>
         </member>
+        <member name="T:CommonLib.Helpers.DateTimeHelper">
+            <summary>
+            DateTime类
+            </summary>
+        </member>
+        <member name="M:CommonLib.Helpers.DateTimeHelper.GetTimeStamp">
+            <summary>
+            获取当前时间戳（精度毫秒）
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Helpers.DateTimeHelper.GetTimeStampBySeconds">
+            <summary>
+            获取当前时间戳（精度秒）
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:CommonLib.Helpers.FileSystemHelper">
             <summary>
             文件系统Helper
