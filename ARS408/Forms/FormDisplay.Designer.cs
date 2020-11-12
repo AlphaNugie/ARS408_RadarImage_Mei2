@@ -860,7 +860,7 @@
             this.SocketTcpServer.ServerPort = 5000;
             this.SocketTcpServer.ServerSocket = null;
             this.SocketTcpServer.StartSockst = null;
-            this.SocketTcpServer.TcpServerRecevice += new SocketHelper.SocketTcpServer.ReceviceEventHandler(this.SocketTcpServer_TcpServerRecevice);
+            this.SocketTcpServer.Received += new SocketHelper.SocketTcpServer.ReceivedEventHandler(this.SocketTcpServer_TcpServerRecevice);
             // 
             // FormDisplay
             // 

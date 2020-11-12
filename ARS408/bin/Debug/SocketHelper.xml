@@ -428,11 +428,24 @@
             </summary>
             <param name="byteMsg"></param>
         </member>
+        <member name="M:SocketHelper.SocketTcpClient.SendData(System.String,SocketHelper.StringType)">
+            <summary>
+            发送字符串，同时指定待发送字符串的类型
+            </summary>
+            <param name="cmdstr">待发送字符串</param>
+            <param name="type">字符串类型，普通字符串或16进制字符串</param>
+        </member>
         <member name="M:SocketHelper.SocketTcpClient.SendData(System.String)">
             <summary>
             发送字符串
             </summary>
             <param name="cmdstr"></param>
+        </member>
+        <member name="M:SocketHelper.SocketTcpClient.SendHexString(System.String)">
+            <summary>
+            发送16进制字符串
+            </summary>
+            <param name="hex">待发送16进制字符串</param>
         </member>
         <member name="M:SocketHelper.SocketTcpClient.SendFile(System.String)">
             <summary>
@@ -526,6 +539,21 @@
             <summary>
             设计器支持所需的方法 - 不要
             使用代码编辑器修改此方法的内容。
+            </summary>
+        </member>
+        <member name="T:SocketHelper.StringType">
+            <summary>
+            字符串类型
+            </summary>
+        </member>
+        <member name="F:SocketHelper.StringType.Normal">
+            <summary>
+            普通字符串
+            </summary>
+        </member>
+        <member name="F:SocketHelper.StringType.Hex">
+            <summary>
+            16进制字符串
             </summary>
         </member>
         <member name="F:SocketHelper.TCP.AxTcpWebClient.components">
@@ -1339,23 +1367,23 @@
             <param name="port"></param>
             <returns></returns>
         </member>
-        <member name="T:SocketHelper.SocketTcpServer.ReceviceEventHandler">
+        <member name="T:SocketHelper.SocketTcpServer.ReceivedEventHandler">
             <summary>
             数据接收事件委托
             </summary>
             <param name="temp">Socket对象</param>
             <param name="e">事件参数</param>
         </member>
-        <member name="E:SocketHelper.SocketTcpServer.TcpServerRecevice">
+        <member name="E:SocketHelper.SocketTcpServer.Received">
             <summary>
             TCP服务接收事件
             </summary>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.OnTcpServerRecevice(System.Net.Sockets.Socket,SocketHelper.ReceivedEventArgs)">
+        <member name="M:SocketHelper.SocketTcpServer.OnTcpServerReceive(System.Net.Sockets.Socket,SocketHelper.ReceivedEventArgs)">
             <summary>
-            数据接收事件
+            TcpServer数据接收事件
             </summary>
-            <param name="temp">Socket对象</param>
+            <param name="clientSocket">发送数据的客户端Socket对象</param>
             <param name="e">事件参数</param>
         </member>
         <member name="T:SocketHelper.SocketTcpServer.LogEventHandler">

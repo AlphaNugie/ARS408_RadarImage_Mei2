@@ -591,7 +591,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:CommonLib.Clients.GenericStorage`1.Last">
+        <member name="M:CommonLib.Clients.GenericStorage`1.Previous">
             <summary>
             转到上一条实体并返回，假如已是末尾则无变化
             </summary>
@@ -600,6 +600,18 @@
         <member name="M:CommonLib.Clients.GenericStorage`1.Next">
             <summary>
             转到下一条实体并返回，假如已在第一条实体则跳出队列
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Clients.GenericStorage`1.First">
+            <summary>
+            转到队列中最靠前（最晚加入的）实体并返回，假如已在第一条实体则跳出队列
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Clients.GenericStorage`1.Last">
+            <summary>
+            转到队列中最靠前（最早加入的）实体并返回，假如已在第一条实体则跳出队列
             </summary>
             <returns></returns>
         </member>

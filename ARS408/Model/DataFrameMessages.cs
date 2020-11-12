@@ -28,22 +28,14 @@ namespace ARS408.Model
         //private readonly int _pushf_max_count = 1; //push finalization的最大次数
         private int _pushf_counter = 0; //计算push finalization的次数
         private readonly int _id_step = 500; //累积不同帧的点时为防止ID重复所添加的ID步长（与_pushf_counter结合使用）
-        ////TODO 斗轮雷达按俯仰角取点时的范围厚度（一半）
-        //private readonly double thickness = 2;
 
         /// <summary>
         /// push finalization的最大次数
         /// </summary>
         private int PushfMaxCount { get { return this.Radar.PushfMaxCount; } }
-        //private int PushfMaxCount { get { return this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; } }
         #endregion
 
         #region 公共属性
-        ///// <summary>
-        ///// 父窗体
-        ///// </summary>
-        //public FormDisplay ParentForm { get; set; }
-
         /// <summary>
         /// 雷达信息对象
         /// </summary>
@@ -127,6 +119,11 @@ namespace ARS408.Model
         /// 待发送列表
         /// </summary>
         public List<SensorGeneral> ListToSend { get; set; }
+
+        /// <summary>
+        /// 历史数据记录
+        /// </summary>
+        public List<SensorGeneral> ListHistory { get; set; }
 
         /// <summary>
         /// 最具有威胁的集群或目标点
@@ -453,13 +450,6 @@ namespace ARS408.Model
                 //对于非料流雷达：找出距离最小的点
                 else
                     this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
-                //if (this.Radar != null)
-                //{
-                //    this.ListBuffer.Sort(SensorGeneral.DistanceComparison); //根据距检测区的最短距离排序
-                //    //对于非皮带料流雷达：找出距离最小的点
-                //    if (!is_belt)
-                //        this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
-                //}
                 this.ListTrigger.Clear();
                 this.ListToSend.Clear();
                 this.ListTrigger.AddRange(this.ListBuffer);
@@ -480,9 +470,7 @@ namespace ARS408.Model
                     while(surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
                         surfaceAnglesQueue.Dequeue();
                     this.Radar._surface_angle = surfaceAnglesQueue.Average();
-                    //this.Radar._surface_angle = BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 15, -10, 10, 0.2, out message);
                 }
-                //this.Radar._curve_slope = BaseFunc.GetCurveSlope(this.ListToSend, 1, 15, -10, 10, 10);
                 this.ListBuffer.Clear();
                 this.ListBuffer_Other.Clear();
                 this.ListBuffer_AllOther.Clear();
