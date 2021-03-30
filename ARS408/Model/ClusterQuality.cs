@@ -60,6 +60,21 @@ namespace ARS408.Model
             this.Base = message;
         }
 
+        public override SensorQuality Copy()
+        {
+            return new ClusterQuality
+            {
+                Id = Id,
+                DistLongRms = DistLongRms,
+                DistLatRms = DistLatRms,
+                VrelLongRms = VrelLongRms,
+                VrelLatRms = VrelLatRms,
+                Pdh0 = Pdh0,
+                InvalidState = InvalidState,
+                AmbigState = AmbigState
+            };
+        }
+
         /// <summary>
         /// 转换2进制数据
         /// </summary>

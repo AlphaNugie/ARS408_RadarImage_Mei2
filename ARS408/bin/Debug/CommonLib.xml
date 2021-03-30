@@ -585,6 +585,11 @@
             以默认项填满存储器
             </summary>
         </member>
+        <member name="M:CommonLib.Clients.GenericStorage`1.Clear">
+            <summary>
+            清空队列内所有对象
+            </summary>
+        </member>
         <member name="M:CommonLib.Clients.GenericStorage`1.Current">
             <summary>
             返回当前实体
@@ -621,6 +626,190 @@
             </summary>
             <param name="index">Queue内部索引</param>
             <returns></returns>
+        </member>
+        <member name="T:CommonLib.Clients.GlitchFilter">
+            <summary>
+            数据尖刺（突变）过滤器
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.Enabled">
+            <summary>
+            是否启用过滤器
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.ObsVal">
+            <summary>
+            当前观测值（observed value）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.RefVal">
+            <summary>
+            初步处理值（refined value）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.CurrVal">
+            <summary>
+            当前有效值
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.LongDistAvoidEnabled">
+            <summary>
+            是否避免达到远距值
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.LongDist2Avoid">
+            <summary>
+            应避免达到的远距值（假如达到此值则用上一个输出值代替当前值）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.LongDistCountLimit">
+            <summary>
+            测距达到远距值检定次数限定值（超过此次数则以默认值替代当前值）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.AverageGapEnabled">
+            <summary>
+            变化差距平均值过滤是否启用
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.StepLength">
+            <summary>
+            存储的历史数值数量，最小长度为2，小于2则自动补正
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.StepWidth">
+            <summary>
+            过滤时允许的差异倍数，越小越严格，默认为5
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.FixedGapEnabled">
+            <summary>
+            是否启用固定差距过滤，启用后与上一次相比差异不超过固定差距阈值的将保留
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.FixedGapThres">
+            <summary>
+            固定差距过滤阈值
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.GlitchFilter.FixedGapCountLimit">
+            <summary>
+            达到固定差距检定次数限定值（超过此次数则以初步处理值替代当前值）
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.GlitchFilter.#ctor(System.Boolean,System.Int32)">
+            <summary>
+            用给定的是否启用过滤器标志、历史数据存储数量初始化
+            </summary>
+            <param name="enabled">是否启用过滤器</param>
+            <param name="length">过滤器历史数据长度</param>
+        </member>
+        <member name="M:CommonLib.Clients.GlitchFilter.#ctor(System.Boolean,System.Int32,System.Double)">
+            <summary>
+            用给定的是否启用过滤器标志、历史数据存储数量、过滤差异倍数初始化
+            </summary>
+            <param name="enabled">是否启用过滤器</param>
+            <param name="length">过滤器历史数据长度</param>
+            <param name="width">过滤时允许的差异倍数，越小越严格，默认为5</param>
+        </member>
+        <member name="M:CommonLib.Clients.GlitchFilter.PushValue(System.Double@)">
+            <summary>
+            将新值向队列内压入，假如过滤器未启用，用新值作当前值，否则进行尖刺过滤判断
+            </summary>
+            <param name="value">新值</param>
+        </member>
+        <member name="M:CommonLib.Clients.GlitchFilter.PushValue(System.Double)">
+            <summary>
+            将新值向队列内压入，假如过滤器未启用，用新值作当前值，否则进行尖刺过滤判断
+            </summary>
+            <param name="value">新值</param>
+        </member>
+        <member name="T:CommonLib.Clients.KalmanFilter">
+            <summary>
+            卡尔曼滤波
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Q">
+            <summary>
+            预测值偏差度
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.R">
+            <summary>
+            观测值偏差度
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Acce">
+            <summary>
+            加速度（默认为0）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Velocity">
+            <summary>
+            速度（默认为0）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Values">
+            <summary>
+            估计值相关
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Covars">
+            <summary>
+            估计协方差相关
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.CurrVal">
+            <summary>
+            当前时刻观测值
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.KalmanFilter.Coeff">
+            <summary>
+            卡尔曼系数
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.KalmanFilter.#ctor(System.Double,System.Double)">
+            <summary>
+            以给定的预测值偏差度、观测值偏差度初始化
+            </summary>
+            <param name="Q">预测值偏差度</param>
+            <param name="R">观测值偏差度</param>
+        </member>
+        <member name="M:CommonLib.Clients.KalmanFilter.SetValue(System.Double@,System.Double)">
+            <summary>
+            设置当前观测值，同时提供速度，加速度默认为0
+            </summary>
+            <param name="value">当前观测值</param>
+            <param name="v">速度</param>
+        </member>
+        <member name="M:CommonLib.Clients.KalmanFilter.SetValue(System.Double@,System.Double,System.Double)">
+            <summary>
+            设置当前观测值，同时提供加速度与速度
+            </summary>
+            <param name="value">当前观测值</param>
+            <param name="a">加速度</param>
+            <param name="v">速度</param>
+        </member>
+        <member name="T:CommonLib.Clients.ValueSet">
+            <summary>
+            3种值的组合：上一时刻最优估计，初估计，当前时刻最优估计
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ValueSet.PrevBest">
+            <summary>
+            上一时刻最优估计
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ValueSet.InitEval">
+            <summary>
+            初估计
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ValueSet.BestEval">
+            <summary>
+            当前时刻最优估计
+            </summary>
         </member>
         <member name="T:CommonLib.Clients.FileClient">
             <summary>
@@ -1211,6 +1400,11 @@
         <member name="P:CommonLib.Clients.Tasks.Task.Interval">
             <summary>
             任务循环运行间隔，毫秒
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.Tasks.Task.Initialized">
+            <summary>
+            是否已初始化
             </summary>
         </member>
         <member name="P:CommonLib.Clients.Tasks.Task.LoopCounter">
@@ -3228,7 +3422,37 @@
             <summary>
             获取字符串中每一位字符的累加校验和（字符串为空时为0）
             </summary>
-            <param name="input"></param>
+            <param name="input">待计算累积和字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.HexHelper.GetStringSumResult(System.String,System.Char)">
+            <summary>
+            获取字符串中每一位字符的累加校验和并添加到字符串末尾，校验和与字符串之间用指定分隔字符连接（字符串为空时返回空字符串）
+            </summary>
+            <param name="input">待计算累积和字符串</param>
+            <param name="bridge">连接字符</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.HexHelper.IsStringSumVerified(System.String,System.Char)">
+            <summary>
+            获取字符串是否符合字符累加校验和的校验，分隔字符为指定字符
+            </summary>
+            <param name="input">待计算累积和字符串</param>
+            <param name="bridge">连接字符</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.HexHelper.GetStringSumResult(System.String)">
+            <summary>
+            获取字符串中每一位字符的累加校验和并添加到字符串末尾，校验和与字符串之间用半角逗号连接（字符串为空时返回空字符串）
+            </summary>
+            <param name="input">待计算累积和字符串</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.HexHelper.IsStringSumVerified(System.String)">
+            <summary>
+            获取字符串是否符合字符累加校验和的校验，分隔字符为半角逗号
+            </summary>
+            <param name="input">待计算累积和字符串</param>
             <returns></returns>
         </member>
         <member name="T:CommonLib.Function.IniFileHelper">

@@ -37,5 +37,7 @@ namespace ARS408.Model
         /// </summary>
         public SignalValue VrelLatRms { get; set; }
         #endregion
+
+        public abstract SensorQuality Copy();
     }
 }

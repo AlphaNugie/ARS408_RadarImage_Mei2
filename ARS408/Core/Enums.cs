@@ -8,6 +8,89 @@ using System.Threading.Tasks;
 namespace ARS408.Core
 {
     /// <summary>
+    /// 网格类型
+    /// </summary>
+    public enum BlockType
+    {
+        /// <summary>
+        /// 无效网格（重量低于低阈值）
+        /// </summary>
+        Invalid = 0,
+
+        /// <summary>
+        /// 普通网格（重量大于等于低阈值但低于高阈值）
+        /// </summary>
+        Common = 1,
+
+        /// <summary>
+        /// 核心网格（重量大于等于高阈值）
+        /// </summary>
+        Core
+    }
+
+    /// <summary>
+    /// 网格单元在正片网格区域中的位置
+    /// </summary>
+    public enum BlockPosition
+    {
+        /// <summary>
+        /// 位置类型无效
+        /// </summary>
+        Invalid = -1,
+
+        /// <summary>
+        /// 比前部更超前
+        /// </summary>
+        BeyondFront = 4,
+
+        /// <summary>
+        /// 前部
+        /// </summary>
+        Front = 3,
+
+        /// <summary>
+        /// 中部
+        /// </summary>
+        Middle = 2,
+
+        /// <summary>
+        /// 后部
+        /// </summary>
+        Back = 1,
+
+        /// <summary>
+        /// 比后部更靠后
+        /// </summary>
+        BehindBack = 0
+    }
+
+    /// <summary>
+    /// 网格聚类类型
+    /// </summary>
+    public enum BlockClusterType
+    {
+        /// <summary>
+        /// 地面杂波/小煤堆
+        /// </summary>
+        Clutter = 0,
+
+        /// <summary>
+        /// 坝基
+        /// </summary>
+        Foundation = 1,
+
+        /// <summary>
+        /// 大臂部分
+        /// </summary>
+        MainArm = 2,
+
+        /// <summary>
+        /// 一般物体
+        /// </summary>
+        Normal = 3
+    }
+
+    /// <summary>
     /// 连接模式
     /// </summary>
     public enum ConnectionMode
@@ -119,6 +202,22 @@ namespace ARS408.Core
         /// 目标模式
         /// </summary>
         Object = 1
+    }
+
+    /// <summary>
+    /// 是否在底层的判断方式
+    /// </summary>
+    public enum BottomLevelType
+    {
+        /// <summary>
+        /// 根据俯仰角度判断
+        /// </summary>
+        PitchAngle = 1,
+
+        /// <summary>
+        /// 根据斗轮下沿距地面高度判断
+        /// </summary>
+        PileHeight = 2
     }
 
     /// <summary>

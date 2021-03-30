@@ -104,6 +104,21 @@
             定位天线本地Z坐标
             </summary>
         </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Centrex">
+            <summary>
+            回转轴本地X坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Centrey">
+            <summary>
+            回转轴本地Y坐标
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Centrez">
+            <summary>
+            回转轴本地Z坐标
+            </summary>
+        </member>
         <member name="P:SerializationFactory.GnssProtoInfo.LocalCoor_Tipx">
             <summary>
             臂架顶端本地X坐标
@@ -274,6 +289,66 @@
             配重右侧距离
             </summary>
         </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistLeftFront">
+            <summary>
+            大臂左前距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistLeftMiddle">
+            <summary>
+            大臂左中距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistLeftBack">
+            <summary>
+            大臂左后距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistRightFront">
+            <summary>
+            大臂右前距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistRightMiddle">
+            <summary>
+            大臂右中距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.DistRightBack">
+            <summary>
+            大臂右后距离
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelLeftFront">
+            <summary>
+            左前距离级别
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelLeftMiddle">
+            <summary>
+            左中距离级别
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelLeftBack">
+            <summary>
+            左后距离级别
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelRightFront">
+            <summary>
+            右前距离级别
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelRightMiddle">
+            <summary>
+            右中距离级别
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.LevelRightBack">
+            <summary>
+            右后距离级别
+            </summary>
+        </member>
         <member name="P:SerializationFactory.RadarProtoInfo.RadarList">
             <summary>
             雷达基础信息列表
@@ -307,6 +382,37 @@
         <member name="P:SerializationFactory.RadarProtoInfo.SurfaceAngleWheelRight">
             <summary>
             斗轮右侧雷达一次拟合斜率
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.OutOfStackLeft">
+            <summary>
+            左侧是否出垛边（由matlab模型决定）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.OutOfStackRight">
+            <summary>
+            右侧是否出垛边（由matlab模型决定）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.RadiusAverageLeft">
+            <summary>
+            左侧平均半径
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.RadiusAverageRight">
+            <summary>
+            右侧平均半径
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.OnBottomLevel">
+            <summary>
+            是否位于底层
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.BlockDistances">
+            <summary>
+            所有网格测距值的集合，格式为“a0,a1,...a5;b0,b1,...b5;c0,c1,...,c5;d0,d1,...,d5”
+            abcd大项分别代表原始值、远距过滤值、变化差异过滤纸以及卡尔曼滤波过滤值，内部序号分别代表左前中后、右前中后
             </summary>
         </member>
         <member name="M:SerializationFactory.RadarProtoInfo.#ctor">

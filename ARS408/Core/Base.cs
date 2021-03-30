@@ -79,6 +79,11 @@ namespace ARS408.Core
             private set { _radar_info = value; }
         }
 
+        /// <summary>
+        /// OPC数据源
+        /// </summary>
+        public static OpcDataSource OpcDataSource { get; set; }
+
         #region 斗轮雷达相关
         /// <summary>
         /// 离群点过滤系数，标准值为1，越小越严格，为0将过滤掉所有点
@@ -89,6 +94,26 @@ namespace ARS408.Core
         /// 拟合平面角度求平均的样本数量，至少为1，值越大越平滑
         /// </summary>
         public static int SurfaceAngleSampleLength { get; set; }
+
+        /// <summary>
+        /// 当位于底层时，是否针对斗轮雷达进行过滤
+        /// </summary>
+        public static bool FilterBottomLevel { get; set; }
+
+        /// <summary>
+        /// 判断底层的方式，包括俯仰角度与斗轮下沿距地面高度
+        /// </summary>
+        public static BottomLevelType BottomLevelType { get; set; }
+
+        /// <summary>
+        /// 底层大臂俯仰角度上限，低于此值时在底层
+        /// </summary>
+        public static double BottomLevelPitchAngle { get; set; }
+
+        /// <summary>
+        /// 底层大臂斗轮下沿距地面高度上限，低于此值时在底层
+        /// </summary>
+        public static double BottomLevelPileHeight { get; set; }
         #endregion
 
         #region 点云文件
@@ -312,6 +337,48 @@ property float rcs";
     /// </summary>
     public static class BaseFunc
     {
+        #region 网格
+        /// <summary>
+        /// 清空网格单元2维数组中每个元素的一般消息列表
+        /// </summary>
+        /// <param name="blocks"></param>
+        public static void Clear(this BlockUnit[,] blocks)
+        {
+            if (blocks == null)
+                return;
+            for (int i = 0; i < BlockConst.MatrixSize[1]; i++)
+                for (int j = 0; j < BlockConst.MatrixSize[0]; j++)
+                {
+                    BlockUnit block = blocks[j, i];
+                    block.CoreBlock = null;
+                    block.ListGeneral.Clear();
+                    block.UpdateBlockType();
+                }
+        }
+
+        /// <summary>
+        /// 判断当前网格聚类列表中是否存在以给定网格单元为核心网格的聚类
+        /// </summary>
+        /// <param name="list">网格聚类列表</param>
+        /// <param name="block">给定的网格单元</param>
+        /// <returns></returns>
+        public static bool ContainsCoreBlock(this List<BlockCluster> list, BlockUnit block)
+        {
+            bool result = false;
+            if (list == null || block == null)
+                return result;
+            foreach (var cluster in list)
+            {
+                if (cluster.CoreBlock.Equals(block))
+                {
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
+        #endregion
+
         #region 配置文件处理
         /// <summary>
         /// 配置文件初始化
@@ -321,6 +388,7 @@ property float rcs";
             BaseConst.Thread_RefreshConfigs.Start();
             try
             {
+                BaseConst.OpcDataSource = new OpcDataSource();
                 BaseConst.IpAddress = BaseConst.IniHelper.ReadData("Connection", "IpAddress");
                 BaseConst.Port = ushort.Parse(BaseConst.IniHelper.ReadData("Connection", "Port"));
                 BaseConst.ConnectionMode = (ConnectionMode)int.Parse(BaseConst.IniHelper.ReadData("Connection", "ConnectionMode"));
@@ -332,6 +400,24 @@ property float rcs";
                 DataTable table = (new DataService_ThreatLevel()).GetThreatLevels();
                 if (table != null && table.Rows.Count > 0)
                     BaseConst.ThreatLevelValues = table.Rows.Cast<DataRow>().Select(row => double.Parse(row["LEVEL_VALUE"].ToString())).ToArray();
+                #region 网格化
+                BlockConst.DefaultDistance = double.Parse(BaseConst.IniHelper.ReadData("Block", "DefaultDistance"));
+                BlockConst.UpLeftCorner = BaseConst.IniHelper.ReadData("Block", "UpLeftCorner").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                BlockConst.AreaSize = BaseConst.IniHelper.ReadData("Block", "AreaSize").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                BlockConst.MatrixSize = BaseConst.IniHelper.ReadData("Block", "MatrixSize").Split(',').Select(p => int.Parse(p.Trim())).ToArray();
+                BlockConst.UnitSize = new double[] { BlockConst.AreaSize[0] / BlockConst.MatrixSize[0], BlockConst.AreaSize[1] / BlockConst.MatrixSize[1] };
+                BlockConst.PredictionDeviation = double.Parse(BaseConst.IniHelper.ReadData("Block", "PredictionDeviation"));
+                BlockConst.ObservationDeviation = double.Parse(BaseConst.IniHelper.ReadData("Block", "ObservationDeviation"));
+                BlockUnit[,] blocks = new BlockUnit[BlockConst.MatrixSize[0], BlockConst.MatrixSize[1]];
+                for (int i = 0; i < BlockConst.MatrixSize[1]; i++)
+                    for (int j = 0; j < BlockConst.MatrixSize[0]; j++)
+                        blocks[j, i] = new BlockUnit(j, i, BlockConst.UnitSize[0], BlockConst.UnitSize[1]);
+                BlockConst.Blocks = blocks;
+                BlockConst.BlockClusters = new List<BlockCluster>();
+                BlockConst.CommonBlocks = new List<BlockUnit>();
+                BlockConst.DistancesLeft = new Distances(Directions.Left, true);
+                BlockConst.DistancesRight = new Distances(Directions.Right, true);
+                #endregion
             }
             catch (Exception) { }
             //BaseFunc.RadarListUpdate();
@@ -362,7 +448,11 @@ property float rcs";
                     #region 斗轮雷达
                     BaseConst.DistFilterCoefficient = double.Parse(BaseConst.IniHelper.ReadData("Wheel", "DistFilterCoefficient"));
                     BaseConst.SurfaceAngleSampleLength = int.Parse(BaseConst.IniHelper.ReadData("Wheel", "SurfaceAngleSampleLength"));
-                    #endregion
+                    BaseConst.FilterBottomLevel = BaseConst.IniHelper.ReadData("Wheel", "FilterBottomLevel").Equals("1");
+                    BaseConst.BottomLevelType = (BottomLevelType)int.Parse(BaseConst.IniHelper.ReadData("Wheel", "BottomLevelType"));
+                    BaseConst.BottomLevelPitchAngle = double.Parse(BaseConst.IniHelper.ReadData("Wheel", "BottomLevelPitchAngle"));
+                    BaseConst.BottomLevelPileHeight = double.Parse(BaseConst.IniHelper.ReadData("Wheel", "BottomLevelPileHeight"));
+        #endregion
                     #region 检测
                     BaseConst.BorderDistThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BorderDistThres"));
                     BaseConst.BucketHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketHeight"));
@@ -385,8 +475,28 @@ property float rcs";
                     BaseConst.IteDistLimit = double.Parse(BaseConst.IniHelper.ReadData("Detection", "IteDistLimit"));
                     BaseConst.IteCountLimit = int.Parse(BaseConst.IniHelper.ReadData("Detection", "IteCountLimit"));
                     #endregion
+                    #region 网格
+                    BlockConst.ProcessInternal = int.Parse(BaseConst.IniHelper.ReadData("Block", "ProcessInternal"));
+                    BlockConst.DefaultDistance = double.Parse(BaseConst.IniHelper.ReadData("Block", "DefaultDistance"));
+                    BlockConst.BlockClusterRadius = BaseConst.IniHelper.ReadData("Block", "BlockClusterRadius").Split(',').Select(p => int.Parse(p.Trim())).ToArray();
+                    BlockConst.ClusteringThresholds = BaseConst.IniHelper.ReadData("Block", "ClusteringThresholds").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                    BlockConst.ClutterThresholds = BaseConst.IniHelper.ReadData("Block", "ClutterThresholds").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                    BlockConst.FoundAngleMarg = double.Parse(BaseConst.IniHelper.ReadData("Block", "FoundAngleMarg"));
+                    BlockConst.MainArmScopeX = double.Parse(BaseConst.IniHelper.ReadData("Block", "MainArmScopeX"));
+                    BlockConst.FieldBorders = BaseConst.IniHelper.ReadData("Block", "FieldBorders").Split(',').Select(p => Math.Floor(double.Parse(p.Trim()))).ToArray();
+                    BlockConst.DistCorrLeft = BaseConst.IniHelper.ReadData("Block", "DistCorrLeft").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                    BlockConst.DistCorrRight = BaseConst.IniHelper.ReadData("Block", "DistCorrRight").Split(',').Select(p => double.Parse(p.Trim())).ToArray();
+                    BlockConst.GlitchRemovalEnabled = BaseConst.IniHelper.ReadData("Block", "GlitchRemovalEnabled").Equals("1");
+                    BlockConst.LongDistCountLimit = int.Parse(BaseConst.IniHelper.ReadData("Block", "LongDistCountLimit"));
+                    BlockConst.KalmanFilterEnabled = BaseConst.IniHelper.ReadData("Block", "KalmanFilterEnabled").Equals("1");
+                    BlockConst.PredictionDeviation = double.Parse(BaseConst.IniHelper.ReadData("Block", "PredictionDeviation"));
+                    BlockConst.ObservationDeviation = double.Parse(BaseConst.IniHelper.ReadData("Block", "ObservationDeviation"));
+                    #endregion
                     BaseConst.ReceiveRestTime = int.Parse(BaseConst.IniHelper.ReadData("Connection", "ReceiveRestTime"));
                     BaseConst.WriteItemValue = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
+                    DataTable table = (new DataService_ThreatLevel()).GetThreatLevels();
+                    if (table != null && table.Rows.Count > 0)
+                        BaseConst.ThreatLevelValues = table.Rows.Cast<DataRow>().Select(row => double.Parse(row["LEVEL_VALUE"].ToString())).ToArray();
                 }
                 catch (Exception) { }
 
@@ -422,33 +532,47 @@ property float rcs";
 
             BaseConst.RadarInfo.DistWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
             BaseConst.RadarInfo.DistWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
-            BaseConst.RadarInfo.SlopeWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurveSlope).MinExceptZero(); //斗轮左侧斜率
-            BaseConst.RadarInfo.SlopeWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurveSlope).MinExceptZero(); //斗轮右侧斜率
             BaseConst.RadarInfo.SurfaceAngleWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮左侧拟合平面角度
             BaseConst.RadarInfo.SurfaceAngleWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮右侧拟合平面角度
+            BaseConst.RadarInfo.OutOfStackLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.OutOfStack).FirstOrDefault();
+            BaseConst.RadarInfo.OutOfStackRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.OutOfStack).FirstOrDefault();
+            BaseConst.RadarInfo.RadiusAverageLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.RadiusAverage).FirstOrDefault();
+            BaseConst.RadarInfo.RadiusAverageRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.RadiusAverage).FirstOrDefault();
+            BaseConst.RadarInfo.OnBottomLevel = BaseConst.OpcDataSource.OnBottomLevel;
             //BaseConst.RadarInfo.DistWheelMin = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮最近距离
             BaseConst.RadarInfo.DistBelt = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Belt).Select(r => r.CurrentDistance).MinExceptZero(); //皮带料流距离
-            BaseConst.RadarInfo.DistArmLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //臂架左侧距离
-            BaseConst.RadarInfo.DistArmRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //臂架右侧距离
-            BaseConst.RadarInfo.DistArmBelow = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Down).Select(r => r.CurrentDistance).MinExceptZero(); //臂架下方距离
-            BaseConst.RadarInfo.DistCounterLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //配重左侧距离
-            BaseConst.RadarInfo.DistCounterRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //配重右侧距离
+            #region 防碰
+            //BaseConst.RadarInfo.DistArmBelow = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Arm && r.Direction == Directions.Down).Select(r => r.CurrentDistance).MinExceptZero(); //臂架下方距离
+            //BaseConst.RadarInfo.DistCounterLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Left).Select(r => r.CurrentDistance).MinExceptZero(); //配重左侧距离
+            //BaseConst.RadarInfo.DistCounterRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Counterweight && r.Direction == Directions.Right).Select(r => r.CurrentDistance).MinExceptZero(); //配重右侧距离
+            #region 网格测距距离
+            BaseConst.RadarInfo.DistLeftFront = BlockConst.DistLeftFront;
+            BaseConst.RadarInfo.DistLeftMiddle = BlockConst.DistLeftMiddle;
+            BaseConst.RadarInfo.DistLeftBack = BlockConst.DistLeftBack;
+            BaseConst.RadarInfo.DistRightFront = BlockConst.DistRightFront;
+            BaseConst.RadarInfo.DistRightMiddle = BlockConst.DistRightMiddle;
+            BaseConst.RadarInfo.DistRightBack = BlockConst.DistRightBack;
+            #endregion
+            #region 网格测距级别
+            //向大臂向右运动时左侧报警为0，向左运动时右侧报警为0
+            BaseConst.RadarInfo.LevelLeftFront = BaseConst.OpcDataSource.MovingDirection == Directions.Right ? 0 : BlockConst.LevelLeftFront;
+            BaseConst.RadarInfo.LevelLeftMiddle = BaseConst.OpcDataSource.MovingDirection == Directions.Right ? 0 : BlockConst.LevelLeftMiddle;
+            BaseConst.RadarInfo.LevelLeftBack = BaseConst.OpcDataSource.MovingDirection == Directions.Right ? 0 : BlockConst.LevelLeftBack;
+            BaseConst.RadarInfo.LevelRightFront = BaseConst.OpcDataSource.MovingDirection == Directions.Left ? 0 : BlockConst.LevelRightFront;
+            BaseConst.RadarInfo.LevelRightMiddle = BaseConst.OpcDataSource.MovingDirection == Directions.Left ? 0 : BlockConst.LevelRightMiddle;
+            BaseConst.RadarInfo.LevelRightBack = BaseConst.OpcDataSource.MovingDirection == Directions.Left ? 0 : BlockConst.LevelRightBack;
+            #endregion
+            Distances left = BlockConst.DistancesLeft, right = BlockConst.DistancesRight;
+            //BaseConst.RadarInfo.DistArmLeft = left.Nearest; //臂架左侧距离
+            //BaseConst.RadarInfo.DistArmRight = right.Nearest; //臂架右侧距离
+            BaseConst.RadarInfo.BlockDistances = string.Format("{0},{1} {2},{3} {4},{5} {6},{7}", left.GetValues(1), right.GetValues(1), left.GetValues(2), right.GetValues(2), left.GetValues(3), right.GetValues(3), left.GetValues(4), right.GetValues(4));
+            #endregion
             BaseConst.RadarInfo.RadarList.Clear();
             BaseConst.RadarInfo.WheelLeftCoorList.Clear();
             BaseConst.RadarInfo.WheelRightCoorList.Clear();
-            //BaseConst.RadarInfo.RadarList.AddRange(BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)));
             BaseConst.RadarList.ForEach(radar =>
             {
                 BaseConst.RadarInfo.RadarList.Add(Serializer.ChangeType<Radar, RadarInfoDetail>(radar));
-                //if (radar.GroupType != RadarGroupType.Wheel || !radar.Name.Contains("斗轮"))
-                //    return;
-                //List<SensorGeneral> olist = radar.Infos.ListToSend.ToList();
-                //List<RadarCoor> list = new List<RadarCoor>(olist.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
-                ////list.AddRange(radar.Infos.ListBuffer_Other.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
-                //if (radar.Name.Contains("左"))
-                //    BaseConst.RadarInfo.WheelLeftCoorList.AddRange(list);
-                //else if (radar.Name.Contains("右"))
-                //    BaseConst.RadarInfo.WheelRightCoorList.AddRange(list);
             });
         }
 
@@ -490,59 +614,346 @@ property float rcs";
 
         public static string GetInfoString()
         {
-            string main = string.Format(@"[
-  ""walkpos"": {0},
-  ""armpitch"": {1},
-  ""armyaw"": {2},
-  ""walkingleft_plc"": {3},
-  ""walkingright_plc"": {4},
-  ""pitch_plc"": {5},
-  ""yaw_plc"": {6},
-  斗轮左：{7}
-  斗轮右：{8}
-]", OpcConst.WalkingPosition, OpcConst.PitchAngle, OpcConst.YawAngle, OpcConst.WalkingRight_Plc, OpcConst.WalkingLeft_Plc, OpcConst.Pitch_Plc, OpcConst.Yaw_Plc, BaseConst.RadarInfo.DistWheelLeft/*this.DictDistances["DistWheelLeft"]*/, BaseConst.RadarInfo.DistWheelRight/*this.DictDistances["DistWheelRight"]*//*, this.DictDistances["DistLand"] + this.DictDistances["DistSea"] + 2.623, this.DictDistances["DistNorth"], this.DictDistances["DistSouth"], this.DictDistances["DistNorth"] + this.DictDistances["DistSouth"] + 4.831*/).Replace('[', '{').Replace(']', '}');
+            string main = string.Format(@"  北斗行走: {0},
+  北斗俯仰: {1},
+  北斗回转: {2},
+  PLC行走左: {3},
+  PLC行走右: {4},
+  PLC俯仰: {5},
+  PLC回转: {6},
+  斗轮左：{8},
+  斗轮右：{9},
+  下沿高度：{16},
+  PLC走行标志（后/停/前）：{20}{21}{22},
+  PLC俯仰标志（下/停/上）：{23}{24}{25},
+  PLC回转标志（左/停/右）：{26}{27}{28},
+  PLC回转速度：{7:f2},
+  PLC走行速度：{30:f2},
+  行走方向：{17},
+  俯仰方向：{18},
+  回转方向：{19},
+  运动方向：{29},
+  左侧前中后：{10:f2}, {11:f2}, {12:f2}
+  右侧前中后：{13:f2}, {14:f2}, {15:f2}
+]",
+  BaseConst.OpcDataSource.WalkingPosition, BaseConst.OpcDataSource.PitchAngle, BaseConst.OpcDataSource.YawAngle, BaseConst.OpcDataSource.WalkingRight_Plc, BaseConst.OpcDataSource.WalkingLeft_Plc, BaseConst.OpcDataSource.PitchAngle_Plc, BaseConst.OpcDataSource.YawAngle_Plc, BaseConst.OpcDataSource.YawSpeed_Plc, BaseConst.RadarInfo.DistWheelLeft, BaseConst.RadarInfo.DistWheelRight, BlockConst.DistLeftFront, BlockConst.DistLeftMiddle, BlockConst.DistLeftBack, BlockConst.DistRightFront, BlockConst.DistRightMiddle, BlockConst.DistRightBack, BaseConst.OpcDataSource.PileHeight_Plc, BaseConst.OpcDataSource.WalkDirection, BaseConst.OpcDataSource.PitchDirection, BaseConst.OpcDataSource.YawDirection, BaseConst.OpcDataSource.WalkBackward, BaseConst.OpcDataSource.WalkFixated, BaseConst.OpcDataSource.WalkForward, BaseConst.OpcDataSource.PitchDownward, BaseConst.OpcDataSource.PitchFixated, BaseConst.OpcDataSource.PitchUpward, BaseConst.OpcDataSource.YawLeft, BaseConst.OpcDataSource.YawFixated, BaseConst.OpcDataSource.YawRight, BaseConst.OpcDataSource.MovingDirection, BaseConst.OpcDataSource.WalkingSpeed_Plc).Replace('[', '{').Replace(']', '}');
             return main;
         }
         #endregion
 
         #region 数据处理与转换
-        //private static double coeff = 1.1;
+        #region 初始平面角度方法
+        ////private static double coeff = 1.1;
+        ///// <summary>
+        ///// 将所有雷达点拟合为平面，拟合斜率
+        ///// </summary>
+        ///// <param name="source">数据源</param>
+        ///// <param name="xf">纵向坐标最小值</param>
+        ///// <param name="xc">纵向坐标最大值</param>
+        ///// <param name="yf">横向坐标最小值</param>
+        ///// <param name="yc">横向坐标最大值</param>
+        ///// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        ///// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        ///// <param name="message">输出的消息</param>
+        ///// <returns></returns>
+        //public static double GetSurfaceAngle(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, bool extraProc, out string message)
+        //{
+        //    double def = 0; //默认值
+        //    if (source == null || source.Count() == 0)
+        //    {
+        //        message = "未提供任何点的数据";
+        //        return def;
+        //    }
+        //    List<SensorGeneral> sourceList = source.Where(g => g.DistLong.Between(xf, xc) && g.DistLat.Between(yf, yc)).ToList(); //排除不在特定坐标范围内的点
+        //    List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
+        //    List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+        //    List<Anonymous> checkList = new List<Anonymous>();
+        //    foreach (var gi in sourceList)
+        //    {
+        //        List<double> listDists = new List<double>();
+        //        foreach (var gj in sourceList)
+        //            //排除同一个点
+        //            if (gi != gj)
+        //                listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+        //        //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+        //        listDists.Sort();
+        //        int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+        //        ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+        //        listDists = listDists.Take(ex_count).ToList();
+        //        if (listDists.Count == 0)
+        //            continue;
+        //        double dist = listDists.Average();
+        //        checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+        //    }
+        //    double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+        //    double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
+        //    checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+        //    //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
+        //    foreach (var g in sourceList)
+        //    {
+        //        //排除距离其它点太远的点
+        //        if (checkList.Count(c => c.Id == g.Id) > 0)
+        //            continue;
+        //        //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+        //        if (extraProc)
+        //        {
+        //            finalList.Add(g);
+        //            xsum += g.DistLong;
+        //            zsum += g.DistLat;
+        //            ysum += g.PushfCounter;
+        //        }
+        //        listx.Add(g.DistLong);
+        //        listz.Add(g.DistLat);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //    sourceList.Clear();
+        //    //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+        //    if (!extraProc || listx.Count == 0)
+        //        goto FINAL_STEP;
+        //    #region 额外处理措施（针对斗轮左侧雷达）
+        //    //重心坐标，开始寻找距离重心坐标最近的点
+        //    xa = xsum / finalList.Count;
+        //    za = zsum / finalList.Count;
+        //    ya = ysum / finalList.Count;
+        //    //将第一个点作为默认最近点，计算初始最近距离
+        //    SensorGeneral nearest = finalList.First();
+        //    double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+        //    //循环最终列表，各个点之间比较距离重心最近的点
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+        //        if (dist < distMin)
+        //        {
+        //            distMin = dist;
+        //            nearest = g;
+        //        }
+        //    }
+        //    //List<SensorGeneral> finalList2 = new List<SensorGeneral>();
+        //    listx.Clear();
+        //    listz.Clear();
+        //    listy.Clear();
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+        //        if (k < 0)
+        //            continue;
+        //        //finalList2.Add(g);
+        //        listx.Add(g.DistLong);
+        //        listz.Add(g.DistLat);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //#endregion
+
+        //FINAL_STEP:
+        //    //double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
+        //    double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
+        //    return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
+        //    //return results == null || results.Length == 0 ? def : (90 - Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI); //越低代表离垛边越靠近
+        //}
+        #endregion
+
+        #region 初始平面角度方法V1
+        ////private static double coeff = 1.1;
+        ///// <summary>
+        ///// 将所有雷达点拟合为平面，拟合斜率
+        ///// </summary>
+        ///// <param name="source">数据源</param>
+        ///// <param name="xf">纵向坐标最小值</param>
+        ///// <param name="xc">纵向坐标最大值</param>
+        ///// <param name="yf">横向坐标最小值</param>
+        ///// <param name="yc">横向坐标最大值</param>
+        ///// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        ///// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        ///// <param name="message">输出的消息</param>
+        ///// <returns></returns>
+        //public static double GetSurfaceAngleV1(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, bool extraProc, out double rad_avr, out string message)
+        //{
+        //    rad_avr = 0;
+        //    double def = 0; //默认值
+        //    if (source == null || source.Count() == 0)
+        //    {
+        //        message = "未提供任何点的数据";
+        //        return def;
+        //    }
+        //    List<SensorGeneral> sourceList = source.Where(g => g.DistLong.Between(xf, xc) && g.DistLat.Between(yf, yc)).ToList(); //排除不在特定坐标范围内的点
+        //    List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
+        //    List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+        //    List<Anonymous> checkList = new List<Anonymous>();
+        //    foreach (var gi in sourceList)
+        //    {
+        //        List<double> listDists = new List<double>();
+        //        foreach (var gj in sourceList)
+        //            //排除同一个点
+        //            if (gi != gj)
+        //                listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+        //        //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+        //        listDists.Sort();
+        //        int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+        //        ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+        //        listDists = listDists.Take(ex_count).ToList();
+        //        if (listDists.Count == 0)
+        //            continue;
+        //        double dist = listDists.Average();
+        //        checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+        //    }
+        //    double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+        //    double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
+        //    checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+        //    //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
+        //    foreach (var g in sourceList)
+        //    {
+        //        //排除距离其它点太远的点
+        //        if (checkList.Count(c => c.Id == g.Id) > 0)
+        //            continue;
+        //        //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+        //        if (extraProc)
+        //        {
+        //            finalList.Add(g);
+        //            xsum += g.DistLong;
+        //            zsum += g.DistLat;
+        //            ysum += g.PushfCounter;
+        //        }
+        //        listx.Add(g.DistLong);
+        //        listz.Add(g.DistLat);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //    #region 计算平均半径
+        //    //按半径排序，去除前后各10%的点
+        //    int part = (int)(sourceList.Count * 0.1);
+        //    rad_avr = sourceList.Count == 0 ? 0 : sourceList.OrderBy(g => g.Radius).Select(g => g.Radius).Skip(part).Take(sourceList.Count - part * 2).Average();
+        //    #endregion
+        //    sourceList.Clear();
+        //    //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+        //    if (!extraProc || listx.Count == 0)
+        //        goto FINAL_STEP;
+        //    #region 额外处理措施（针对斗轮左侧雷达）
+        //    //重心坐标，开始寻找距离重心坐标最近的点
+        //    xa = xsum / finalList.Count;
+        //    za = zsum / finalList.Count;
+        //    ya = ysum / finalList.Count;
+        //    //将第一个点作为默认最近点，计算初始最近距离
+        //    SensorGeneral nearest = finalList.First();
+        //    double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+        //    //循环最终列表，各个点之间比较距离重心最近的点
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+        //        if (dist < distMin)
+        //        {
+        //            distMin = dist;
+        //            nearest = g;
+        //        }
+        //    }
+        //    //List<SensorGeneral> finalList2 = new List<SensorGeneral>();
+        //    listx.Clear();
+        //    listz.Clear();
+        //    listy.Clear();
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+        //        if (k < 0)
+        //            continue;
+        //        //finalList2.Add(g);
+        //        listx.Add(g.DistLong);
+        //        listz.Add(g.DistLat);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //#endregion
+
+        //FINAL_STEP:
+        //    //double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
+        //    double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
+        //    return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
+        //    //return results == null || results.Length == 0 ? def : (90 - Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI); //越低代表离垛边越靠近
+        //}
+        #endregion
+
+        #region 平面角度方法版本V2
         /// <summary>
         /// 将所有雷达点拟合为平面，拟合斜率
         /// </summary>
-        /// <param name="source">数据源</param>
-        /// <param name="xf">纵向坐标最小值</param>
-        /// <param name="xc">纵向坐标最大值</param>
-        /// <param name="yf">横向坐标最小值</param>
-        /// <param name="yc">横向坐标最大值</param>
+        /// <param name="points">数据源</param>
+        /// <param name="xybias">xy坐标校正值，分别为xy</param>
+        /// <param name="rangle">左右雷达倾角，分别为左右，向下为正</param>
+        /// <param name="pitch">单机俯仰角</param>
         /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
-        /// <returns></returns>
-        public static double GetSurfaceAngle(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, out string message)
+        /// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        /// <param name="rad_avr">输出的平均半径</param>
+        /// <param name="message">输出的消息</param>
+        /// <returns>返回处理的角度，角度越大越倾向于出垛</returns>
+        public static double GetSurfaceAngleV2(IEnumerable<SensorGeneral> points, double[] xybias, double rangle, double pitch, double dist_ex_count, bool extraProc, out double rad_avr, out string message)
         {
-            double def = 0; //默认值
-            if (source == null || source.Count() == 0)
+            //double def_angle = 90, def_rad = 20; //默认角度，默认半径，默认在垛外
+            double def_angle = 0, def_rad = 0; //默认角度，默认半径，默认在垛内
+            rad_avr = def_rad;
+            if (points == null || points.Count() == 0 || /*xlimit == null || xlimit.Length < 2 || ylimit == null || ylimit.Length < 2 || */xybias == null || xybias.Length < 2/* || rcs == null || rcs.Length < 2*/)
             {
                 message = "未提供任何点的数据";
-                return def;
+                return def_angle;
             }
-            //int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(source.Count() * dist_ex_count) : (int)dist_ex_count;
-            List<SensorGeneral> sourceList = source.ToList();
+            double /*xf = xlimit[0], xc = xlimit[1], yf = ylimit[0], yc = ylimit[1], */xbias = xybias[0], ybias = xybias[1]/*, rcs_floor = rcs[0], rcs_ceil = rcs[1]*/;
+            //List<SensorGeneral> sourceList = source.Where(g => g.DistLong.Between(xf, xc) && g.DistLat.Between(yf, yc)).ToList(); //排除不在特定坐标范围内的点
+            List<SensorGeneral> source, sourceList = new List<SensorGeneral>();
+            //source = points.Select(g => g.Copy()).ToList();
+            source = points.ToList();
+            #region 坐标范围过滤
+            //排除不在特定坐标范围内以及不在特定角度和半径范围内的点
+            foreach (var g in source)
+            {
+                //if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc) || !g.RCS.Between(rcs_floor, rcs_ceil))
+                //    continue;
+
+                ////纵坐标直接校正，横坐标乘以-1再校正，角度加上俯仰角再加上倾角
+                //g.DistLong += xbias;
+                //g.DistLat = g.DistLat * -1 + ybias;
+                //double angle = g.Angle + pitch + rangle, x = g.Radius * Math.Cos(angle * Math.PI / 180), y = g.Radius * Math.Sin(angle * Math.PI / 180);
+                //g.DistLong = x;
+                //g.DistLat = y;
+                //if (!angle.Between(-90, 0) || !g.Radius.Between(2, 15))
+                //    continue;
+                ////判断位于底层时，假如XY坐标不在特定范围内则排除
+                //if (OpcConst.OnBottomLevel && !(x.Between(0, 8) && y < -0.5))
+                //    continue;
+
+                //纵坐标直接校正，横坐标乘以-1再校正，角度加上俯仰角再加上倾角
+                if (!g.HelpFlag)
+                {
+                    g.HelpFlag = true;
+                    g.DistLong += xbias;
+                    g.DistLat = g.DistLat * -1 + ybias;
+                    double angle = g.Angle + pitch + rangle;
+                    double x = g.Radius * Math.Cos(angle * Math.PI / 180), y = g.Radius * Math.Sin(angle * Math.PI / 180);
+                    g.DistLong = x;
+                    g.DistLat = y;
+                }
+                bool bottom = BaseConst.FilterBottomLevel && BaseConst.OpcDataSource.OnBottomLevel;
+                //double xceil = bottom ? 8 : double.MaxValue, yfloor = -4.8 - BaseConst.OpcDataSource.PileHeight_Plc, yceil = bottom ? -2 : 0;
+                double xceil = double.MaxValue, yfloor = -4.8 - BaseConst.OpcDataSource.PileHeight_Plc, yceil = 0;
+                if (!g.Angle.Between(-90, 0) || !g.Radius.Between(2, 15))
+                    continue;
+                //假如XY坐标不在特定范围内则排除，坐标范围根据是否在底层而有所区别
+                if (!g.DistLong.Between(0, xceil) || !g.DistLat.Between(yfloor, yceil))
+                    continue;
+                ////判断位于底层时，假如XY坐标不在特定范围内则排除
+                //if (BaseConst.FilterBottomLevel && BaseConst.OpcDataSource.OnBottomLevel && !(g.DistLong.Between(0, 8) && g.DistLat < -2))
+                //    continue;
+
+                //if (g.Angle.Between(-90, 0) && g.Radius.Between(2, 15))
+                sourceList.Add(g);
+            }
+            #endregion
+            List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
             List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
             List<Anonymous> checkList = new List<Anonymous>();
+            #region 排除距离其它点太远的点
             foreach (var gi in sourceList)
             {
-                //排除不在特定坐标范围内的点
-                if (!gi.DistLong.Between(xf, xc) || !gi.DistLat.Between(yf, yc))
-                    continue;
-                //double dist = 0;
                 List<double> listDists = new List<double>();
                 foreach (var gj in sourceList)
-                {
-                    //排除同一个点以及不在特定坐标范围内的点
-                    if (gi == gj || !gj.DistLong.Between(xf, xc) || !gj.DistLat.Between(yf, yc))
-                        continue;
-                    listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
-                }
+                    //排除同一个点
+                    if (gi != gj)
+                        //listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2)/* + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2)*/)); //计算与其它所有点的距离并储存
+                        listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
                 //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
                 listDists.Sort();
                 int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
@@ -554,67 +965,648 @@ property float rcs";
                 checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
             }
             double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+            double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
             checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
             //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
             foreach (var g in sourceList)
             {
-                //排除不在特定坐标范围内的点以及距离其它点太远的点
-                if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc) || checkList.Count(c => c.Id == g.Id) > 0)
+                //排除距离其它点太远的点
+                if (checkList.Count(c => c.Id == g.Id) > 0)
                     continue;
                 //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+                if (extraProc)
+                {
+                    finalList.Add(g);
+                    xsum += g.DistLong;
+                    zsum += g.DistLat;
+                    ysum += g.PushfCounter;
+                }
                 listx.Add(g.DistLong);
                 listz.Add(g.DistLat);
                 listy.Add(g.PushfCounter);
             }
-            //double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
+            #endregion
+            #region 计算平均半径
+            //按半径排序，去除前后各10%的点
+            int part = (int)(sourceList.Count * 0.1);
+            rad_avr = sourceList.Count == 0 ? def_rad : sourceList.OrderBy(g => g.Radius).Select(g => g.Radius).Skip(part).Take(sourceList.Count - part * 2).Average();
+            #endregion
+            sourceList.Clear();
+            //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+            if (!extraProc || listx.Count == 0)
+                goto FINAL_STEP;
+            #region 额外处理措施（针对斗轮左侧雷达）
+            //重心坐标，开始寻找距离重心坐标最近的点
+            xa = xsum / finalList.Count;
+            za = zsum / finalList.Count;
+            ya = ysum / finalList.Count;
+            //将第一个点作为默认最近点，计算初始最近距离
+            SensorGeneral nearest = finalList.First();
+            double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+            //循环最终列表，各个点之间比较距离重心最近的点
+            foreach (SensorGeneral g in finalList)
+            {
+                double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+                if (dist < distMin)
+                {
+                    distMin = dist;
+                    nearest = g;
+                }
+            }
+            //List<SensorGeneral> finalList2 = new List<SensorGeneral>();
+            listx.Clear();
+            listz.Clear();
+            listy.Clear();
+            foreach (SensorGeneral g in finalList)
+            {
+                double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+                if (k < 0)
+                    continue;
+                //finalList2.Add(g);
+                listx.Add(g.DistLong);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
+            }
+        #endregion
+
+        FINAL_STEP:
             double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
-            return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
-            //return results == null || results.Length == 0 ? def : (90 - Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI); //越低代表离垛边越靠近
+            return results == null || results.Length == 0 ? def_angle : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
         }
+        #endregion
+
+        #region 平面角度方法版本V2 fail
+        ///// <summary>
+        ///// 将所有雷达点拟合为平面，拟合斜率
+        ///// </summary>
+        ///// <param name="source">数据源</param>
+        ///// <param name="xlimit">x坐标限制范围数组，依次为下限，上限</param>
+        ///// <param name="ylimit">y坐标限制范围数组，依次为下限，上限</param>
+        ///// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        ///// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        ///// <param name="message">输出的消息</param>
+        ///// <returns></returns>
+        //public static double GetSurfaceAngle(IEnumerable<SensorGeneral> points, double[] xlimit, double[] ylimit, double dist_ex_count, bool extraProc, out double rad_avr, out string message)
+        //{
+        //    rad_avr = 0;
+        //    double def = 0; //默认值
+        //    if (points == null || points.Count() == 0 || xlimit == null || xlimit.Length < 2 || ylimit == null || ylimit.Length < 2)
+        //    {
+        //        message = "未提供任何点的数据";
+        //        return def;
+        //    }
+        //    double xf = xlimit[0], xc = xlimit[1], yf = ylimit[0], yc = ylimit[1]/*, xbias = xybias[0], ybias = xybias[1]*/;
+        //    List<SensorGeneral> source, sourceList = new List<SensorGeneral>();
+        //    source = points.ToList();
+        //    #region 坐标范围过滤
+        //    //排除不在特定坐标范围内以及不在特定角度和半径范围内的点
+        //    foreach (var g in source)
+        //    {
+        //        if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc))
+        //            continue;
+        //        #region crap
+        //        ////纵坐标直接校正，横坐标乘以-1再校正，角度加上俯仰角再加上倾角
+        //        //g.DistLong += xbias;
+        //        //g.DistLat = g.DistLat * -1 + ybias;
+        //        //double angle = g.AngleYoz + BaseConst.OpcDataSource.PitchAngle_Plc, x = g.Radius * Math.Cos(angle * Math.PI / 180), y = g.Radius * Math.Sin(angle * Math.PI / 180);
+        //        //g.DistLong = x;
+        //        //g.DistLat = y;
+        //        //if (!angle.Between(-90, 0) || !g.Radius.Between(2, 15))
+        //        //    continue;
+        //        ////判断位于底层时，假如XY坐标不在特定范围内则排除
+        //        //if (BaseConst.OpcDataSource.OnBottomLevel && !(x.Between(0, 8) && y < -2))
+        //        //    continue;
+        //        #endregion
+        //        //修改XOZ角度，对横纵坐标重新赋值以重新计算坐标
+        //        g.Radar.DegreeXoz += BaseConst.OpcDataSource.PitchAngle_Plc;
+        //        g.DistLong = g.DistLong;
+        //        g.DistLat = g.DistLat;
+        //        if (!g.AngleYoz.Between(-90, 0) || !g.RadiusXyz.Between(2, 15))
+        //            continue;
+        //        //判断位于底层时，假如XY坐标不在特定范围内则排除
+        //        if (BaseConst.OpcDataSource.OnBottomLevel && !(g.Y.Between(0, 8) && g.Z < -2))
+        //            continue;
+        //        sourceList.Add(g);
+        //    }
+        //    #endregion
+        //    List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
+        //    List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+        //    List<Anonymous> checkList = new List<Anonymous>();
+        //    #region 排除距离其它点太远的点
+        //    foreach (var gi in sourceList)
+        //    {
+        //        List<double> listDists = new List<double>();
+        //        foreach (var gj in sourceList)
+        //            //排除同一个点
+        //            if (gi != gj)
+        //                listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+        //        //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+        //        listDists.Sort();
+        //        int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+        //        ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+        //        listDists = listDists.Take(ex_count).ToList();
+        //        if (listDists.Count == 0)
+        //            continue;
+        //        double dist = listDists.Average();
+        //        checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+        //    }
+        //    double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+        //    double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
+        //    checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+        //    //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
+        //    foreach (var g in sourceList)
+        //    {
+        //        //排除距离其它点太远的点
+        //        if (checkList.Count(c => c.Id == g.Id) > 0)
+        //            continue;
+        //        //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+        //        if (extraProc)
+        //        {
+        //            finalList.Add(g);
+        //            xsum += g.DistLong;
+        //            zsum += g.DistLat;
+        //            ysum += g.PushfCounter;
+        //        }
+        //        listx.Add(g.Y);
+        //        listz.Add(g.Z);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //    #endregion
+        //    #region 计算平均半径
+        //    //按半径排序，去除前后各10%的点
+        //    int part = (int)(sourceList.Count * 0.1);
+        //    rad_avr = sourceList.OrderBy(g => g.RadiusXyz).Select(g => g.RadiusXyz).Skip(part).Take(sourceList.Count - part * 2).Average();
+        //    #endregion
+        //    sourceList.Clear();
+        //    //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+        //    if (!extraProc || listx.Count == 0)
+        //        goto FINAL_STEP;
+        //    #region 额外处理措施（针对斗轮左侧雷达）
+        //    //重心坐标，开始寻找距离重心坐标最近的点
+        //    xa = xsum / finalList.Count;
+        //    za = zsum / finalList.Count;
+        //    ya = ysum / finalList.Count;
+        //    //将第一个点作为默认最近点，计算初始最近距离
+        //    SensorGeneral nearest = finalList.First();
+        //    double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+        //    //循环最终列表，各个点之间比较距离重心最近的点
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+        //        if (dist < distMin)
+        //        {
+        //            distMin = dist;
+        //            nearest = g;
+        //        }
+        //    }
+        //    //List<SensorGeneral> finalList2 = new List<SensorGeneral>();
+        //    listx.Clear();
+        //    listz.Clear();
+        //    listy.Clear();
+        //    foreach (SensorGeneral g in finalList)
+        //    {
+        //        double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+        //        if (k < 0)
+        //            continue;
+        //        //finalList2.Add(g);
+        //        listx.Add(g.Y);
+        //        listz.Add(g.Z);
+        //        listy.Add(g.PushfCounter);
+        //    }
+        //#endregion
+
+        //FINAL_STEP:
+        //    double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
+        //    return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
+        //}
+        #endregion
+
+        #region 测距雷达网格化处理
+        private static readonly Distances _leftDists = new Distances(), _rightDists = new Distances();
+        public static void ProcessBlockUnits()
+        {
+            BlockConst.Blocks.Clear();
+            BlockConst.CommonBlocks.Clear();
+            BlockConst.BlockClusters.Clear();
+            _leftDists.ResetDistances(BlockConst.DefaultDistance);
+            _rightDists.ResetDistances(BlockConst.DefaultDistance);
+            #region 新处理方法
+            ////臂架两侧工作中的雷达被处理过的数量，假如大于0则代表仍有雷达未准备好被处理
+            //int count = BaseConst.RadarList.Count(r => r.GroupType == RadarGroupType.Arm && r.Direction != Directions.Down && r.Working == 1 && !r.ProcFlag);
+            //if (count > 0)
+            //    return;
+            //List<SensorGeneral> container = new List<SensorGeneral>();
+            ////遍历雷达并将雷达扫描点填入网格单元中
+            //foreach (var radar in BaseConst.RadarList)
+            //{
+            //    if (radar.GroupType != RadarGroupType.Arm || radar.Direction == Directions.Down)
+            //        continue;
+            //    container.AddRange(radar.Infos.ListToSend);
+            //    if (radar.Infos.ListToSend.Count == 0)
+            //        continue;
+            //    radar.ProcFlag = false; //设置处理标志，表示被处理过
+            //}
+            //foreach (var general in container)
+            //{
+            //    //假如单点测距在大臂范围内或测距临界值之外，则跳过
+            //    if (general == null || general.DistanceToBorder <= BlockConst.MainArmScopeX || (BaseConst.BorderDistThres > 0 && general.DistanceToBorder >= BaseConst.BorderDistThres))
+            //        continue;
+            //    //根据点坐标找到其应归属的网格单元列索引、行索引；假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸）直接前往下一个循环
+            //    int columnIndex = (int)Math.Floor((general.X - BlockConst.UpLeftCorner[0]) / BlockConst.UnitSize[0]), rowIndex = (int)Math.Floor((BlockConst.UpLeftCorner[1] - general.Y) / BlockConst.UnitSize[1]);
+            //    if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 || rowIndex >= BlockConst.MatrixSize[1])
+            //        continue;
+            //    BlockUnit block = BlockConst.Blocks[columnIndex, rowIndex];
+            //    block.AddSensorGeneral(general);
+            //    if (block.TypeChanged && block.Type == BlockType.Common)
+            //        BlockConst.CommonBlocks.Add(block);
+            //    //if (block.TypeChanged && block.Type == BlockType.Core)
+            //    //    BlockConst.BlockClusters.Add(new BlockCluster(block));
+            //}
+            #endregion
+            #region 旧处理方法
+            //遍历雷达并将雷达扫描点填入网格单元中
+            foreach (var radar in BaseConst.RadarList)
+            {
+                if (radar.GroupType != RadarGroupType.Arm || radar.Direction == Directions.Down)
+                    continue;
+                List<SensorGeneral> list = null;
+                //try { list = radar.Infos.ListToSendAll.ToList(); }
+                try { list = radar.Infos.ListToSend.ToList(); }
+                catch (Exception) { }
+                if (list == null || list.Count == 0)
+                    continue;
+                radar.ProcFlag = false; //设置处理标志，表示被处理过
+                //List<SensorGeneral> list = radar.Infos.ListToSend.ToList();
+                foreach (var general in list)
+                {
+                    //假如单点测距在大臂范围内或测距临界值之外，则跳过
+                    if (general == null || general.DistanceToBorder <= BlockConst.MainArmScopeX || (BaseConst.BorderDistThres > 0 && general.DistanceToBorder >= BaseConst.BorderDistThres))
+                        continue;
+                    //根据点坐标找到其应归属的网格单元列索引、行索引；假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸）直接前往下一个循环
+                    int columnIndex = (int)Math.Floor((general.X - BlockConst.UpLeftCorner[0]) / BlockConst.UnitSize[0]), rowIndex = (int)Math.Floor((BlockConst.UpLeftCorner[1] - general.Y) / BlockConst.UnitSize[1]);
+                    if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 || rowIndex >= BlockConst.MatrixSize[1])
+                        continue;
+                    BlockUnit block = BlockConst.Blocks[columnIndex, rowIndex];
+                    block.AddSensorGeneral(general);
+                    if (block.TypeChanged && block.Type == BlockType.Common)
+                        BlockConst.CommonBlocks.Add(block);
+                    //if (block.TypeChanged && block.Type == BlockType.Core)
+                    //    BlockConst.BlockClusters.Add(new BlockCluster(block));
+                }
+            }
+            #endregion
+            BlockConst.CommonBlocks = GetOutlierFilteredBlocks(BlockConst.CommonBlocks); //对符合第一阈值的网格单元进行统计滤波
+            //记录核心网格
+            foreach (BlockUnit block in BlockConst.CommonBlocks)
+                if (block.Type == BlockType.Core)
+                    BlockConst.BlockClusters.Add(new BlockCluster(block));
+            foreach (var cluster in BlockConst.BlockClusters)
+            {
+                BlockUnit core = cluster.CoreBlock;
+                if (core == null)
+                    continue;
+                //int columnIndex = cluster.CoreBlock.ColumnIndex, rowIndex = cluster.CoreBlock.RowIndex;
+                int columnIndex = 0, rowIndex = 0;
+                //遍历核心网格周围半径内的网格单元（从核心网格向四周延伸若干格，具体数量见配置文件）
+                for (int i = 0 - BlockConst.BlockClusterRadius[1]; i <= BlockConst.BlockClusterRadius[1]; i++)
+                {
+                    for (int j = 0 - BlockConst.BlockClusterRadius[0]; j <= BlockConst.BlockClusterRadius[0]; j++)
+                    {
+                        columnIndex = core.ColumnIndex + j;
+                        rowIndex = core.RowIndex + i;
+                        //假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸），假如i与j均为0（代表循环将回到当前网格），直接前往下一个循环
+                        if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 || rowIndex >= BlockConst.MatrixSize[1] || (i == 0 && j == 0))
+                            continue;
+                        cluster.AddCommonBlock(BlockConst.Blocks[columnIndex, rowIndex]);
+                    }
+                }
+                //遍历完四周网格单元后更新网格聚类属性，迭代左右距离值
+                cluster.RefreshProperties();
+                if (cluster.Type == BlockClusterType.Normal && cluster.CenterX < 0)
+                    _leftDists.Iterate(cluster.Distances);
+                else if (cluster.Type == BlockClusterType.Normal && cluster.CenterX > 0)
+                    _rightDists.Iterate(cluster.Distances);
+                //if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX < 0)
+                //    _leftDists.Iterate(cluster.Distances);
+                //else if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX > 0)
+                //    _rightDists.Iterate(cluster.Distances);
+            }
+            //BlockConst.DistancesLeft.Copy(_leftDists, BlockConst.DistCorrLeft);
+            //BlockConst.DistancesRight.Copy(_rightDists, BlockConst.DistCorrRight);
+            BlockConst.DistancesLeft.SetDistCorrs(BlockConst.DistCorrLeft);
+            BlockConst.DistancesRight.SetDistCorrs(BlockConst.DistCorrRight);
+            BlockConst.DistancesLeft.Copy(_leftDists);
+            BlockConst.DistancesRight.Copy(_rightDists);
+        }
+        #endregion
+
+        #region 获取MATLAB模型所需1维数组
+        private const int XLEN = 15; //X坐标分块的数量，第1块坐标[0,1)，第2块坐标[1,2)，……，第n块坐标[n-1,n)
 
         /// <summary>
-        /// 获取雷达点的一次拟合斜率
+        /// 将所有雷达点拟合为平面，拟合斜率
         /// </summary>
         /// <param name="source">数据源</param>
         /// <param name="xf">纵向坐标最小值</param>
         /// <param name="xc">纵向坐标最大值</param>
         /// <param name="yf">横向坐标最小值</param>
         /// <param name="yc">横向坐标最大值</param>
-        /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目</param>
+        /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        /// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        /// <param name="model_array">输出的供matlab机器学习模型使用的数组</param>
+        /// <param name="message">输出的消息</param>
         /// <returns></returns>
-        public static double GetCurveSlope(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, int dist_ex_count)
+        public static double GetSurfaceAngle(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, bool extraProc, out double[] model_array, out string message)
         {
+            double def = 0; //默认值
+            model_array = null;
             if (source == null || source.Count() == 0)
-                return 0;
-            List<SensorGeneral> sourceList = source.ToList();
+            {
+                message = "未提供任何点的数据";
+                return def;
+            }
+            List<SensorGeneral> sourceList = source.Where(g => g.DistLong.Between(xf, xc) && g.DistLat.Between(yf, yc)).ToList(); //排除不在特定坐标范围内的点
+            List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
             List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
             List<Anonymous> checkList = new List<Anonymous>();
             foreach (var gi in sourceList)
             {
-                //排除不在特定坐标范围内的点
-                if (!gi.DistLong.Between(xf, xc) || !gi.DistLat.Between(yf, yc))
-                    continue;
-                double dist = 0;
+                List<double> listDists = new List<double>();
                 foreach (var gj in sourceList)
-                {
-                    //排除同一个点以及不在特定坐标范围内的点
-                    if (gi == gj || !gj.DistLong.Between(xf, xc) || !gj.DistLat.Between(yf, yc))
-                        continue;
-                    dist += Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2)); //叠加与其它所有点的距离
-                }
+                    //排除同一个点
+                    if (gi != gj)
+                        listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+                //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+                listDists.Sort();
+                int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+                ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+                listDists = listDists.Take(ex_count).ToList();
+                if (listDists.Count == 0)
+                    continue;
+                double dist = listDists.Average();
                 checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
             }
-            checkList = checkList.OrderByDescending(a => a.Dist).Take(dist_ex_count).ToList();
+            double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+            double xmin = double.MaxValue; //X最小值
+            int ymax = 0; //Y最大值
+            double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
+            checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+            //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
             foreach (var g in sourceList)
             {
-                //排除不在特定坐标范围内的点以及距离其它点太远的点
-                if (!g.DistLong.Between(xf, xc) || !g.DistLat.Between(yf, yc) || checkList.Count(c => c.Id == g.Id) > 0)
+                //排除距离其它点太远的点
+                if (checkList.Count(c => c.Id == g.Id) > 0)
                     continue;
+                //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+                if (extraProc)
+                {
+                    finalList.Add(g);
+                    xsum += g.DistLong;
+                    zsum += g.DistLat;
+                    ysum += g.PushfCounter;
+                }
+                //遍历x的最小值，y的最大值
+                if (g.DistLong < xmin)
+                    xmin = g.DistLong;
+                if (g.PushfCounter > ymax)
+                    ymax = g.PushfCounter;
                 listx.Add(g.DistLong);
-                listy.Add(g.DistLat);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
             }
-            double[] results = CurveFitting.GetCurveCoefficients(listx, listy, listx.Count, 1);
-            return results == null || results.Length == 0 ? 0 : results[0];
+            sourceList.Clear();
+            //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+            if (!extraProc || listx.Count == 0)
+                goto FINAL_STEP;
+            #region 额外处理措施（针对斗轮左侧雷达）
+            //重心坐标，开始寻找距离重心坐标最近的点
+            xa = xsum / finalList.Count;
+            za = zsum / finalList.Count;
+            ya = ysum / finalList.Count;
+            //将第一个点作为默认最近点，计算初始最近距离
+            SensorGeneral nearest = finalList.First();
+            double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+            //循环最终列表，各个点之间比较距离重心最近的点
+            foreach (SensorGeneral g in finalList)
+            {
+                double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+                if (dist < distMin)
+                {
+                    distMin = dist;
+                    nearest = g;
+                }
+            }
+            xmin = double.MaxValue;
+            ymax = 0;
+            listx.Clear();
+            listz.Clear();
+            listy.Clear();
+            foreach (SensorGeneral g in finalList)
+            {
+                double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+                if (k < 0)
+                    continue;
+                //遍历x的最小值，y的最大值
+                if (g.DistLong < xmin)
+                    xmin = g.DistLong;
+                if (g.PushfCounter > ymax)
+                    ymax = g.PushfCounter;
+                listx.Add(g.DistLong);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
+            }
+        #endregion
+
+        FINAL_STEP:
+            //遍历所有坐标点，根据XY坐标决定Z坐标应放在模型数组中的哪个位置
+            List<double>[] groups = new List<double>[(ymax + 1) * XLEN];
+            for (int i = 0; i < listx.Count; i++)
+            {
+                //X坐标减去X最小值并向下取整，范围应从0到_xlen-1，假如超过则跳到下一个循环
+                int x = (int)Math.Floor(listx[i] - xmin), y = (int)listy[i];
+                if (x >= XLEN)
+                    continue;
+                double z = listz[i];
+                int index = x + y * XLEN; //Y坐标每增大1，则数组下标增加_xlen
+                List<double> group = groups[index];
+                if (group == null)
+                    group = new List<double>();
+                group.Add(listz[i]);
+            }
+            double[] results = SurfaceFitting.GetSurceCoefficients(listx, listy, listz, out message);
+            model_array = groups.Length == 0 ? model_array : groups.Select(group => group == null || group.Count == 0 ? 0 : group.Average()).ToArray();
+            return results == null || results.Length == 0 ? def : Math.Atan(1 / Math.Abs(results[0])) * 180 / Math.PI; //越高代表离垛边越靠近
+        }
+
+        /// <summary>
+        /// 将所有雷达点转换为供MATLAB机器学习模型使用的1维数组，数组长度由累积帧数乘以X坐标分块的数量决定
+        /// </summary>
+        /// <param name="source">数据源</param>
+        /// <param name="xf">纵向坐标最小值</param>
+        /// <param name="xc">纵向坐标最大值</param>
+        /// <param name="yf">横向坐标最小值</param>
+        /// <param name="yc">横向坐标最大值</param>
+        /// <param name="dist_ex_count">根据距其它点的距离和来排除的点数目，假如大于等于0小于1，则为排除点的比例（可以不排除，不可以全排除）</param>
+        /// <param name="extraProc">是否采取额外处理措施（重心斜率相关操作）</param>
+        /// <returns></returns>
+        public static double[] GetSurfaceArray(IEnumerable<SensorGeneral> source, double xf, double xc, double yf, double yc, double dist_ex_count, bool extraProc, out string message)
+        {
+            message = string.Empty;
+            double[] def = null; //默认值
+            if (source == null || source.Count() == 0)
+            {
+                message = "未提供任何点的数据";
+                return def;
+            }
+            List<SensorGeneral> sourceList = source.Where(g => g.DistLong.Between(xf, xc) && g.DistLat.Between(yf, yc)).ToList(); //排除不在特定坐标范围内的点
+            List<SensorGeneral> finalList = new List<SensorGeneral>(); //最终保留点列表
+            List<double> listx = new List<double>(), listy = new List<double>(), listz = new List<double>();
+            List<Anonymous> checkList = new List<Anonymous>();
+            foreach (var gi in sourceList)
+            {
+                List<double> listDists = new List<double>();
+                foreach (var gj in sourceList)
+                    //排除同一个点
+                    if (gi != gj)
+                        listDists.Add(Math.Sqrt(Math.Pow(gj.DistLong - gi.DistLong, 2) + Math.Pow(gj.DistLat - gi.DistLat, 2) + Math.Pow(gj.PushfCounter - gi.PushfCounter, 2))); //计算与其它所有点的距离并储存
+                //找出排序靠前若干位的距离值并取平均值，记为单点距离平均值
+                listDists.Sort();
+                int ex_count = dist_ex_count >= 0 && dist_ex_count < 1 ? (int)(listDists.Count * dist_ex_count) : (int)dist_ex_count;
+                ex_count = ex_count == 0 ? 1 : ex_count; //至少为1
+                listDists = listDists.Take(ex_count).ToList();
+                if (listDists.Count == 0)
+                    continue;
+                double dist = listDists.Average();
+                checkList.Add(new Anonymous() { Id = gi.Id, Dist = dist });
+            }
+            double dist_avr = checkList.Count == 0 ? 0 : checkList.Select(a => a.Dist).Average() * BaseConst.DistFilterCoefficient; //求所有点的单点距离平均值的平均值，记为全局平均值
+            double xmin = double.MaxValue; //X最小值
+            int ymax = 0; //Y最大值
+            double xsum = 0, ysum = 0, zsum = 0, xa = 0, ya = 0, za = 0; //所有点XYZ坐标和，以求平均值；所有点XYZ坐标的平均值
+            checkList.RemoveAll(a => a.Dist <= dist_avr); //排除所有距离不超过全局平均值的点，剩下的点则为距离较远的点
+            //checkList = checkList.OrderByDescending(a => a.Dist).Take(ex_count).ToList();
+            foreach (var g in sourceList)
+            {
+                //排除距离其它点太远的点
+                if (checkList.Count(c => c.Id == g.Id) > 0)
+                    continue;
+                //x列向量为纵向坐标，y横向量为帧序号（清算次数），z列向量为横向坐标
+                if (extraProc)
+                {
+                    finalList.Add(g);
+                    xsum += g.DistLong;
+                    zsum += g.DistLat;
+                    ysum += g.PushfCounter;
+                }
+                //遍历x的最小值，y的最大值
+                if (g.DistLong < xmin)
+                    xmin = g.DistLong;
+                if (g.PushfCounter > ymax)
+                    ymax = g.PushfCounter;
+                listx.Add(g.DistLong);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
+            }
+            sourceList.Clear();
+            //假如不采取额外处理措施或者所剩点数为0，直接进入最终阶段
+            if (!extraProc || listx.Count == 0)
+                goto FINAL_STEP;
+            #region 额外处理措施（针对斗轮左侧雷达）
+            //重心坐标，开始寻找距离重心坐标最近的点
+            xa = xsum / finalList.Count;
+            za = zsum / finalList.Count;
+            ya = ysum / finalList.Count;
+            //将第一个点作为默认最近点，计算初始最近距离
+            SensorGeneral nearest = finalList.First();
+            double distMin = Math.Sqrt(Math.Pow(nearest.DistLong - xa, 2) + Math.Pow(nearest.DistLat - za, 2) + Math.Pow(nearest.PushfCounter - ya, 2));
+            //循环最终列表，各个点之间比较距离重心最近的点
+            foreach (SensorGeneral g in finalList)
+            {
+                double dist = Math.Sqrt(Math.Pow(g.DistLong - xa, 2) + Math.Pow(g.DistLat - za, 2) + Math.Pow(g.PushfCounter - ya, 2));
+                if (dist < distMin)
+                {
+                    distMin = dist;
+                    nearest = g;
+                }
+            }
+            xmin = double.MaxValue;
+            ymax = 0;
+            listx.Clear();
+            listz.Clear();
+            listy.Clear();
+            foreach (SensorGeneral g in finalList)
+            {
+                double k = (g.DistLat - nearest.DistLat) / (g.DistLong - nearest.DistLong); //计算最终列表中每个点
+                if (k < 0)
+                    continue;
+                //遍历x的最小值，y的最大值
+                if (g.DistLong < xmin)
+                    xmin = g.DistLong;
+                if (g.PushfCounter > ymax)
+                    ymax = g.PushfCounter;
+                listx.Add(g.DistLong);
+                listz.Add(g.DistLat);
+                listy.Add(g.PushfCounter);
+            }
+        #endregion
+
+        FINAL_STEP:
+            //遍历所有坐标点，根据XY坐标决定Z坐标应放在数组中的哪个位置
+            List<double>[] groups = new List<double>[(ymax + 1) * XLEN];
+            for (int i = 0; i < listx.Count; i++)
+            {
+                //X坐标减去X最小值并向下取整，范围应从0到_xlen-1，假如超过则跳到下一个循环
+                int x = (int)Math.Floor(listx[i] - xmin), y = (int)listy[i];
+                if (x >= XLEN)
+                    continue;
+                double z = listz[i];
+                int index = x + y * XLEN; //Y坐标每增大1，则数组下标增加_xlen
+                List<double> group = groups[index];
+                if (group == null)
+                    group = new List<double>();
+                group.Add(listz[i]);
+            }
+            double[] results = groups.Length == 0 ? def : groups.Select(group => group == null || group.Count == 0 ? 0 : group.Average()).ToArray();
+            return results; //越高代表离垛边越靠近
+        }
+        #endregion
+
+        /// <summary>
+        /// 过滤给定网格单元列表中的离群网格并返回过滤后列表
+        /// </summary>
+        /// <param name="blocks">待过滤离群网格单元的网格单元列表</param>
+        /// <returns></returns>
+        public static List<BlockUnit> GetOutlierFilteredBlocks(List<BlockUnit> blocks)
+        {
+            if (blocks == null)
+                return null;
+            if (blocks.Count == 0)
+                return new List<BlockUnit>();
+
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                List<double> dists = new List<double>();
+                BlockUnit outer = blocks[i];
+                outer.AverageDistance = 0;
+                for (int j = 0; j < blocks.Count; j++)
+                {
+                    //排除相同点
+                    if (i == j)
+                        continue;
+                    double dist = outer.DistanceTo(blocks[j]);
+                    dists.Add(dist);
+                }
+                //对与其它点的距离进行排序，并选出距离最小的若干个
+                dists.Sort();
+                dists = dists.Take(5).ToList();
+                if (dists.Count == 0)
+                    continue;
+                outer.AverageDistance = dists.Average();
+            }
+            //计算以上符合条件的网格单元互相之间平均最近距离的平均值与方差，网格单元只保留平均最近距离不大于此平均值与方差的和
+            List<double> averages = blocks.Select(b => b.AverageDistance).ToList();
+            double dist_aver = averages.Average(), dist_std = averages.Standard();
+            return blocks.Where(b => b.AverageDistance <= dist_aver + dist_std).ToList();
         }
 
         /// <summary>
@@ -735,7 +1727,7 @@ property float rcs";
                     level = BaseConst.ThreatLevelValues.Length - i - 1;
                     //if (value >= r * BaseConst.ThreatLevelValues[i])
                     //假如测距为0或测距不大于-100，或测距大于该级别报警距离
-                    if (value == 0 || value <= -100 || value >= r * BaseConst.ThreatLevelValues[i])
+                    if (/*value == 0 || */value <= -100 || value >= r * BaseConst.ThreatLevelValues[i])
                         break;
                     level++;
                 }
@@ -744,15 +1736,32 @@ property float rcs";
         }
 
         /// <summary>
-        /// 2进制转10进制字符串
+        /// 根据给定的行走方向，俯仰方向，回转方向判断臂架运动方向（只当行走与回转方向不相反时）
         /// </summary>
-        /// <param name="binary"></param>
+        /// <param name="walkDir">行走方向</param>
+        /// <param name="pitchDir">俯仰方向</param>
+        /// <param name="yawDir">回转方向</param>
         /// <returns></returns>
-        public static string Binary2Decimal(string binary)
+        public static Directions GetMovingDirection(Directions walkDir, Directions pitchDir, Directions yawDir)
         {
-            try { return Convert.ToInt32(binary, 2).ToString(); }
-            catch { return string.Empty; }
+            Directions result = Directions.None;
+            if ((walkDir == Directions.Left && yawDir == Directions.None) || (walkDir == Directions.Left && yawDir == Directions.Left) || (walkDir == Directions.None && yawDir == Directions.Left))
+                result = Directions.Left;
+            else if ((walkDir == Directions.Right && yawDir == Directions.None) || (walkDir == Directions.Right && yawDir == Directions.Right) || (walkDir == Directions.None && yawDir == Directions.Right))
+                result = Directions.Right;
+            return result;
         }
+
+        ///// <summary>
+        ///// 2进制转10进制字符串
+        ///// </summary>
+        ///// <param name="binary"></param>
+        ///// <returns></returns>
+        //public static string Binary2Decimal(string binary)
+        //{
+        //    try { return Convert.ToInt32(binary, 2).ToString(); }
+        //    catch { return string.Empty; }
+        //}
 
         /// <summary>
         /// 通过消息ID获取传感器ID与实际的MessageId_0
@@ -767,24 +1776,24 @@ property float rcs";
         }
         #endregion
 
-        /// <summary>
-        /// 将集群或目标一般信息保存到点云文件
-        /// 返回：0 成功；1 文件名为空；2 顶点列表为空
-        /// </summary>
-        /// <typeparam name="T">集群或目标一般信息类</typeparam>
-        /// <param name="messages">消息List</param>
-        /// <param name="use_converted">是否使用转换后的坐标</param>
-        /// <returns></returns>
-        public static int WriteMessagesToFile<T>(IEnumerable<T> messages, bool use_converted)
-        {
-            if (messages == null || messages.Count() == 0)
-                return 0;
-            List<string> dots = new List<string>();
-            foreach (dynamic m in messages)
-                if (m is ClusterGeneral || m is ObjectGeneral)
-                    dots.Add(string.Format(BaseConst.AddingCustomInfo ? "{0} {1} {2} {3} {4} {5}{6}" : "{0} {1} {2} {3} {4} {5}", Math.Round((!use_converted ? m.DistLat * -1 : m.ModiCoors.X) * 1000), Math.Round((!use_converted ? m.DistLong : m.ModiCoors.Y) * 1000), !use_converted ? 0 : Math.Round(m.ModiCoors.Z * 1000), m.Color.R, m.Color.G, m.Color.B, m.GetCustomInfo()));
-            return BaseConst.PlyFileClient.SaveVertexes(dots);
-        }
+        ///// <summary>
+        ///// 将集群或目标一般信息保存到点云文件
+        ///// 返回：0 成功；1 文件名为空；2 顶点列表为空
+        ///// </summary>
+        ///// <typeparam name="T">集群或目标一般信息类</typeparam>
+        ///// <param name="messages">消息List</param>
+        ///// <param name="use_converted">是否使用转换后的坐标</param>
+        ///// <returns></returns>
+        //public static int WriteMessagesToFile<T>(IEnumerable<T> messages, bool use_converted)
+        //{
+        //    if (messages == null || messages.Count() == 0)
+        //        return 0;
+        //    List<string> dots = new List<string>();
+        //    foreach (dynamic m in messages)
+        //        if (m is ClusterGeneral || m is ObjectGeneral)
+        //            dots.Add(string.Format(BaseConst.AddingCustomInfo ? "{0} {1} {2} {3} {4} {5}{6}" : "{0} {1} {2} {3} {4} {5}", Math.Round((!use_converted ? m.DistLat * -1 : m.ModiCoors.X) * 1000), Math.Round((!use_converted ? m.DistLong : m.ModiCoors.Y) * 1000), !use_converted ? 0 : Math.Round(m.ModiCoors.Z * 1000), m.Color.R, m.Color.G, m.Color.B, m.GetCustomInfo()));
+        //    return BaseConst.PlyFileClient.SaveVertexes(dots);
+        //}
     }
 
     public class Anonymous

@@ -41,7 +41,6 @@ namespace ARS408.Model
         /// <summary>
         /// 根据转换后Z坐标的大小排序
         /// </summary>
-        //public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.ModiCoors.Z.CompareTo(b.ModiCoors.Z);
         public static Comparison<SensorGeneral> HeightComparison = (a, b) => a.Z.CompareTo(b.Z);
         #endregion
 
@@ -96,6 +95,16 @@ namespace ARS408.Model
         public double Angle { get; set; }
 
         /// <summary>
+        /// 雷达坐标系内点距离原点的距离
+        /// </summary>
+        public double Radius { get; set; }
+
+        /// <summary>
+        /// 单机XYZ坐标系内点距离原点的距离
+        /// </summary>
+        public double RadiusXyz { get; set; }
+
+        /// <summary>
         /// 当前点在单机YOZ平面内的角度，自Y轴正向转向Z轴正向为正，反之为负
         /// </summary>
         public double AngleYoz { get; set; }
@@ -103,12 +112,12 @@ namespace ARS408.Model
         /// <summary>
         /// 与竖直向下的角度的差值
         /// </summary>
-        public double AngleVert { get { return Math.Abs(this.Angle - OpcConst.PitchAngle); } }
+        public double AngleVert { get { return Math.Abs(this.Angle - BaseConst.OpcDataSource.PitchAngle); } }
 
         /// <summary>
         /// 与竖直向下的角度的差值的层次（越靠近竖直角度层次越小，每个层次差1°）
         /// </summary>
-        public double AngleLevel { get { return Math.Floor(Math.Abs(this.Angle - OpcConst.PitchAngle) / 1); } }
+        public double AngleLevel { get { return Math.Floor(Math.Abs(this.Angle - BaseConst.OpcDataSource.PitchAngle) / 1); } }
 
         /// <summary>
         /// 纵向的相对速度（x），米/秒
@@ -236,6 +245,8 @@ namespace ARS408.Model
         /// 距检测边界的距离，与检测方式（点线面）与雷达朝向（海北陆南）有关
         /// </summary>
         public double DistanceToBorder { get; set; }
+
+        public bool HelpFlag { get; set; }
         #endregion
 
         /// <summary>
@@ -253,6 +264,8 @@ namespace ARS408.Model
             this.Base = message;
         }
 
+        public abstract SensorGeneral Copy();
+
         /// <summary>
         /// 将从雷达收到的二进制数据转换为雷达基础信息
         /// </summary>
@@ -264,8 +277,10 @@ namespace ARS408.Model
         /// </summary>
         public void CalculateAngle()
         {
-            this.Angle = this._dist_long == 0 ? Math.Sign(this._dist_lat) * 90 : Math.Atan(this._dist_lat / this._dist_long) * 180 / Math.PI;
-            this.AngleYoz = this.Y == 0 ? Math.Sign(this.Z) * 90 : Math.Atan(this.Z / this.Y) * 180 / Math.PI;
+            Angle = _dist_long == 0 ? Math.Sign(_dist_lat) * 90 : Math.Atan(_dist_lat / _dist_long) * 180 / Math.PI;
+            Radius = Math.Sqrt(Math.Pow(_dist_long, 2) + Math.Pow(_dist_lat, 2));
+            RadiusXyz = Math.Sqrt(Math.Pow(X, 2) + Math.Pow(Y, 2) + Math.Pow(Z, 2));
+            AngleYoz = Y == 0 ? Math.Sign(Z) * 90 : Math.Atan(Z / Y) * 180 / Math.PI;
         }
 
         /// <summary>

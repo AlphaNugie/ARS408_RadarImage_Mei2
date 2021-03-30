@@ -27,6 +27,8 @@ namespace ARS408.Model
             }
         }
 
+        //public abstract SensorMessage Copy();
+
         /// <summary>
         /// 将从雷达收到的二进制数据转换为实际信息
         /// </summary>

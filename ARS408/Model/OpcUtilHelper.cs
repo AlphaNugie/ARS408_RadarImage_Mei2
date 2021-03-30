@@ -46,44 +46,9 @@ namespace ARS408.Model
         public string[] OpcItemNames { get; set; }
 
         ///// <summary>
-        ///// 行走位置
+        ///// 行走位置单位对应的系数（例如，毫米为1，厘米为10）
         ///// </summary>
-        //public double WalkingPosition { get; set; }
-
-        ///// <summary>
-        ///// 大臂俯仰角（°）
-        ///// </summary>
-        //public double PitchAngle { get; set; }
-
-        ///// <summary>
-        ///// 大臂回转角度
-        ///// </summary>
-        //public double YawAngle { get; set; }
-
-        ///// <summary>
-        ///// 溜桶俯仰
-        ///// </summary>
-        //public double WalkingLeft_Plc { get; set; }
-
-        ///// <summary>
-        ///// 溜桶回转
-        ///// </summary>
-        //public double WalkingRight_Plc { get; set; }
-
-        ///// <summary>
-        ///// 皮带速度
-        ///// </summary>
-        //public double Pitch_Plc { get; set; }
-
-        ///// <summary>
-        ///// 瞬时流量
-        ///// </summary>
-        //public double Yaw_Plc { get; set; }
-
-        /// <summary>
-        /// 行走位置单位对应的系数（例如，毫米为1，厘米为10）
-        /// </summary>
-        public int UnitRatio { get; set; }
+        //public int UnitRatio { get; set; }
 
         /// <summary>
         /// 读标签值的间隔（毫秒）
@@ -107,7 +72,7 @@ namespace ARS408.Model
         public OpcUtilHelper(Shiploader shiploader)
         {
             this.Shiploader = shiploader;
-            this.UnitRatio = int.Parse(BaseConst.IniHelper.ReadData("OPC", "PositionUnitRatio"));
+            //this.UnitRatio = int.Parse(BaseConst.IniHelper.ReadData("OPC", "PositionUnitRatio"));
             this.ReadInterval = int.Parse(BaseConst.IniHelper.ReadData("OPC", "ReadInterval"));
         }
 
@@ -133,7 +98,7 @@ namespace ARS408.Model
                 this.AddGroupItems();
             }
             catch (Exception ex) { this.LastErrorMessage = "OPC connection failed. " + ex.Message; }
-            
+
             this.ThreadControl(true);
         }
 
@@ -196,7 +161,9 @@ namespace ARS408.Model
                     this.GetFullItemName(this.Shiploader.TopicNameBucketPitch, this.Shiploader.ItemNameBucketPitch),
                     this.GetFullItemName(this.Shiploader.TopicNameBucketYaw, this.Shiploader.ItemNameBucketYaw),
                     this.GetFullItemName(this.Shiploader.TopicNameBeltSpeed, this.Shiploader.ItemNameBeltSpeed),
-                    this.GetFullItemName(this.Shiploader.TopicNameStream, this.Shiploader.ItemNameStream)
+                    this.GetFullItemName(this.Shiploader.TopicNameStream, this.Shiploader.ItemNameStream),
+                    this.GetFullItemName(this.Shiploader.TopicNameStream, "Local:4:I.Data[18]"),
+                    this.GetFullItemName(this.Shiploader.TopicNameStream, "WRH_Radar_Pile_Height"),
                 };
 
                 this.OpcItemNames = list.ToArray();
@@ -213,6 +180,11 @@ namespace ARS408.Model
 
                 Array errors, strit = itemIds.ToArray(), lci = clientHandlers.ToArray();
                 this.OpcGroup.OPCItems.AddItems(count, ref strit, ref lci, out ServerHandles, out errors);
+                //去除服务端句柄中最后一项（假如为0）
+                List<int> enu = ServerHandles.Cast<int>().ToList();
+                enu.Insert(0, 0);
+                if (enu.Last() == 0)
+                    ServerHandles = enu.Take(enu.Count() - 1).ToArray();
                 this.OpcGroup.IsSubscribed = true;
                 this.OpcGroup.UpdateRate = 30;
             }
@@ -292,8 +264,8 @@ namespace ARS408.Model
                 try
                 {
                     this.ReadItemValues();
-                    try { this.UnitRatio = int.Parse(BaseConst.IniHelper.ReadData("OPC", "PositionUnitRatio")); }
-                    catch (Exception) { }
+                    //try { this.UnitRatio = int.Parse(BaseConst.IniHelper.ReadData("OPC", "PositionUnitRatio")); }
+                    //catch (Exception) { }
                 }
                 catch (Exception e) { FileClient.WriteExceptionInfo(e, "循环更新OPC项的值时出现问题", true); }
             }
@@ -306,7 +278,8 @@ namespace ARS408.Model
         {
             try
             {
-                //假如未添加任何OPC项
+                //假如有任何OPC项添加失败
+                //if (this.OpcGroup.OPCItems.Count < ServerHandles.Length)
                 if (this.OpcGroup.OPCItems.Count <= 0)
                     return;
 
@@ -327,8 +300,13 @@ namespace ARS408.Model
                 OpcConst.YawAngle = double.Parse(itemValues.GetValue(3).ToString());
                 OpcConst.WalkingLeft_Plc = double.Parse(itemValues.GetValue(4).ToString());
                 OpcConst.WalkingRight_Plc = double.Parse(itemValues.GetValue(5).ToString());
-                OpcConst.Pitch_Plc = double.Parse(itemValues.GetValue(6).ToString());
-                OpcConst.Yaw_Plc = double.Parse(itemValues.GetValue(7).ToString());
+                OpcConst.PitchAngle_Plc = double.Parse(itemValues.GetValue(6).ToString());
+                OpcConst.YawAngle_Plc = double.Parse(itemValues.GetValue(7).ToString());
+                OpcConst.YawSpeed_Plc = double.Parse(itemValues.GetValue(8).ToString()) / 14500 * 0.13 * 360 / 60;
+                //尝试读取地面高度，假如读取不到则设为50
+                try { OpcConst.PileHeight_Plc = double.Parse(itemValues.GetValue(9).ToString()); }
+                catch (Exception) { OpcConst.PileHeight_Plc = 50; }
+                //OpcConst.PileHeight_Plc = double.Parse(itemValues.GetValue(9).ToString());
             }
             catch (Exception ex)
             {

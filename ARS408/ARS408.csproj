@@ -53,6 +53,10 @@
     <Reference Include="MathNet.Numerics, Version=4.12.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.4.12.0\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
+    <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    <Reference Include="OpcLibrary">
+      <HintPath>..\..\..\CommonLib\CommonLib\OpcLibrary\bin\Debug\netstandard2.0\OpcLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="protobuf-net, Version=2.4.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
       <HintPath>..\packages\protobuf-net.2.4.6\lib\net40\protobuf-net.dll</HintPath>
     </Reference>
@@ -88,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Base.cs" />
+    <Compile Include="Core\BlockConst.cs" />
     <Compile Include="Core\DataService_GroupType.cs" />
     <Compile Include="Core\DataService_Radar.cs" />
     <Compile Include="Core\DataService_RadarGroup.cs" />
@@ -95,7 +100,8 @@
     <Compile Include="Core\DataService_Sqlite.cs" />
     <Compile Include="Core\DataService_ThreatLevel.cs" />
     <Compile Include="Core\Enums.cs" />
-    <Compile Include="Core\OpcConst.cs" />
+    <Compile Include="Core\OpcDataSource.cs" />
+    <Compile Include="Core\MatlabFunctions.cs" />
     <Compile Include="Forms\FormCoorsLimitationConfig.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -169,6 +175,8 @@
       <DependentUpon>FormThreatLevels.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\BaseMessage.cs" />
+    <Compile Include="Model\BlockCluster.cs" />
+    <Compile Include="Model\BlockUnit.cs" />
     <Compile Include="Model\ClusterGeneral.cs" />
     <Compile Include="Model\ClusterQuality.cs" />
     <Compile Include="Model\ClusterStatus.cs" />
@@ -176,7 +184,7 @@
     <Compile Include="Model\ObjectGeneral.cs" />
     <Compile Include="Model\ObjectQuality.cs" />
     <Compile Include="Model\ObjectStatus.cs" />
-    <Compile Include="Model\OpcUtilHelper.cs" />
+    <Compile Include="Model\OpcTask.cs" />
     <Compile Include="Model\Radar.cs" />
     <Compile Include="Model\RadarGroup.cs" />
     <Compile Include="Model\RadarState.cs" />

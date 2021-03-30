@@ -94,6 +94,22 @@ namespace ARS408.Model
         /// </summary>
         public ClusterGeneral() : base(null, null) { }
 
+        public override SensorGeneral Copy()
+        {
+            ClusterGeneral general = new ClusterGeneral
+            {
+                Id = Id,
+                DistLong = DistLong,
+                DistLat = DistLat,
+                VrelLong = VrelLong,
+                VrelLat = VrelLat,
+                DynProp = DynProp,
+                RCS = RCS,
+                PushfCounter = PushfCounter
+            };
+            return general;
+        }
+
         /// <summary>
         /// 转换2进制数据
         /// </summary>
@@ -102,13 +118,13 @@ namespace ARS408.Model
         {
             try
             {
-                this.Id = Convert.ToByte(binary.Substring(0, 8), 2);
-                this.DistLong = Math.Round(0.2 * Convert.ToUInt16(binary.Substring(8, 13), 2) - 500, 1);
-                this.DistLat = Math.Round(0.2 * Convert.ToUInt16(binary.Substring(22, 10), 2) - 102.3, 1);
-                this.VrelLong = Math.Round(0.25 * Convert.ToUInt16(binary.Substring(32, 10), 2) - 128, 2);
-                this.VrelLat = Math.Round(0.25 * Convert.ToUInt16(binary.Substring(42, 9), 2) - 64, 2);
-                this.DynProp = (DynProp)Convert.ToByte(binary.Substring(53, 3), 2);
-                this.RCS = 0.5 * Convert.ToUInt16(binary.Substring(56, 8), 2) - 64;
+                Id = Convert.ToByte(binary.Substring(0, 8), 2);
+                DistLong = Math.Round(0.2 * Convert.ToUInt16(binary.Substring(8, 13), 2) - 500, 1);
+                DistLat = Math.Round(0.2 * Convert.ToUInt16(binary.Substring(22, 10), 2) - 102.3, 1);
+                VrelLong = Math.Round(0.25 * Convert.ToUInt16(binary.Substring(32, 10), 2) - 128, 2);
+                VrelLat = Math.Round(0.25 * Convert.ToUInt16(binary.Substring(42, 9), 2) - 64, 2);
+                DynProp = (DynProp)Convert.ToByte(binary.Substring(53, 3), 2);
+                RCS = 0.5 * Convert.ToUInt16(binary.Substring(56, 8), 2) - 64;
             }
             catch (Exception) { }
         }

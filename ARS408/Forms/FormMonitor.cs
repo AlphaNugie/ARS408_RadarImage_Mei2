@@ -1,6 +1,7 @@
 ﻿using ARS408.Core;
 using ARS408.Model;
 using CommonLib.Clients;
+using CommonLib.Extensions;
 using CommonLib.Function;
 using CommonLib.UIControlUtil;
 using OPCAutomation;
@@ -52,7 +53,7 @@ namespace ARS408.Forms
         /// <summary>
         /// OPC工具
         /// </summary>
-        public OpcUtilHelper OpcHelper { get; private set; }
+        public OpcTask OpcTask { get; private set; }
 
         /// <summary>
         /// OPC组
@@ -75,21 +76,21 @@ namespace ARS408.Forms
             InitializeComponent();
             BaseConst.Log.WriteLogsToFile("监视页面初始化中...shiploader_id: " + shiploader_id);
             this.shiploader_id = shiploader_id;
-            this.column_width = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
-            this.Loading = true;
-            this.DataSource = null;
-            this.UpdateShiploader();
-            this.InitOpcHelper();
-            this.DataSourceRefresh();
+            column_width = tableLayoutPanel_Main.ColumnStyles[0].Width;
+            Loading = true;
+            DataSource = null;
+            UpdateShiploader();
+            InitOpcTask();
+            DataSourceRefresh();
 
-            this.threadUpdateItems = new Thread(new ThreadStart(this.UpdateItemsLoop)) { IsBackground = true };
-            this.threadWriteItems = new Thread(new ThreadStart(this.WriteItemValuesLoop)) { IsBackground = true };
-            this.AddGroupItemsAsync();
-            this.threadUpdateItems.Start();
-            //this.threadWriteitems.Start();
+            threadUpdateItems = new Thread(new ThreadStart(UpdateItemsLoop)) { IsBackground = true };
+            threadWriteItems = new Thread(new ThreadStart(WriteItemValuesLoop)) { IsBackground = true };
+            AddGroupItemsAsync();
+            threadUpdateItems.Start();
+            //threadWriteitems.Start();
 
             if (BaseConst.AutoConnect)
-                this.StartOrEnd(true);
+                StartOrEnd(true);
 
             BaseConst.Log.WriteLogsToFile("监视页面初始化完成, shiploader_id: " + shiploader_id);
         }
@@ -105,7 +106,7 @@ namespace ARS408.Forms
         /// <returns></returns>
         private void UpdateShiploader()
         {
-            DataTable table = (new DataService_Shiploader()).GetShiploader(this.shiploader_id);
+            DataTable table = (new DataService_Shiploader()).GetShiploader(shiploader_id);
             Shiploader loader = null;
             if (table != null && table.Rows.Count > 0)
             {
@@ -133,28 +134,14 @@ namespace ARS408.Forms
                     ItemNameStream = row["item_name_stream"].ToString()
                 };
             }
-            this.Shiploader = loader;
-        }
-
-        /// <summary>
-        /// OPC初始化
-        /// </summary>
-        private void InitOpcHelper()
-        {
-            this.OpcHelper = new OpcUtilHelper(this.Shiploader);
-            new Thread(new ThreadStart(() =>
-            {
-                this.OpcHelper.Init();
-                this.label_opc.SafeInvoke(() => this.label_opc.Text = this.OpcHelper.LastErrorMessage);
-            }))
-            { IsBackground = true }.Start();
+            Shiploader = loader;
         }
 
         private void DataSourceRefresh()
         {
             try
             {
-                this.DataSource = this.dataService.GetAllLevels();
+                DataSource = dataService.GetAllLevels();
             }
             catch (Exception e)
             {
@@ -163,8 +150,8 @@ namespace ARS408.Forms
                 return;
             }
 
-            this.treeView_Main.BindTreeViewDataSource(this.DataSource, this.parent_field, this.key_field, this.display_field);
-            this.Loading = false;
+            treeView_Main.BindTreeViewDataSource(DataSource, parent_field, key_field, display_field);
+            Loading = false;
         }
 
         /// <summary>
@@ -173,14 +160,14 @@ namespace ARS408.Forms
         /// <param name="flag">假如为true则开始，否则结束</param>
         private void StartOrEnd(bool flag)
         {
-            //bool flag = this.button_StartOrEnd.Text.Equals("开始");
+            //bool flag = button_StartOrEnd.Text.Equals("开始");
             BaseConst.Log.WriteLogsToFile("通讯操作开始，全部" + (flag ? "开始" : "结束"));
             foreach (FormDisplay form in BaseConst.DictForms.Values)
             {
                 try { form.StartOrEndReceiving(flag); }
                 catch (Exception) { }
             }
-            this.button_StartOrEnd.Text = flag ? "结束" : "开始";
+            button_StartOrEnd.Text = flag ? "结束" : "开始";
         }
 
         /// <summary>
@@ -189,7 +176,7 @@ namespace ARS408.Forms
         /// <param name="radar">雷达信息</param>
         private void ShowForm(Radar radar)
         {
-            this.ShowForm(radar, null);
+            ShowForm(radar, null);
         }
 
         /// <summary>
@@ -198,7 +185,7 @@ namespace ARS408.Forms
         /// <param name="form">待显示的窗体</param>
         private void ShowForm(Form form)
         {
-            this.ShowForm(null, form);
+            ShowForm(null, form);
         }
 
         /// <summary>
@@ -208,10 +195,10 @@ namespace ARS408.Forms
         /// <param name="form">没有雷达信息为空时显示的窗体</param>
         private void ShowForm(Radar radar, Form form)
         {
-            if (this.tabControl_Main.InvokeRequired)
+            if (tabControl_Main.InvokeRequired)
             {
-                ShowFormHandler handler = new ShowFormHandler(this.ShowForm);
-                this.Invoke(handler, radar);
+                ShowFormHandler handler = new ShowFormHandler(ShowForm);
+                Invoke(handler, radar);
                 return;
             }
 
@@ -224,11 +211,11 @@ namespace ARS408.Forms
 
             string name = radar != null ? radar.Name : form.Name;
             //假如Tab页已存在，选中该页面
-            foreach (TabPage tabPage in this.tabControl_Main.TabPages)
+            foreach (TabPage tabPage in tabControl_Main.TabPages)
             {
                 if (tabPage.Name.Equals(name))
                 {
-                    this.tabControl_Main.SelectedTab = tabPage;
+                    tabControl_Main.SelectedTab = tabPage;
                     return;
                 }
             }
@@ -245,8 +232,8 @@ namespace ARS408.Forms
             page.Name = name;
             page.AutoScroll = true;
 
-            this.tabControl_Main.TabPages.Add(page);
-            this.tabControl_Main.SelectedTab = page;
+            tabControl_Main.TabPages.Add(page);
+            tabControl_Main.SelectedTab = page;
             display.Show();
             if (display is FormDisplay)
                 ((FormDisplay)display).IsShown = true;
@@ -275,11 +262,28 @@ namespace ARS408.Forms
         /// </summary>
         private void DisposeTabPages_all()
         {
-            foreach (TabPage page in this.tabControl_Main.TabPages) this.DisposeTabPage(page);
+            foreach (TabPage page in tabControl_Main.TabPages) DisposeTabPage(page);
         }
         #endregion
 
         #region OPC
+        /// <summary>
+        /// OPC初始化
+        /// </summary>
+        private void InitOpcTask()
+        {
+            OpcTask = new OpcTask(Shiploader);
+            OpcTask.Init();
+            OpcTask.Run();
+            label_opc.SafeInvoke(() => label_opc.Text = OpcTask.ErrorMessage);
+            //new Thread(new ThreadStart(() =>
+            //{
+            //    OpcTask.Init();
+            //    label_opc.SafeInvoke(() => label_opc.Text = OpcTask.LastErrorMessage);
+            //}))
+            //{ IsBackground = true }.Start();
+        }
+
         /// <summary>
         /// 异步添加OPC组与标签
         /// </summary>
@@ -287,11 +291,11 @@ namespace ARS408.Forms
         {
             new Thread(new ThreadStart(() =>
             {
-                this.AddGroupItems();
-                if (this.OpcHelper != null && !string.IsNullOrWhiteSpace(this.OpcHelper.LastErrorMessage))
-                    this.label_opc.SafeInvoke(() => { this.label_opc.Text = this.OpcHelper.LastErrorMessage; });
-                if (BaseConst.RadarList != null && BaseConst.RadarList.Count > 0 && this.OpcHelper != null)
-                    this.threadWriteItems.Start();
+                AddGroupItems();
+                if (OpcTask != null && !string.IsNullOrWhiteSpace(OpcTask.ErrorMessage))
+                    label_opc.SafeInvoke(() => { label_opc.Text = OpcTask.ErrorMessage; });
+                if (BaseConst.RadarList != null && BaseConst.RadarList.Count > 0 && OpcTask != null)
+                    threadWriteItems.Start();
             }))
             { IsBackground = true }.Start();
         }
@@ -303,34 +307,34 @@ namespace ARS408.Forms
         public bool AddGroupItems()
         {
             bool result = false;
-            if (this.Shiploader == null || BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || this.OpcHelper == null)
+            if (Shiploader == null || BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || OpcTask == null)
                 return result;
             try
             {
-                this.OpcGroup = this.OpcHelper.OpcServer.OPCGroups.Add("Group_Radar_All");
-                string basic = "[" + this.Shiploader.TopicName + "]" + "{0}";
-                this.OpcItemNames = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
-                this.OpcItemNames.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
+                OpcGroup = OpcTask.OpcHelper.OpcServer.OPCGroups.Add("Group_Radar_All");
+                string basic = "[" + Shiploader.TopicName + "]" + "{0}";
+                OpcItemNames = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
+                OpcItemNames.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
 
-                int count = this.OpcItemNames.Count;
+                int count = OpcItemNames.Count;
                 string[] itemIds = new string[count + 1];
                 int[] clientHandlers = new int[count + 1];
 
                 for (int i = 1; i <= count; i++)
                 {
                     clientHandlers[i] = i;
-                    itemIds[i] = this.OpcItemNames[i - 1];
+                    itemIds[i] = OpcItemNames[i - 1];
                 }
 
                 Array errors, strit = itemIds.ToArray(), lci = clientHandlers.ToArray();
-                this.OpcGroup.OPCItems.AddItems(count, ref strit, ref lci, out ServerHandles, out errors);
-                this.OpcGroup.IsSubscribed = true;
-                this.OpcGroup.UpdateRate = 30;
+                OpcGroup.OPCItems.AddItems(count, ref strit, ref lci, out ServerHandles, out errors);
+                OpcGroup.IsSubscribed = true;
+                OpcGroup.UpdateRate = 30;
             }
             catch (Exception e)
             {
-                this.OpcHelper.LastErrorMessage = "添加OPC组与标签时出现问题. " + e.Message;
-                FileClient.WriteExceptionInfo(e, this.OpcHelper.LastErrorMessage, false);
+                string errorMessage = "添加OPC组与标签时出现问题. " + e.Message;
+                FileClient.WriteExceptionInfo(e, errorMessage, false);
                 return result;
             }
             return !result;
@@ -338,15 +342,16 @@ namespace ARS408.Forms
 
         private void UpdateItemsLoop()
         {
-            int interval = 50;
-            //int interval = BaseConst.RefreshInterval;
+            //int interval = 50;
             while (true)
             {
-                this.UpdateItems();
-                Thread.Sleep(interval);
+                UpdateItems();
+                //Thread.Sleep(interval);
+                Thread.Sleep(BlockConst.ProcessInternal);
             }
         }
 
+        private readonly Distances _leftDists = new Distances(), _rightDists = new Distances();
         private void UpdateItems()
         {
             if (BaseConst.RadarList == null)
@@ -365,10 +370,99 @@ namespace ARS408.Forms
                 else
                     feet.Insert(0, radar.ThreatLevelBinary);
             }
-            this.radarState = Convert.ToUInt32(states.Length > 0 ? states.ToString() : "0", 2);
-            this.bucketAlarms = Convert.ToUInt32(buckets.Length > 0 ? buckets.ToString() : "0", 2);
-            this.armAlarms = Convert.ToUInt32(arms.Length > 0 ? arms.ToString() : "0", 2);
-            this.feetAlarms = Convert.ToUInt32(feet.Length > 0 ? feet.ToString() : "0", 2);
+            radarState = Convert.ToUInt32(states.Length > 0 ? states.ToString() : "0", 2);
+            bucketAlarms = Convert.ToUInt32(buckets.Length > 0 ? buckets.ToString() : "0", 2);
+            armAlarms = Convert.ToUInt32(arms.Length > 0 ? arms.ToString() : "0", 2);
+            feetAlarms = Convert.ToUInt32(feet.Length > 0 ? feet.ToString() : "0", 2);
+
+            BaseFunc.ProcessBlockUnits();
+            #region 网格化处理（注释）
+            //BlockConst.Blocks.Clear();
+            //BlockConst.CommonBlocks.Clear();
+            //BlockConst.BlockClusters.Clear();
+            //_leftDists.ResetDistances(BlockConst.DefaultDistance);
+            //_rightDists.ResetDistances(BlockConst.DefaultDistance);
+            ////遍历雷达并将雷达扫描点填入网格单元中
+            //foreach (var radar in BaseConst.RadarList)
+            //{
+            //    if (radar.GroupType != RadarGroupType.Arm)
+            //        continue;
+            //    List<SensorGeneral> list = null;
+            //    //try { list = radar.Infos.ListToSendAll.ToList(); }
+            //    try { list = radar.Infos.ListToSend.ToList(); }
+            //    catch (Exception) { }
+            //    if (list == null)
+            //        continue;
+            //    //List<SensorGeneral> list = radar.Infos.ListToSend.ToList();
+            //    foreach (var general in list)
+            //    {
+            //        //假如单点测距在大臂范围内或测距临界值之外，则跳过
+            //        if (general == null || general.DistanceToBorder <= BlockConst.MainArmScopeX || (BaseConst.BorderDistThres > 0 && general.DistanceToBorder >= BaseConst.BorderDistThres))
+            //            continue;
+            //        //根据点坐标找到其应归属的网格单元列索引、行索引；假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸）直接前往下一个循环
+            //        int columnIndex = (int)Math.Floor((general.X - BlockConst.UpLeftCorner[0]) / BlockConst.UnitSize[0]), rowIndex = (int)Math.Floor((BlockConst.UpLeftCorner[1] - general.Y) / BlockConst.UnitSize[1]);
+            //        if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 || rowIndex >= BlockConst.MatrixSize[1])
+            //            continue;
+            //        BlockUnit block = BlockConst.Blocks[columnIndex, rowIndex];
+            //        block.AddSensorGeneral(general);
+            //        if (block.TypeChanged && block.Type == BlockType.Common)
+            //            BlockConst.CommonBlocks.Add(block);
+            //        //if (block.TypeChanged && block.Type == BlockType.Core)
+            //        //    BlockConst.BlockClusters.Add(new BlockCluster(block));
+            //    }
+            //}
+            //BlockConst.CommonBlocks = BaseFunc.GetOutlierFilteredBlocks(BlockConst.CommonBlocks); //对符合第一阈值的网格单元进行统计滤波
+            ////记录核心网格
+            //foreach (BlockUnit block in BlockConst.CommonBlocks)
+            //    if (block.Type == BlockType.Core)
+            //        BlockConst.BlockClusters.Add(new BlockCluster(block));
+            //foreach (var cluster in BlockConst.BlockClusters)
+            //{
+            //    BlockUnit core = cluster.CoreBlock;
+            //    if (core == null)
+            //        continue;
+            //    //int columnIndex = cluster.CoreBlock.ColumnIndex, rowIndex = cluster.CoreBlock.RowIndex;
+            //    int columnIndex = 0, rowIndex = 0;
+            //    ////遍历核心网格周围5x5的网格单元（从核心网格向四周延伸2格）
+            //    //for (int i = -2; i <= 2; i++)
+            //    //{
+            //    //    for (int j = -2; j <= 2; j++)
+            //    //    {
+            //    //        columnIndex = core.ColumnIndex + j;
+            //    //        rowIndex = core.RowIndex + i;
+            //    //        //假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸），假如i与j均为0（代表循环将回到当前网格），直接前往下一个循环
+            //    //        if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 ||rowIndex >= BlockConst.MatrixSize[1] || (i == 0 && j == 0))
+            //    //            continue;
+            //    //        cluster.AddCommonBlock(BlockConst.Blocks[columnIndex, rowIndex]);
+            //    //    }
+            //    //}
+            //    //遍历核心网格周围半径内的网格单元（从核心网格向四周延伸若干格，具体数量见配置文件）
+            //    for (int i = 0 - BlockConst.BlockClusterRadius[1]; i <= BlockConst.BlockClusterRadius[1]; i++)
+            //    {
+            //        for (int j = 0 - BlockConst.BlockClusterRadius[0]; j <= BlockConst.BlockClusterRadius[0]; j++)
+            //        {
+            //            columnIndex = core.ColumnIndex + j;
+            //            rowIndex = core.RowIndex + i;
+            //            //假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸），假如i与j均为0（代表循环将回到当前网格），直接前往下一个循环
+            //            if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 ||rowIndex >= BlockConst.MatrixSize[1] || (i == 0 && j == 0))
+            //                continue;
+            //            cluster.AddCommonBlock(BlockConst.Blocks[columnIndex, rowIndex]);
+            //        }
+            //    }
+            //    //遍历完四周网格单元后更新网格聚类属性，迭代左右距离值
+            //    cluster.RefreshProperties();
+            //    if (cluster.Type == BlockClusterType.Normal && cluster.CenterX < 0)
+            //        _leftDists.Iterate(cluster.Distances);
+            //    else if (cluster.Type == BlockClusterType.Normal && cluster.CenterX > 0)
+            //        _rightDists.Iterate(cluster.Distances);
+            //    //if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX < 0)
+            //    //    _leftDists.Iterate(cluster.Distances);
+            //    //else if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX > 0)
+            //    //    _rightDists.Iterate(cluster.Distances);
+            //}
+            //BlockConst.DistancesLeft.Copy(_leftDists);
+            //BlockConst.DistancesRight.Copy(_rightDists);
+            #endregion
         }
 
         /// <summary>
@@ -381,7 +475,7 @@ namespace ARS408.Forms
                 Thread.Sleep(400);
                 if (!BaseConst.WriteItemValue)
                     continue;
-                try { this.WriteItemValues(); }
+                try { WriteItemValues(); }
                 catch (Exception) { }
             }
         }
@@ -391,24 +485,24 @@ namespace ARS408.Forms
         /// </summary>
         public void WriteItemValues()
         {
-            if (BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || this.OpcHelper == null || this.OpcGroup == null)
+            if (BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || OpcTask == null || OpcGroup == null)
                 return;
 
             try
             {
                 //假如未添加任何OPC项
-                if (this.OpcGroup.OPCItems.Count == 0)
+                if (OpcGroup.OPCItems.Count == 0)
                     return;
 
-                List<object> values = new List<object>() { 0, this.radarState, this.bucketAlarms, this.armAlarms, this.feetAlarms };
+                List<object> values = new List<object>() { 0, radarState, bucketAlarms, armAlarms, feetAlarms };
                 values.AddRange(BaseConst.RadarList.Select(r => (object)r.CurrentDistance));
                 Array itemValues = values.ToArray(), errors;
-                this.OpcGroup.SyncWrite(this.OpcItemNames.Count, ref this.ServerHandles, ref itemValues, out errors);
+                OpcGroup.SyncWrite(OpcItemNames.Count, ref ServerHandles, ref itemValues, out errors);
             }
             catch (Exception ex)
             {
-                string info = string.Format("OPC写入时出现问题. {0}. ip_address: {1}", ex.Message, this.OpcHelper.Shiploader.OpcServerIp);
-                this.label_opc.SafeInvoke(() => { this.label_opc.Text = info; });
+                string info = string.Format("OPC写入时出现问题. {0}. ip_address: {1}", ex.Message, OpcTask.Shiploader.OpcServerIp);
+                label_opc.SafeInvoke(() => { label_opc.Text = info; });
                 FileClient.WriteExceptionInfo(ex, info, false);
             }
         }
@@ -417,30 +511,31 @@ namespace ARS408.Forms
         #region 事件
         private void FormMonitor_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.DisposeTabPages_all();
-            this.StartOrEnd(false);
-            this.OpcHelper.Epilogue();
+            DisposeTabPages_all();
+            StartOrEnd(false);
+            OpcTask.Stop();
+            //OpcTask.Epilogue();
         }
 
         private void TabControl_DoubleClick(object sender, EventArgs e)
         {
-            float current = this.tableLayoutPanel_Main.ColumnStyles[0].Width;
-            this.tableLayoutPanel_Main.ColumnStyles[0] = new ColumnStyle(SizeType.Absolute, this.column_width - current);
+            float current = tableLayoutPanel_Main.ColumnStyles[0].Width;
+            tableLayoutPanel_Main.ColumnStyles[0] = new ColumnStyle(SizeType.Absolute, column_width - current);
         }
 
         private void TreeView_NodeMouseDoubleClick(object sender, TreeNodeMouseClickEventArgs e)
         {
             string name = e.Node.Text.ToString();
-            //Radar radar = this.GetRadarByIpPort(name);
+            //Radar radar = GetRadarByIpPort(name);
             Radar radar = BaseFunc.GetRadarByName(name);
             //假如正在加载或为根节点
-            if (this.Loading || radar == null)
+            if (Loading || radar == null)
                 return;
 
             try
             {
-                this.DisposeTabPages_all();
-                this.ShowForm(radar);
+                DisposeTabPages_all();
+                ShowForm(radar);
             }
             catch (Exception)
             {
@@ -450,20 +545,20 @@ namespace ARS408.Forms
 
         private void Button_StartOrEnd_Click(object sender, EventArgs e)
         {
-            this.StartOrEnd(this.button_StartOrEnd.Text.Equals("开始"));
-            //bool flag = this.button_StartOrEnd.Text.Equals("开始");
+            StartOrEnd(button_StartOrEnd.Text.Equals("开始"));
+            //bool flag = button_StartOrEnd.Text.Equals("开始");
             //foreach (FormDisplay form in BaseConst.DictForms.Values)
             //{
             //    try { form.StartOrEndReceiving(flag); }
             //    catch (Exception ex) { }
             //}
-            //this.button_StartOrEnd.Text = flag ? "结束" : "开始";
+            //button_StartOrEnd.Text = flag ? "结束" : "开始";
         }
 
         private void Button_Info_Click(object sender, EventArgs e)
         {
             FormInfo form = new FormInfo(this);
-            this.ShowForm(form);
+            ShowForm(form);
         }
         #endregion
     }

@@ -17,3 +17,15 @@ dotnet_diagnostic.IDE0067.severity = none
 
 # IDE0060: 删除未使用的参数
 dotnet_code_quality_unused_parameters = non_public:none
+
+# CA1819: Properties should not return arrays
+dotnet_diagnostic.CA1819.severity = none
+
+# IDE0031: 使用 null 传播
+dotnet_style_null_propagation = true:none
+
+# IDE0018: 内联变量声明
+csharp_style_inlined_variable_declaration = true:none
+
+# IDE0052: 删除未读的私有成员
+dotnet_diagnostic.IDE0052.severity = none

@@ -17,8 +17,14 @@ namespace ARS408.Model
     {
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
-        internal double _current, _curve_slope, _surface_angle; //当前距离，当前斜率
+        internal double _current, _curve_slope, _surface_angle, _radius_average; //当前距离，当前斜率
+        internal bool _out_of_stack;
         internal string _threat_level_binary = "00";
+
+        /// <summary>
+        /// 处理标志，为true表示未处理，否则已处理
+        /// </summary>
+        public bool ProcFlag { get; set; }
 
         #region 属性
         /// <summary>
@@ -44,8 +50,8 @@ namespace ARS408.Model
         [ProtoMember(3)]
         public int Working
         {
-            get { return this.State.Working; }
-            set { this.State.Working = value; }
+            get { return State.Working; }
+            set { State.Working = value; }
         }
 
         /// <summary>
@@ -64,8 +70,8 @@ namespace ARS408.Model
         [ProtoMember(4)]
         public double CurrentDistance
         {
-            get { return this._current; }
-            set { this._current = value; }
+            get { return _current; }
+            set { _current = value; }
         }
 
         /// <summary>
@@ -73,8 +79,8 @@ namespace ARS408.Model
         /// </summary>
         public double CurveSlope
         {
-            get { return this._curve_slope; }
-            set { this._curve_slope = value; }
+            get { return _curve_slope; }
+            set { _curve_slope = value; }
         }
 
         /// <summary>
@@ -82,8 +88,26 @@ namespace ARS408.Model
         /// </summary>
         public double SurfaceAngle
         {
-            get { return this._surface_angle; }
-            set { this._surface_angle = value; }
+            get { return _surface_angle; }
+            set { _surface_angle = value; }
+        }
+
+        /// <summary>
+        /// 雷达特定范围内点的平均距离（平均极坐标半径）
+        /// </summary>
+        public double RadiusAverage
+        {
+            get { return _radius_average; }
+            set { _radius_average = value; }
+        }
+
+        /// <summary>
+        /// 是否出垛边判断（由matlab模型决定）
+        /// </summary>
+        public bool OutOfStack
+        {
+            get { return _out_of_stack; }
+            set { _out_of_stack = value; }
         }
 
         internal int _threat_level = 0;
@@ -93,8 +117,8 @@ namespace ARS408.Model
         [ProtoMember(5)]
         public int ThreatLevel
         {
-            get { return this._threat_level; }
-            set { this._threat_level = value; }
+            get { return _threat_level; }
+            set { _threat_level = value; }
         }
 
         /// <summary>
@@ -103,8 +127,8 @@ namespace ARS408.Model
         [ProtoMember(6)]
         public string ThreatLevelBinary
         {
-            get { return this._threat_level_binary; }
-            set { this._threat_level_binary = value; }
+            get { return _threat_level_binary; }
+            set { _threat_level_binary = value; }
         }
 
         #region 通讯与地址
@@ -172,13 +196,13 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeXoy
         {
-            get { return this.degree_xoy; }
+            get { return degree_xoy; }
             set
             {
-                this.degree_xoy = value;
-                this.sinphi = Math.Sin(this.degree_xoy * Math.PI / 180);
-                this.cosphi = Math.Cos(this.degree_xoy * Math.PI / 180);
-                this.UpdateRatios();
+                degree_xoy = value;
+                sinphi = Math.Sin(degree_xoy * Math.PI / 180);
+                cosphi = Math.Cos(degree_xoy * Math.PI / 180);
+                UpdateRatios();
             }
         }
 
@@ -187,13 +211,13 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeYoz
         {
-            get { return this.degree_yoz; }
+            get { return degree_yoz; }
             set
             {
-                this.degree_yoz = value;
-                this.sintheta = Math.Sin(this.degree_yoz * Math.PI / 180);
-                this.costheta = Math.Cos(this.degree_yoz * Math.PI / 180);
-                this.UpdateRatios();
+                degree_yoz = value;
+                sintheta = Math.Sin(degree_yoz * Math.PI / 180);
+                costheta = Math.Cos(degree_yoz * Math.PI / 180);
+                UpdateRatios();
             }
         }
 
@@ -202,13 +226,13 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeXoz
         {
-            get { return this.degree_xoz; }
+            get { return degree_xoz; }
             set
             {
-                this.degree_xoz = value;
-                this.sinlamda = Math.Sin(this.degree_xoz * Math.PI / 180);
-                this.coslamda = Math.Cos(this.degree_xoz * Math.PI / 180);
-                this.UpdateRatios();
+                degree_xoz = value;
+                sinlamda = Math.Sin(degree_xoz * Math.PI / 180);
+                coslamda = Math.Cos(degree_xoz * Math.PI / 180);
+                UpdateRatios();
             }
         }
 
@@ -217,13 +241,13 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeGeneral
         {
-            get { return this.degree_general; }
+            get { return degree_general; }
             set
             {
-                this.degree_general = value;
-                this.sing = Math.Sin(this.degree_general * Math.PI / 180);
-                this.cosg = Math.Cos(this.degree_general * Math.PI / 180);
-                this.UpdateRatios();
+                degree_general = value;
+                sing = Math.Sin(degree_general * Math.PI / 180);
+                cosg = Math.Cos(degree_general * Math.PI / 180);
+                UpdateRatios();
             }
         }
 
@@ -280,11 +304,11 @@ namespace ARS408.Model
         /// </summary>
         public int RcsMinimum
         {
-            get { return this._rcsMinimum; }
+            get { return _rcsMinimum; }
             set
             {
-                this._rcsMinimum = value;
-                this.Infos.RcsMinimum = this._rcsMinimum;
+                _rcsMinimum = value;
+                Infos.RcsMinimum = _rcsMinimum;
             }
         }
 
@@ -294,11 +318,11 @@ namespace ARS408.Model
         /// </summary>
         public int RcsMaximum
         {
-            get { return this._rcsMaximum; }
+            get { return _rcsMaximum; }
             set
             {
-                this._rcsMaximum = value;
-                this.Infos.RcsMinimum = this._rcsMinimum;
+                _rcsMaximum = value;
+                Infos.RcsMinimum = _rcsMinimum;
             }
         }
 
@@ -443,7 +467,7 @@ namespace ARS408.Model
             set
             {
                 false_alarm_string = value == null ? string.Empty : value;
-                this.FalseAlarmFilter = false_alarm_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
+                FalseAlarmFilter = false_alarm_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
             }
         }
 
@@ -457,7 +481,7 @@ namespace ARS408.Model
             set
             {
                 ambig_state_string = value == null ? string.Empty : value;
-                this.AmbigStateFilter = ambig_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
+                AmbigStateFilter = ambig_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
             }
         }
 
@@ -471,7 +495,7 @@ namespace ARS408.Model
             set
             {
                 invalid_state_string = value == null ? string.Empty : value;
-                this.InvalidStateFilter = invalid_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
+                InvalidStateFilter = invalid_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
             }
         }
 
@@ -485,7 +509,7 @@ namespace ARS408.Model
             set
             {
                 meas_state_string = value == null ? string.Empty : value;
-                this.MeasStateFilter = meas_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
+                MeasStateFilter = meas_state_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
             }
         }
 
@@ -499,7 +523,7 @@ namespace ARS408.Model
             set
             {
                 prob_exist_string = value == null ? string.Empty : value;
-                this.ProbOfExistFilter = prob_exist_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
+                ProbOfExistFilter = prob_exist_string.Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
             }
         }
         #endregion
@@ -523,6 +547,11 @@ namespace ARS408.Model
         /// 雷达碰撞状态标签2
         /// </summary>
         public string ItemNameCollisionState2 { get; set; }
+
+        ///// <summary>
+        ///// 存在概率最低值
+        ///// </summary>
+        //public double ProbOfExistMinimum { get; set; }
         #endregion
 
         #region 构造器
@@ -531,26 +560,26 @@ namespace ARS408.Model
         /// </summary>
         public Radar()
         {
-            this.RadarHeight = 0;
-            this.Infos = new DataFrameMessages(this);
-            this.State = new RadarState();
-            this.Id = -1;
-            this.Name = "ARS408-21";
-            this.RefreshInterval = BaseConst.RefreshInterval;
-            this.GroupType = RadarGroupType.None;
-            this.Direction = Directions.None;
-            this.IpAddress = BaseConst.IpAddress;
-            this.Port = BaseConst.Port;
-            this.ConnectionMode = BaseConst.ConnectionMode;
-            this.UsingLocal = BaseConst.UsingLocal;
-            this.PortLocal = BaseConst.Port_Local;
-            this.RcsMinimum = BaseConst.RcsMinimum;
-            this.RcsMinimum = BaseConst.RcsMaximum;
-            this.ApplyFilter = true;
-            this.ApplyIteration = true;
-            this.PushfMaxCount = 1;
-            this.UsePublicFilters = true;
-            this.FalseAlarmFilterString = this.AmbigStateFilterString = this.InvalidStateFilterString = this.MeasStateFilterString = this.ProbOfExistFilterString = string.Empty;
+            ProcFlag = true;
+            RadarHeight = 0;
+            Infos = new DataFrameMessages(this);
+            State = new RadarState();
+            Id = -1;
+            Name = "ARS408-21";
+            RefreshInterval = BaseConst.RefreshInterval;
+            GroupType = RadarGroupType.None;
+            IpAddress = BaseConst.IpAddress;
+            Port = BaseConst.Port;
+            ConnectionMode = BaseConst.ConnectionMode;
+            UsingLocal = BaseConst.UsingLocal;
+            PortLocal = BaseConst.Port_Local;
+            RcsMinimum = BaseConst.RcsMinimum;
+            RcsMinimum = BaseConst.RcsMaximum;
+            ApplyFilter = true;
+            ApplyIteration = true;
+            PushfMaxCount = 1;
+            UsePublicFilters = true;
+            FalseAlarmFilterString = AmbigStateFilterString = InvalidStateFilterString = MeasStateFilterString = ProbOfExistFilterString = string.Empty;
         }
 
         /// <summary>
@@ -562,61 +591,66 @@ namespace ARS408.Model
             if (row == null)
                 return;
 
-            this.Id = int.Parse(row["radar_id"].ToString());
-            this.Name = row["radar_name"].ToString();
-            this.RefreshInterval = int.Parse(row["refresh_interval"].ToString());
-            this.IpAddress = row["ip_address"].ToString();
-            this.Port = ushort.Parse(row["port"].ToString());
-            this.ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());
-            this.UsingLocal = row["using_local"].ToString().Equals("1");
-            this.IpAddressLocal = row["ip_address_local"].ToString();
-            this.PortLocal = int.Parse(row["port_local"].ToString());
-            this.OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString());
-            this.TopicName = row["topic_name"].ToString();
-            this.OwnerGroupId = int.Parse(row["owner_group_id"].ToString());
-            this.GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString());
-            this.DegreeYoz = double.Parse(row["degree_yoz"].ToString());
-            this.DegreeXoy = double.Parse(row["degree_xoy"].ToString());
-            this.DegreeXoz = double.Parse(row["degree_xoz"].ToString());
-            this.DegreeGeneral = double.Parse(row["degree_general"].ToString());
-            this.Direction = (Directions)int.Parse(row["direction_id"].ToString());
-            this.DefenseMode = int.Parse(row["defense_mode_id"].ToString());
-            this.Offset = double.Parse(row["offset"].ToString());
-            this.XOffset = double.Parse(row["x_offset"].ToString());
-            this.YOffset = double.Parse(row["y_offset"].ToString());
-            this.ZOffset = double.Parse(row["z_offset"].ToString());
-            this.Remark = row["remark"].ToString();
-            this.ItemNameRadarState = row["item_name_radar_state"].ToString();
-            this.ItemNameCollisionState = row["item_name_collision_state"].ToString();
-            this.ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
-            this.RcsMinimum = int.Parse(row["rcs_min"].ToString());
-            this.RcsMaximum = int.Parse(row["rcs_max"].ToString());
-            this.RadarHeight = double.Parse(row["radar_height"].ToString());
-            this.RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
-            this.RadarxMin = double.Parse(row["radar_x_min"].ToString());
-            this.RadarxMax = double.Parse(row["radar_x_max"].ToString());
-            this.RadaryMin = double.Parse(row["radar_y_min"].ToString());
-            this.RadaryMax = double.Parse(row["radar_y_max"].ToString());
-            this.ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
-            this.ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
-            this.ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
-            this.ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
-            this.ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
-            this.ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
-            this.ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
-            this.AngleLimited = row["angle_limited"].ToString().Equals("1");
-            this.AngleMin = double.Parse(row["angle_min"].ToString());
-            this.AngleMax = double.Parse(row["angle_max"].ToString());
+            Id = int.Parse(row["radar_id"].ToString());
+            Name = row["radar_name"].ToString();
+            RefreshInterval = int.Parse(row["refresh_interval"].ToString());
+            IpAddress = row["ip_address"].ToString();
+            Port = ushort.Parse(row["port"].ToString());
+            ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());
+            UsingLocal = row["using_local"].ToString().Equals("1");
+            IpAddressLocal = row["ip_address_local"].ToString();
+            PortLocal = int.Parse(row["port_local"].ToString());
+            OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString());
+            TopicName = row["topic_name"].ToString();
+            OwnerGroupId = int.Parse(row["owner_group_id"].ToString());
+            GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString());
+            DegreeYoz = double.Parse(row["degree_yoz"].ToString());
+            DegreeXoy = double.Parse(row["degree_xoy"].ToString());
+            DegreeXoz = double.Parse(row["degree_xoz"].ToString());
+            DegreeGeneral = double.Parse(row["degree_general"].ToString());
+            Direction = (Directions)int.Parse(row["direction_id"].ToString());
+            DefenseMode = int.Parse(row["defense_mode_id"].ToString());
+            Offset = double.Parse(row["offset"].ToString());
+            XOffset = double.Parse(row["x_offset"].ToString());
+            YOffset = double.Parse(row["y_offset"].ToString());
+            ZOffset = double.Parse(row["z_offset"].ToString());
+            Remark = row["remark"].ToString();
+            ItemNameRadarState = row["item_name_radar_state"].ToString();
+            ItemNameCollisionState = row["item_name_collision_state"].ToString();
+            ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
+            RcsMinimum = int.Parse(row["rcs_min"].ToString());
+            RcsMaximum = int.Parse(row["rcs_max"].ToString());
+            RadarHeight = double.Parse(row["radar_height"].ToString());
+            RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
+            RadarxMin = double.Parse(row["radar_x_min"].ToString());
+            RadarxMax = double.Parse(row["radar_x_max"].ToString());
+            RadaryMin = double.Parse(row["radar_y_min"].ToString());
+            RadaryMax = double.Parse(row["radar_y_max"].ToString());
+            ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
+            ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
+            ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
+            ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
+            ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
+            ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
+            ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
+            AngleLimited = row["angle_limited"].ToString().Equals("1");
+            AngleMin = double.Parse(row["angle_min"].ToString());
+            AngleMax = double.Parse(row["angle_max"].ToString());
             #region 检测特性
-            this.ApplyFilter = row["apply_filter"].ToString().Equals("1");
-            this.ApplyIteration = row["apply_iteration"].ToString().Equals("1");
-            this.PushfMaxCount = int.Parse(row["pushf_max_count"].ToString());
-            this.UsePublicFilters = row["use_public_filters"].ToString().Equals("1");
-            this.FalseAlarmFilterString = row["false_alarm_filter"].ToString();
-            this.AmbigStateFilterString = row["ambig_state_filter"].ToString();
-            this.InvalidStateFilterString = row["invalid_state_filter"].ToString();
-            this.MeasStateFilterString = row["meas_state_filter"].ToString();
-            this.ProbOfExistFilterString = row["prob_exist_filter"].ToString();
+            ApplyFilter = row["apply_filter"].ToString().Equals("1");
+            ApplyIteration = row["apply_iteration"].ToString().Equals("1");
+            PushfMaxCount = int.Parse(row["pushf_max_count"].ToString());
+            UsePublicFilters = row["use_public_filters"].ToString().Equals("1");
+            FalseAlarmFilterString = row["false_alarm_filter"].ToString();
+            AmbigStateFilterString = row["ambig_state_filter"].ToString();
+            InvalidStateFilterString = row["invalid_state_filter"].ToString();
+            MeasStateFilterString = row["meas_state_filter"].ToString();
+            ProbOfExistFilterString = row["prob_exist_filter"].ToString();
+            //FalseAlarmFilter = row["false_alarm_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
+            //AmbigStateFilter = row["ambig_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
+            //InvalidStateFilter = row["invalid_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
+            //MeasStateFilter = row["meas_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
+            //ProbOfExistFilter = row["prob_exist_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
             #endregion
         }
         #endregion
@@ -626,9 +660,9 @@ namespace ARS408.Model
         /// </summary>
         public void UpdateRatios()
         {
-            this.XmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * cosg - sinphi * sing, Yratio = 0 - sintheta * sinlamda * cosg - costheta * sinphi * coslamda * cosg - costheta * cosphi * sing };
-            this.YmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * sing + sinphi * cosg, Yratio = costheta * cosphi * cosg - costheta * sinphi * coslamda * sing - sintheta * sinlamda * sing };
-            this.ZmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * sinlamda, Yratio = sintheta * coslamda - costheta * sinphi * sinlamda };
+            XmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * cosg - sinphi * sing, Yratio = 0 - sintheta * sinlamda * cosg - costheta * sinphi * coslamda * cosg - costheta * cosphi * sing };
+            YmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * sing + sinphi * cosg, Yratio = costheta * cosphi * cosg - costheta * sinphi * coslamda * sing - sintheta * sinlamda * sing };
+            ZmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * sinlamda, Yratio = sintheta * coslamda - costheta * sinphi * sinlamda };
 
         }
     }

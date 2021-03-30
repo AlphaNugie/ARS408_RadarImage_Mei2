@@ -76,8 +76,12 @@ namespace ARS408.Model
         /// </summary>
         public RadarState RadarState
         {
-            get { return this.Radar.State; }
-            set { this.Radar.State = value; }
+            get { return Radar != null ? Radar.State : null; }
+            set
+            {
+                if (Radar != null)
+                    Radar.State = value;
+            }
         }
 
         /// <summary>
@@ -119,6 +123,11 @@ namespace ARS408.Model
         /// 待发送列表
         /// </summary>
         public List<SensorGeneral> ListToSend { get; set; }
+
+        /// <summary>
+        /// 待发送列表（所有点）
+        /// </summary>
+        public List<SensorGeneral> ListToSendAll { get; set; }
 
         /// <summary>
         /// 历史数据记录
@@ -181,11 +190,12 @@ namespace ARS408.Model
         private int timer = 0;
         public int Timer
         {
-            get { return this.timer; }
+            get { return timer; }
             set
             {
-                this.timer = value;
-                this.RadarState.Working = this.timer < 5 ? 1 : 0;
+                timer = value;
+                if (RadarState != null)
+                    RadarState.Working = this.timer < 5 ? 1 : 0;
             }
         }
 
@@ -201,27 +211,25 @@ namespace ARS408.Model
         /// <param name="radar">雷达信息对象</param>
         public DataFrameMessages(Radar radar)
         {
-            //this.ParentForm = form;
-            //this.Radar = radar;
-            this.Radar = radar == null ? new Radar() : radar;
-            //this._pushf_max_count = this.Radar.GroupType == RadarGroupType.Belt ? 10 : 1; //皮带料流雷达push finalization最大次数为5（统计5帧的点）
-            this.Flags = new List<bool>() { false, false, false, false, false, false, false, true, true, true };
-            this.limit_factor = this.Radar.GroupType == RadarGroupType.Feet ? 10 : 1;
-            this.CurrentSensorMode = SensorMode.Cluster;
-            this.ListBuffer = new List<SensorGeneral>();
-            this.ListBuffer_Other = new List<SensorGeneral>();
-            this.ListBuffer_AllOther = new List<SensorGeneral>();
-            this.ListTrigger = new List<SensorGeneral>();
-            this.ListToSend = new List<SensorGeneral>();
-            this.ThreadCheck = new Thread(new ThreadStart(this.CheckIfRadarsWorking)) { IsBackground = true };
+            Radar = radar == null ? new Radar() : radar;
+            Flags = new List<bool>() { false, false, false, false, false, false, false, true, true, true };
+            limit_factor = this.Radar.GroupType == RadarGroupType.Feet ? 10 : 1;
+            CurrentSensorMode = SensorMode.Cluster;
+            ListBuffer = new List<SensorGeneral>();
+            ListBuffer_Other = new List<SensorGeneral>();
+            ListBuffer_AllOther = new List<SensorGeneral>();
+            ListTrigger = new List<SensorGeneral>();
+            ListToSend = new List<SensorGeneral>();
+            ListToSendAll = new List<SensorGeneral>();
+            ThreadCheck = new Thread(new ThreadStart(this.CheckIfRadarsWorking)) { IsBackground = true };
 
-            if (this.Radar != null)
+            if (Radar != null)
             {
-                this.IsBelt = this.Radar.GroupType == RadarGroupType.Belt; //是否为皮带雷达
-                this.Flags[4] = this.Radar.GroupType == RadarGroupType.Arm && this.Radar.Name.Contains("陆"); //是否为大臂陆侧雷达
-                this.Flags[6] = this.Radar.GroupType == RadarGroupType.Feet; //是否为门腿雷达
+                IsBelt = this.Radar.GroupType == RadarGroupType.Belt; //是否为皮带雷达
+                Flags[4] = this.Radar.GroupType == RadarGroupType.Arm && this.Radar.Name.Contains("陆"); //是否为大臂陆侧雷达
+                Flags[6] = this.Radar.GroupType == RadarGroupType.Feet; //是否为门腿雷达
             }
-            this.ThreadCheck.Start();
+            ThreadCheck.Start();
         }
 
         #region 功能
@@ -316,56 +324,26 @@ namespace ARS408.Model
             Flags[2] = !general.RCS.Between(this.RcsMinimum, this.RcsMaximum); //RCS值是否不在范围内
             if (this.Radar != null)
             {
-                Flags[1] = (BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres); //距边界距离是否小于0或超出阈值
+                Flags[1] = BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres; //距边界距离是否小于0或超出阈值
                 Flags[7] = !this.Radar.RadarCoorsLimited || general.WithinRadarLimits; //雷达坐标系坐标的限制
                 Flags[8] = !this.Radar.ClaimerCoorsLimited || general.WithinClaimerLimits; //单机坐标系坐标的限制
                 Flags[9] = !this.Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
-            //TODO (所有雷达)过滤条件Lv1：RCS值、坐标在限定范围内 / RCS值在范围内
-            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9];
-            //TODO (非臂架下方)过滤条件Lv2：距边界范围在阈值内
-            save2list = save2list && !(Flags[1]);
-            ////假如是堆料机落料口雷达，限制角度范围（S1俯仰范围为-10°~11°）
-            //if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("落料"))
-            //    save2list = general.Angle.Between(-40, 40);
-            //YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
-            if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
-                save2list = (general.AngleYoz + OpcConst.Pitch_Plc).Between(-30, 0); //水平以下30°
+            //TODO (所有雷达)过滤条件Lv1：RCS值、坐标、角度在限定范围内，距边界范围在阈值内
+            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9] && !Flags[1];
+            ////YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
+            //if (save2list && this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+            //    save2list = (general.AngleYoz + BaseConst.OpcDataSource.PitchAngle_Plc).Between(-30, 0); //水平以下30°
             //TODO (其余数据)过滤条件Lv2：RCS值在范围内
             bool save2other = !save2list && !Flags[2];
-            bool save2allother = !save2list;
-            //if (!save2list)
-            //    //save2other = false;
-            //    //save2other = BaseConst.ShowDesertedPoints && !Flags[2];
-            //    save2allother = !Flags[2];
-            #region 旧判断逻辑
-            //if (this.IsShore)
-            //    save2list = !Flags[2] && z.Between(-1, 1) && x.Between(-5, 5);
-            //else
-            //{
-            //    //非岸基输出结果过滤条件1：距边界范围在阈值内，RCS值在范围内，溜桶雷达Z方向坐标不低于大铲最低点
-            //    if (!(Flags[1] || Flags[2] || Flags[3]))
-            //    {
-            //        //非大臂陆侧
-            //        if (!Flags[4])
-            //            //非门腿雷达直接返回true，门腿雷达判断：横向距离在黄标线范围内,高度高于地面0.1米以上
-            //            save2list = !Flags[6] ? true : lat.Between(this.outer, this.inner) && z > BaseConst.FeetFilterHeight - this.Radar.RadarHeight;
-            //        else
-            //            //大臂陆侧过滤条件：横向坐标在5~10，纵向坐标在5~10之间
-            //            save2list = lat.Between(0, 5) && lon.Between(5, 10);
-            //    }
-            //    //溜桶下方障碍物过滤条件：RCS值在范围内，障碍物在溜桶下方的距离在阈值内、且距边界距离不超过1米
-            //    else
-            //        save2other = !(Flags[2]) && Flags[5];
-            //}
-            #endregion
+            //bool save2allother = !save2list;
             #endregion
 
             general.PushfCounter = _pushf_counter;
             general.Id += _pushf_counter * _id_step;
             if (save2list)
                 this.ListBuffer.Add(general);
-            /*else */if (save2allother)
+            if (!save2list)
                 this.ListBuffer_AllOther.Add(general);
             if (save2other)
                 this.ListBuffer_Other.Add(general);
@@ -430,6 +408,7 @@ namespace ARS408.Model
         }
 
         private readonly Queue<double> surfaceAnglesQueue = new Queue<double>();
+        //int counter = 0;
         //private int max_count = 3;
         /// <summary>
         /// 结束一个阶段的数据压入，将缓冲区数据汇入正式数据
@@ -450,26 +429,40 @@ namespace ARS408.Model
                 //对于非料流雷达：找出距离最小的点
                 else
                     this.GeneralMostThreat = this.ListBuffer.Count() > 0 ? this.ListBuffer.First() : null;
-                this.ListTrigger.Clear();
-                this.ListToSend.Clear();
-                this.ListTrigger.AddRange(this.ListBuffer);
-                this.ListToSend.AddRange(this.ListBuffer);
+                ListTrigger.Clear();
+                ListToSend.Clear();
+                ListToSendAll.Clear();
+                ListTrigger.AddRange(ListBuffer);
+                ListToSend.AddRange(ListBuffer);
+                ListToSendAll.AddRange(ListBuffer);
                 if (BaseConst.ShowDesertedPoints)
-                    this.ListTrigger.AddRange(this.ListBuffer_AllOther);
-                //this.ListToSend.AddRange(this.ListBuffer_AllOther);
-                this.ListToSend.AddRange(this.ListBuffer_Other);
+                    ListTrigger.AddRange(ListBuffer_AllOther);
+                //ListToSend.AddRange(ListBuffer_Other);
+                ListToSendAll.AddRange(ListBuffer_AllOther);
+                Radar.ProcFlag = true; //设置雷达处理标志，表示未处理过
                 //计算斗轮雷达点的1次拟合斜率，纵向坐标1~15，横向坐标-10~10，剔除10个距离其它点最远的点
-                string message;
-                if (this.Radar.GroupType == RadarGroupType.Wheel && this.Radar.Name.Contains("斗轮"))
+                if (Radar.GroupType == RadarGroupType.Wheel && Radar.Name.Contains("斗轮"))
                 {
-                    //最后处理角度为90°-返回结果-雷达XOZ倾角-PLC俯仰角（后两个角度均带正负号）
-                    //纵向坐标范围根据Y轴方向偏移决定（越靠前的范围越小）
-                    double angle = 90 - BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 11.652 - this.Radar.YOffset, -10, 10, 0.2, out message) - this.Radar.DegreeXoz - OpcConst.Pitch_Plc;
-                    surfaceAnglesQueue.Enqueue(angle);
-                    //if (surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
+                    string message;
+                    bool onLeft = Radar.Name.Contains("左");
+                    //double[] modelArray;
+                    //根据距其它点的距离和来排除的点比例
+                    double dist_ex_count = 0.2;
+                    //xy坐标取值范围，xy坐标偏移量
+                    double[] xybias = new double[] { Radar.YOffset, Radar.ZOffset };
+                    double rangle = Radar.DegreeXoz;
+                    //最后处理角度为90°-返回结果（后两个角度均带正负号）
+                    //double angle = 90 - (BaseFunc.GetSurfaceAngle(this.ListToSend, xlimit, ylimit, xybias, radar_angle, dist_ex_count, false, out Radar._radius_average, out message)/* + radar_angle + BaseConst.OpcDataSource.PitchAngle_Plc*/);
+                    //double angle = 90 - BaseFunc.GetSurfaceAngle(this.ListToSend, 1, 11.652 - this.Radar.YOffset, -10, 10, 0.2, false, out message) - this.Radar.DegreeXoz - BaseConst.OpcDataSource.PitchAngle_Plc;
+                    //double angle = 90 - BaseFunc.GetSurfaceAngleV1(this.ListToSend, 1, 11.652 - this.Radar.YOffset, -10, 10, 0.2, false, out Radar._radius_average, out message) - this.Radar.DegreeXoz - BaseConst.OpcDataSource.PitchAngle_Plc;
+                    double angle = 90 - BaseFunc.GetSurfaceAngleV2(ListToSend, xybias, rangle, BaseConst.OpcDataSource.PitchAngle_Plc, dist_ex_count, false, out Radar._radius_average, out message);
+                    //angle = double.IsNaN(angle) ? -1 : angle;
+                    if (!double.IsNaN(angle))
+                        surfaceAnglesQueue.Enqueue(angle);
                     while(surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
                         surfaceAnglesQueue.Dequeue();
-                    this.Radar._surface_angle = surfaceAnglesQueue.Average();
+                    this.Radar._surface_angle = surfaceAnglesQueue.Count == 0 ? 0 : surfaceAnglesQueue.Average();
+                    //this.Radar._out_of_stack = MatlabFunctions.IsOutOfStack(modelArray);
                 }
                 this.ListBuffer.Clear();
                 this.ListBuffer_Other.Clear();

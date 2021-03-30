@@ -117,6 +117,30 @@ namespace ARS408.Model
             this.Base = message;
         }
 
+        //public override SensorMessage Copy()
+        //{
+        //    return new RadarState
+        //    {
+        //        MemoryWriteStatus = MemoryWriteStatus,
+        //        MemoryReadStatus = MemoryReadStatus,
+        //        MaxDistance = MaxDistance,
+        //        PersistentError = PersistentError,
+        //        Interference = Interference,
+        //        TemperatureError = TemperatureError,
+        //        TemporaryError = TemporaryError,
+        //        VoltageError = VoltageError,
+        //        RadarPower = RadarPower,
+        //        SortIndex = SortIndex,
+        //        SensorId = SensorId,
+        //        MotionRxState = MotionRxState,
+        //        SendExtendedInfo = SendExtendedInfo,
+        //        SendQuality = SendQuality,
+        //        OutputType = OutputType,
+        //        ControlRelay = ControlRelay,
+        //        RcsThreshold = RcsThreshold
+        //    };
+        //}
+
         /// <summary>
         /// 转换2进制数据
         /// </summary>

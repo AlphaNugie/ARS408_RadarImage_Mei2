@@ -1,7 +1,9 @@
 ﻿using ARS408.Core;
 using ARS408.Forms;
 using ARS408.Model;
+using CommonLib.Clients;
 using CommonLib.Enums;
+using CommonLib.Extensions;
 using CommonLib.Function;
 using ProtoBuf;
 using SerializationFactory;
@@ -28,37 +30,32 @@ namespace ARS408
         {
             BaseFunc.InitConfigs(); //配置初始化
             #region 测试
-            //object j = 1;
-            //int j_ = (int)j;
-            //bool result = j_ == 1;
-            //double d = 2 == 2 ? 0 : 90 - 3 * 2 / (double)4;
-            //List<double> list = new List<double>();
-            ////list.Add(3.2);
-            //list = list.Take(1).ToList();
-            //double d = list.Average();
-            //list.Sort();
-            //return;
+            //Distance dist = new Distance(true, 50, 42);
+            //dist.DistCorr = -4;
+            ////dist.SlideIntoRunway();
+            //while (true)
+            //{
+            //    dist.SetValue(8);
+            //}
 
-            //List<double> list = new List<double>() { 3, 1, 4, 2, 9, 11, 5 };
-            //list.Sort();
-            //List<SensorGeneral> list = new List<SensorGeneral>() { new ClusterGeneral() { Id = 1, DistLong = 1, DistLat = 1 }, new ClusterGeneral() { Id = 2, DistLong = 2, DistLat = 3 }, new ClusterGeneral() { Id = 3, DistLong = 3, DistLat = 5 }, new ClusterGeneral() { Id = 4, DistLong = 10, DistLat = 9 }, new ClusterGeneral() { Id = 5, DistLong = 9, DistLat = -8 }, new ClusterGeneral() { Id = 6, DistLong = 99, DistLat = 79 }, new ClusterGeneral() { Id = 7, DistLong = 100, DistLat = 291 } };
-            //double slope = BaseFunc.GetCurveSlope(list, 1, 15, -10, 10, 2);
+            //GlitchFilter[] glitchs = new GlitchFilter[6];
+            //for (int i = 0; i < glitchs.Length; i++)
+            //    glitchs[i] = new GlitchFilter(true, 6, 5) { LongDistAvoidEnabled = true, LongDist2Avoid = BlockConst.DefaultDistance, LongDistCountLimit = BlockConst.LongDistCountLimit, AverageGapEnabled = false, FixedGapEnabled = true, FixedGapThres = 0.7, FixedGapCountLimit = 3 };
+            //string filePath = @"D:\煤二期\Documents\雷达数据\MATLAB处理\防碰\原始网格数据-20210127173130.csv";
+            //List<double[]> list = File.ReadAllLines(filePath).Skip(1).Select(line => line.Split(',').Skip(1).Select(p => double.Parse(p)).ToArray()).ToList();
+            //GlitchFilter glitch = glitchs[3]; //右前
+            //foreach (var numbers in list)
+            //{
+            //    double right_front = numbers[3];
+            //    glitch.PushValue(ref right_front);
+            //    right_front = glitch.CurrVal;
+            //}
             //return;
-            //var list = "".Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
-            //int threat = BaseFunc.GetThreatLevelByValue(3);
-            //threat = BaseFunc.GetThreatLevelByValue(2);
-            //threat = BaseFunc.GetThreatLevelByValue(1.7);
-            //threat = BaseFunc.GetThreatLevelByValue(1.5);
-            //threat = BaseFunc.GetThreatLevelByValue(1.3);
-            //threat = BaseFunc.GetThreatLevelByValue(1);
-            //threat = BaseFunc.GetThreatLevelByValue(0.5);
-            //string test = new string("12345".ToCharArray().Reverse().ToArray());
-            //SensorGeneral g = new ClusterGeneral();
-            //RadarCoor coor = Serializer.ChangeType<SensorGeneral, RadarCoor>(g);
             #endregion
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(UnhandledException_Raising); //未捕获异常触发事件
             string argstring = args == null ? string.Empty : ";" + string.Join(";", args).ToUpper() + ";";
             int temp = 1;
             if (temp == 2)
@@ -70,5 +67,18 @@ namespace ARS408
 
             Application.Run(form);
         }
+
+        #region 事件
+        /// <summary>
+        /// 未捕获异常触发事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private static void UnhandledException_Raising(object sender, UnhandledExceptionEventArgs args)
+        {
+            Exception e = (Exception)args.ExceptionObject;
+            FileClient.WriteFailureInfo(new string[] { string.Format("未处理异常被触发，运行时是否即将终止：{0}，错误信息：{1}", args.IsTerminating, e.Message), e.StackTrace, e.TargetSite.ToString() }, "UnhandledException", "unhandled " + DateTime.Now.ToString("yyyy-MM-dd"));
+        }
+        #endregion
     }
 }
