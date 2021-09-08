@@ -44,6 +44,16 @@ namespace ARS408.Core
         /// </summary>
         public static IniFileHelper IniHelper = new IniFileHelper("Config.ini");
 
+        private static bool _opcEnabled = true;
+        /// <summary>
+        /// 是否在启动时对OPC初始化，没有配置项时默认为true
+        /// </summary>
+        public static bool OpcEnabled
+        {
+            get { return _opcEnabled; }
+            set { _opcEnabled = true; }
+        }
+
         /// <summary>
         /// 是否写入OPC标签
         /// </summary>
@@ -54,11 +64,21 @@ namespace ARS408.Core
         /// </summary>
         public static bool Save2Database = true;
 
-        private static Dictionary<Radar, FormDisplay> _dict_forms = new Dictionary<Radar, FormDisplay>();
+        //private static Dictionary<Radar, FormDisplay> _dict_forms = new Dictionary<Radar, FormDisplay>();
+        ///// <summary>
+        ///// 记录雷达实体类对象与显示页面对应关系的键值对
+        ///// </summary>
+        //public static Dictionary<Radar, FormDisplay> DictForms
+        //{
+        //    get { return _dict_forms; }
+        //    private set { _dict_forms = value; }
+        //}
+
+        private static Dictionary<int, FormDisplay> _dict_forms = new Dictionary<int, FormDisplay>();
         /// <summary>
-        /// 记录雷达实体类对象与显示页面对应关系的键值对
+        /// 记录雷达ID与显示页面对应关系的键值对
         /// </summary>
-        public static Dictionary<Radar, FormDisplay> DictForms
+        public static Dictionary<int, FormDisplay> DictForms
         {
             get { return _dict_forms; }
             private set { _dict_forms = value; }
@@ -285,20 +305,20 @@ property float rcs";
         /// </summary>
         public static double BucketUpLimit { get; set; }
 
-        /// <summary>
-        /// 下方障碍物距离的阈值
-        /// </summary>
-        public static double ObsBelowThres { get; set; }
+        ///// <summary>
+        ///// 下方障碍物距离的阈值
+        ///// </summary>
+        //public static double ObsBelowThres { get; set; }
 
-        /// <summary>
-        /// 溜桶下方障碍物四周边界距离最大值（可为负值）
-        /// </summary>
-        public static double ObsBelowFrontier { get; set; }
+        ///// <summary>
+        ///// 溜桶下方障碍物四周边界距离最大值（可为负值）
+        ///// </summary>
+        //public static double ObsBelowFrontier { get; set; }
 
-        /// <summary>
-        /// 门腿雷达过滤距地面不超过此高度的点（单位米）
-        /// </summary>
-        public static double FeetFilterHeight { get; set; }
+        ///// <summary>
+        ///// 门腿雷达过滤距地面不超过此高度的点（单位米）
+        ///// </summary>
+        //public static double FeetFilterHeight { get; set; }
 
         /// <summary>
         /// 报警级数数值
@@ -329,6 +349,33 @@ property float rcs";
         /// 新值检定次数限定值（超过此值则以假定值替代当前值）
         /// </summary>
         public static int IteCountLimit { get; set; }
+        #endregion
+
+        #region Sqlite
+        /// <summary>
+        /// 是否将数据保存到Sqlite
+        /// </summary>
+        public static bool Save2Sqlite { get; set; }
+
+        private static string _sqlite_file_dir = string.Empty;
+        /// <summary>
+        /// Sqlite文件路径，可为相对路径
+        /// </summary>
+        public static string SqliteFileDir
+        {
+            get { return _sqlite_file_dir; }
+            set { _sqlite_file_dir = string.IsNullOrWhiteSpace(value) || value.Contains("not found") ? string.Empty : value; }
+        }
+
+        private static string _sqlite_file_name = "base.db";
+        /// <summary>
+        /// Sqlite文件名称，包括后缀
+        /// </summary>
+        public static string SqliteFileName
+        {
+            get { return _sqlite_file_name; }
+            set { _sqlite_file_name = string.IsNullOrWhiteSpace(value) || value.Contains("not found") ? "base.db" : value; }
+        }
         #endregion
     }
 
@@ -433,6 +480,11 @@ property float rcs";
             {
                 try
                 {
+                    #region Sqlite
+                    BaseConst.Save2Sqlite = BaseConst.IniHelper.ReadData("Sqlite", "Save2Sqlite").Equals("1");
+                    BaseConst.SqliteFileDir = BaseConst.IniHelper.ReadData("Sqlite", "FileDir");
+                    BaseConst.SqliteFileName = BaseConst.IniHelper.ReadData("Sqlite", "FileName");
+                    #endregion
                     #region Main
                     BaseConst.AutoConnect = BaseConst.IniHelper.ReadData("Main", "AutoConnect").Equals("1");
                     BaseConst.AddingCustomInfo = BaseConst.IniHelper.ReadData("Main", "AddingCustomInfo").Equals("1");
@@ -457,9 +509,9 @@ property float rcs";
                     BaseConst.BorderDistThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BorderDistThres"));
                     BaseConst.BucketHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketHeight"));
                     BaseConst.BucketUpLimit = double.Parse(BaseConst.IniHelper.ReadData("Detection", "BucketUpLimit"));
-                    BaseConst.ObsBelowThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowThres"));
-                    BaseConst.ObsBelowFrontier = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowFrontier"));
-                    BaseConst.FeetFilterHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "FeetFilterHeight"));
+                    //BaseConst.ObsBelowThres = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowThres"));
+                    //BaseConst.ObsBelowFrontier = double.Parse(BaseConst.IniHelper.ReadData("Detection", "ObsBelowFrontier"));
+                    //BaseConst.FeetFilterHeight = double.Parse(BaseConst.IniHelper.ReadData("Detection", "FeetFilterHeight"));
                     BaseConst.UsePublicRcsRange = BaseConst.IniHelper.ReadData("Detection", "UsePublicRcsRange").Equals("1");
                     BaseConst.ClusterFilterEnabled = BaseConst.IniHelper.ReadData("Detection", "ClusterFilterEnabled").Equals("1"); //集群过滤器是否启用
                     BaseConst.ObjectFilterEnabled = BaseConst.IniHelper.ReadData("Detection", "ObjectFilterEnabled").Equals("1"); //目标过滤器是否启用
@@ -493,7 +545,10 @@ property float rcs";
                     BlockConst.ObservationDeviation = double.Parse(BaseConst.IniHelper.ReadData("Block", "ObservationDeviation"));
                     #endregion
                     BaseConst.ReceiveRestTime = int.Parse(BaseConst.IniHelper.ReadData("Connection", "ReceiveRestTime"));
+                    #region OPC
+                    BaseConst.OpcEnabled = !BaseConst.IniHelper.ReadData("OPC", "OpcEnabled").Equals("0"); //判断OPC是否初始化，没有配置项时默认为true
                     BaseConst.WriteItemValue = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
+                    #endregion
                     DataTable table = (new DataService_ThreatLevel()).GetThreatLevels();
                     if (table != null && table.Rows.Count > 0)
                         BaseConst.ThreatLevelValues = table.Rows.Cast<DataRow>().Select(row => double.Parse(row["LEVEL_VALUE"].ToString())).ToArray();
@@ -517,8 +572,8 @@ property float rcs";
 
             //排除根节点
             foreach (Radar radar in BaseConst.RadarList)
-                if (!BaseConst.DictForms.ContainsKey(radar))
-                    BaseConst.DictForms.Add(radar, new FormDisplay(radar));
+                if (radar != null && !BaseConst.DictForms.ContainsKey(radar.Id))
+                    BaseConst.DictForms.Add(radar.Id, new FormDisplay(radar));
             BaseConst.Log.WriteLogsToFile("雷达列表刷新完成");
         }
 
@@ -530,8 +585,11 @@ property float rcs";
             if (BaseConst.RadarList == null || BaseConst.RadarList.Count == 0)
                 return;
 
-            BaseConst.RadarInfo.DistWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
-            BaseConst.RadarInfo.DistWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
+            IEnumerable<Radar> enuLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")), enuRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右"));
+            BaseConst.RadarInfo.DistWheelLeft = enuLeft.Select(r => r.CurrentDistance).MinExceptZero(); //斗轮左距离
+            BaseConst.RadarInfo.DistWheelRight = enuRight.Select(r => r.CurrentDistance).MinExceptZero(); //斗轮右距离
+            BaseConst.RadarInfo.AngleWheelLeft = enuLeft.Select(r => r.CurrentAngle).MinExceptZero(); //斗轮左角度
+            BaseConst.RadarInfo.AngleWheelRight = enuRight.Select(r => r.CurrentAngle).MinExceptZero(); //斗轮右角度
             BaseConst.RadarInfo.SurfaceAngleWheelLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮左侧拟合平面角度
             BaseConst.RadarInfo.SurfaceAngleWheelRight = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("右")).Select(r => r.SurfaceAngle).MinExceptZero(); //斗轮右侧拟合平面角度
             BaseConst.RadarInfo.OutOfStackLeft = BaseConst.RadarList.Where(r => r.GroupType == RadarGroupType.Wheel && r.Name.Contains("左")).Select(r => r.OutOfStack).FirstOrDefault();
@@ -591,13 +649,12 @@ property float rcs";
             if (radar != null && (infos = radar.Infos) != null)
             {
                 //double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.ModiCoors.Z;
-                double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.Z;
+                //double obj_height = infos.GeneralHighest == null ? 0 : 0 - BaseConst.BucketHeight - infos.GeneralHighest.Z;
                 distance = infos.CurrentDistance;
                 result = string.Format(@"  ""radar_{0}"": [
   ""effective"": {1},
   ""distance"": {2},
-  ""below"": {3}
-  ],", radar.PortLocal + "_" + radar.Name, infos.RadarState.Working, distance, obj_height);
+  ],", radar.PortLocal + "_" + radar.Name, infos.RadarState.Working, distance);
             }
 
             return result;

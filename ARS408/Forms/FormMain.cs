@@ -1,5 +1,4 @@
 ﻿using ARS408.Core;
-using CarServer;
 using CommonLib.Clients;
 using CommonLib.Function;
 using CommonLib.UIControlUtil;
@@ -38,12 +37,13 @@ namespace ARS408.Forms
         public FormMain()
         {
             InitializeComponent();
-            this.Init_Watchdog();
+            Init_Watchdog();
             BaseFunc.UpdateRadarList();
 
-            this.toolStripMenu_AutoConnect.Checked = BaseConst.AutoConnect;
-            this.toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1");
-            this.toolStrip_ShowDeserted.Checked = BaseConst.ShowDesertedPoints;
+            toolStripMenu_AutoConnect.Checked = BaseConst.AutoConnect;
+            toolStripMenu_AutoMonitor.Checked = BaseConst.IniHelper.ReadData("Main", "AutoMonitor").Equals("1");
+            toolStrip_ShowDeserted.Checked = BaseConst.ShowDesertedPoints;
+            toolStrip_WriteItemValues.Checked = BaseConst.IniHelper.ReadData("OPC", "WriteItemValue").Equals("1");
             BaseConst.Log.WriteLogsToFile("程序主体初始化完成");
         }
 
@@ -55,8 +55,8 @@ namespace ARS408.Forms
         private void FormMain_Load(object sender, EventArgs e)
         {
             //假如勾选自动开始监视，打开监视页面
-            if (this.toolStripMenu_AutoMonitor.Checked)
-                this.ShowMonitors();
+            if (toolStripMenu_AutoMonitor.Checked)
+                ShowMonitors();
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.tabControl_Main.DisposeAllTabPages();
-            this.tcpServer_Watchdog.Stop();
-            this.timer1.Stop();
+            tabControl_Main.DisposeAllTabPages();
+            tcpServer_Watchdog.Stop();
+            timer1.Stop();
 
             BaseConst.DictForms.Values.Cast<FormDisplay>().ToList().ForEach(form =>
             {
@@ -84,12 +84,12 @@ namespace ARS408.Forms
         /// </summary>
         private void Init_Watchdog()
         {
-            this.tcpServer_Watchdog.ServerIp = BaseConst.IniHelper.ReadData("Watchdog", "MainServerIp");
-            this.tcpServer_Watchdog.ServerPort = int.Parse(BaseConst.IniHelper.ReadData("Watchdog", "MainServerPort"));
-            this.tcpServer_Watchdog.IsHeartCheck = BaseConst.IniHelper.ReadData("Watchdog", "SendHeartBeat").Equals("1");
-            this.tcpServer_Watchdog.HeartBeatPacket = BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatString");
-            this.tcpServer_Watchdog.CheckTime = int.Parse(BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatInterval"));
-            this.tcpServer_Watchdog.Start();
+            tcpServer_Watchdog.ServerIp = BaseConst.IniHelper.ReadData("Watchdog", "MainServerIp");
+            tcpServer_Watchdog.ServerPort = int.Parse(BaseConst.IniHelper.ReadData("Watchdog", "MainServerPort"));
+            tcpServer_Watchdog.IsHeartCheck = BaseConst.IniHelper.ReadData("Watchdog", "SendHeartBeat").Equals("1");
+            tcpServer_Watchdog.HeartBeatPacket = BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatString");
+            tcpServer_Watchdog.CheckTime = int.Parse(BaseConst.IniHelper.ReadData("Watchdog", "HeartBeatInterval"));
+            tcpServer_Watchdog.Start();
             BaseConst.Log.WriteLogsToFile("看门狗兼下发服务启动");
         }
 
@@ -99,12 +99,12 @@ namespace ARS408.Forms
         private void InitializeMonitors()
         {
             BaseConst.Log.WriteLogsToFile("开始刷新监视页面列表...");
-            DataTable table = this.DataService_Shiploader.GetAllShiploadersOrderbyId();
+            DataTable table = DataService_Shiploader.GetAllShiploadersOrderbyId();
             if (table == null || table.Rows.Count == 0)
                 return;
 
-            this.list_monitors = table.Rows.Cast<DataRow>().Select(row => new FormMonitor(int.Parse(row["shiploader_id"].ToString()))).ToList();
-            //table.Rows.Cast<DataRow>().ToList().ForEach(row => this.ShowForm(this.first_monitor = new FormMonitor(int.Parse(row["shiploader_id"].ToString())), DockStyle.Fill));
+            list_monitors = table.Rows.Cast<DataRow>().Select(row => new FormMonitor(int.Parse(row["shiploader_id"].ToString()))).ToList();
+            //table.Rows.Cast<DataRow>().ToList().ForEach(row => ShowForm(first_monitor = new FormMonitor(int.Parse(row["shiploader_id"].ToString())), DockStyle.Fill));
             BaseConst.Log.WriteLogsToFile("监视页面列表刷新完成");
         }
 
@@ -113,8 +113,8 @@ namespace ARS408.Forms
         /// </summary>
         private void ShowMonitors()
         {
-            this.InitializeMonitors();
-            this.list_monitors.ForEach(monitor => this.tabControl_Main.ShowForm(monitor, DockStyle.Fill));
+            InitializeMonitors();
+            list_monitors.ForEach(monitor => tabControl_Main.ShowForm(monitor, DockStyle.Fill));
             BaseConst.Log.WriteLogsToFile("已显示所有监视页面");
         }
 
@@ -123,9 +123,9 @@ namespace ARS408.Forms
         /// </summary>
         private void CloseMonitors()
         {
-            foreach (TabPage page in this.tabControl_Main.TabPages)
+            foreach (TabPage page in tabControl_Main.TabPages)
                 if (page.Controls[0] is FormMonitor)
-                    this.tabControl_Main.DisposeTabPage(page);
+                    tabControl_Main.DisposeTabPage(page);
             BaseConst.Log.WriteLogsToFile("已关闭所有监视页面");
         }
         #endregion
@@ -138,7 +138,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Exit_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Shiploaders_Click(object sender, EventArgs e)
         {
-            this.tabControl_Main.ShowForm(new FormShiploader());
+            tabControl_Main.ShowForm(new FormShiploader());
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_RadarGroup_Click(object sender, EventArgs e)
         {
-            this.tabControl_Main.ShowForm(new FormRadarGroup());
+            tabControl_Main.ShowForm(new FormRadarGroup());
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Radar_Click(object sender, EventArgs e)
         {
-            this.tabControl_Main.ShowForm(new FormRadar(), DockStyle.Fill);
+            tabControl_Main.ShowForm(new FormRadar(), DockStyle.Fill);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void TabControl_Main_DoubleClick(object sender, EventArgs e)
         {
-            this.tabControl_Main.DisposeSelectedTabPage();
+            tabControl_Main.DisposeSelectedTabPage();
         }
 
         /// <summary>
@@ -188,8 +188,8 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStripMenu_Monitor_Click(object sender, EventArgs e)
         {
-            this.CloseMonitors();
-            this.ShowMonitors();
+            CloseMonitors();
+            ShowMonitors();
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStrip_ThreatLevels_Click(object sender, EventArgs e)
         {
-            this.tabControl_Main.ShowForm(new FormThreatLevels());
+            tabControl_Main.ShowForm(new FormThreatLevels());
         }
 
         /// <summary>
@@ -209,6 +209,7 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void ToolStrip_OpcConfig_Click(object sender, EventArgs e)
         {
+            //tabControl_Main.ShowForm(new FormOpcConfig());
             FormOpcConfig form = new FormOpcConfig { StartPosition = FormStartPosition.CenterScreen };
             form.ShowDialog();
         }
@@ -230,19 +231,19 @@ namespace ARS408.Forms
         /// <param name="msg">错误信息</param>
         private void TcpServer_Watchdog_OnErrorMsg(string message)
         {
-            try { this.OnTcpInfoCallBack(message, 1); }
+            try { OnTcpInfoCallBack(message, 1); }
             catch (Exception ex) { FileClient.WriteExceptionInfo(ex, "处理TCP服务端错误信息时出现错误", true); }
         }
 
-        private void TcpServer_Watchdog_TcpServerRecevice(Socket socket, ReceivedEventArgs e)
+        private void TcpServer_Watchdog_TcpServerRecevice(object sender, ReceivedEventArgs e)
         {
-            try { this.MessageReceived(socket, e); }
+            try { MessageReceived(e); }
             catch (Exception ex) { FileClient.WriteExceptionInfo(ex, "处理TCP服务端接收的信息时出现错误", true); }
         }
 
-        private void TcpServer_Watchdog_OnStateInfo(string message, SocketHelper.SocketState state)
+        private void TcpServer_Watchdog_OnStateInfo(object sender, StateInfoEventArgs e)
         {
-            try { this.OnTcpInfoCallBack(message, 2); }
+            try { OnTcpInfoCallBack(e.StateInfo, 2); }
             catch (Exception ex) { FileClient.WriteExceptionInfo(ex, "TCP服务端状态信息出错", true); }
         }
 
@@ -252,13 +253,13 @@ namespace ARS408.Forms
             switch (index)
             {
                 case 1:
-                    this.tcp_info_error = message;
+                    tcp_info_error = message;
                     break;
                 case 2:
-                    this.tcp_info_state = message;
+                    tcp_info_state = message;
                     break;
             }
-            this.file_client_dog.WriteLineToFile(message);
+            file_client_dog.WriteLineToFile(message);
         }
 
         /// <summary>
@@ -267,43 +268,43 @@ namespace ARS408.Forms
         /// <param name="socket"></param>
         /// <param name="message"></param>
         /// <param name="data"></param>
-        public void MessageReceived(Socket socket, ReceivedEventArgs e)
+        public void MessageReceived(ReceivedEventArgs e)
         {
-            string info, ip = ((IPEndPoint)socket.RemoteEndPoint).Address.ToString();
-            int port = ((IPEndPoint)socket.RemoteEndPoint).Port;
-            ClientModel clientModel = this.tcpServer_Watchdog.ResolveSocket(ip, port);
+            string info, ip = ((IPEndPoint)e.Socket.RemoteEndPoint).Address.ToString();
+            int port = ((IPEndPoint)e.Socket.RemoteEndPoint).Port;
+            ClientModel clientModel = tcpServer_Watchdog.ResolveSocket(ip, port);
             if (clientModel == null)
             {
                 info = Functions.AddTimeToMessage("客户端为空，怎么就收到消息了呢？不管咋说，消息是这个：" + e.ReceivedString);
-                this.tcp_info_receive = info;
+                tcp_info_receive = info;
                 return;
             }
-            if (clientModel.ClientType == ClientType.None)
-            {
-                ClientType clientType = ClientModel.AnalyzeClientType(e.ReceivedString);
-                clientModel.ClientType = clientType;
-            }
-            info = Functions.AddTimeToMessage(string.Format("{0}:{1} -> 从类型为{2}的客户端 {3}:{4} 接收到数据：{5}", this.tcpServer_Watchdog.ServerIp, this.tcpServer_Watchdog.ServerPort, clientModel.ClientType.ToString(), ip, port, e.ReceivedString));
-            this.tcp_info_receive = info;
+            //if (clientModel.ClientType == ClientType.None)
+            //{
+            //    ClientType clientType = ClientModel.AnalyzeClientType(e.ReceivedString);
+            //    clientModel.ClientType = clientType;
+            //}
+            info = Functions.AddTimeToMessage(string.Format("{0}:{1} -> 从客户端 {2}:{3} 接收到数据：{4}", tcpServer_Watchdog.ServerIp, tcpServer_Watchdog.ServerPort, ip, port, e.ReceivedString));
+            tcp_info_receive = info;
         }
 
         private void Timer1_Tick(object sender, EventArgs e)
         {
             BaseFunc.UpdateRadarInfo();
-            this.tcpServer_Watchdog.SendData(ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR));
-            this.label_Error.Text = this.tcp_info_error;
-            this.label_State.Text = this.tcp_info_state;
-            this.label_Receive.Text = this.tcp_info_receive;
+            tcpServer_Watchdog.SendData(ProtobufNetWrapper.SerializeToBytes(BaseConst.RadarInfo, (int)ProtoInfoType.RADAR));
+            label_Error.Text = tcp_info_error;
+            label_State.Text = tcp_info_state;
+            label_Receive.Text = tcp_info_receive;
         }
 
         private void ToolStripMenu_AutoMonitor_CheckedChanged(object sender, EventArgs e)
         {
-            BaseConst.IniHelper.WriteData("Main", "AutoMonitor", this.toolStripMenu_AutoMonitor.Checked ? "1" : "0");
+            BaseConst.IniHelper.WriteData("Main", "AutoMonitor", toolStripMenu_AutoMonitor.Checked ? "1" : "0");
         }
 
         private void ToolStripMenu_AutoConnect_CheckedChanged(object sender, EventArgs e)
         {
-            BaseConst.IniHelper.WriteData("Main", "AutoConnect", this.toolStripMenu_AutoConnect.Checked ? "1" : "0");
+            BaseConst.IniHelper.WriteData("Main", "AutoConnect", toolStripMenu_AutoConnect.Checked ? "1" : "0");
         }
 
         private void ToolStrip_RadarBehavior_Click(object sender, EventArgs e)
@@ -318,13 +319,13 @@ namespace ARS408.Forms
 
         private void ToolStrip_ShowDeserted_CheckedChanged(object sender, EventArgs e)
         {
-            BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", this.toolStrip_ShowDeserted.Checked ? "1" : "0");
+            BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", toolStrip_ShowDeserted.Checked ? "1" : "0");
+        }
+
+        private void ToolStrip_WriteItemValues_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("OPC", "WriteItemValue", toolStrip_WriteItemValues.Checked ? "1" : "0");
         }
         #endregion
-
-        private void ToolStripMenu_AutoConnect_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }

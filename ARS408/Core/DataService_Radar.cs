@@ -14,8 +14,8 @@ namespace ARS408.Core
     /// </summary>
     public class DataService_Radar
     {
-        //private readonly SqliteProvider provider = new SqliteProvider();
-        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
 
         #region 查询
         /// <summary>
@@ -145,18 +145,18 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
             return sql;
         }
 
-        /// <summary>
-        /// 获取雷达SQL字符串
-        /// </summary>
-        /// <param name="radar">雷达对象</param>
-        /// <returns></returns>
-        private string GetRadarSqlString_ItemName(Radar radar)
-        {
-            string sql = string.Empty;
-            if (radar != null)
-                sql = string.Format("update t_base_radar_info set item_name_radar_state = '{0}', item_name_collision_state = '{1}', item_name_collision_state_2 = '{2}' where radar_id = {3}", radar.ItemNameRadarState, radar.ItemNameCollisionState, radar.ItemNameCollisionState2, radar.Id);
-            return sql;
-        }
+        ///// <summary>
+        ///// 获取雷达SQL字符串
+        ///// </summary>
+        ///// <param name="radar">雷达对象</param>
+        ///// <returns></returns>
+        //private string GetRadarSqlString_ItemName(Radar radar)
+        //{
+        //    string sql = string.Empty;
+        //    if (radar != null)
+        //        sql = string.Format("update t_base_radar_info set item_name_radar_state = '{0}', item_name_collision_state = '{1}', item_name_collision_state_2 = '{2}' where radar_id = {3}", radar.ItemNameRadarState, radar.ItemNameCollisionState, radar.ItemNameCollisionState2, radar.Id);
+        //    return sql;
+        //}
 
         /// <summary>
         /// 获取雷达SQL字符串
@@ -254,16 +254,16 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
             return this.provider.ExecuteSqlTrans(sqls);
         }
 
-        /// <summary>
-        /// 批量保存雷达信息
-        /// </summary>
-        /// <param name="radars">多个雷达对象</param>
-        /// <returns></returns>
-        public bool SaveRadarItemNames(IEnumerable<Radar> radars)
-        {
-            string[] sqls = radars == null ? null : radars.Select(radar => this.GetRadarSqlString_ItemName(radar)).ToArray();
-            return this.provider.ExecuteSqlTrans(sqls);
-        }
+        ///// <summary>
+        ///// 批量保存雷达信息
+        ///// </summary>
+        ///// <param name="radars">多个雷达对象</param>
+        ///// <returns></returns>
+        //public bool SaveRadarItemNames(IEnumerable<Radar> radars)
+        //{
+        //    string[] sqls = radars == null ? null : radars.Select(radar => this.GetRadarSqlString_ItemName(radar)).ToArray();
+        //    return this.provider.ExecuteSqlTrans(sqls);
+        //}
 
         /// <summary>
         /// 批量保存雷达坐标点限制信息

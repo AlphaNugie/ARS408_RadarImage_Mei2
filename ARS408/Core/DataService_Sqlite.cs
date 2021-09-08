@@ -1,4 +1,5 @@
-﻿using CommonLib.DataUtil;
+﻿using ARS408.Model;
+using CommonLib.DataUtil;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,8 +11,8 @@ namespace ARS408.Core
 {
     public class DataService_Sqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider();
-        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
 
         /// <summary>
         /// 获取所有装船机、雷达组、雷达中每一项的本层id、名称与上层id
@@ -72,20 +73,14 @@ where {0} = 0 or shiploader_id = {0}
             return this.provider.Query(sqlString);
         }
 
-        /// <summary>
-        /// 获取所有存在概率，value为概率最小值，name为概率范围名称
-        /// </summary>
-        /// <returns></returns>
-        public DataTable GetAllExistProbs()
-        {
-            string sqlString = "select value, name from t_list_exist_prob order by value";
-            return this.provider.Query(sqlString);
-        }
-
-        public DataTable GetOpcInfo()
-        {
-            string sql = "select * from t_plc_opcgroup g left join t_plc_opcitem i on g.group_id = i.opcgroup_id where i.enabled = 1 order by g.group_id, i.record_id";
-            return this.provider.Query(sql);
-        }
+        ///// <summary>
+        ///// 获取所有存在概率，value为概率最小值，name为概率范围名称
+        ///// </summary>
+        ///// <returns></returns>
+        //public DataTable GetAllExistProbs()
+        //{
+        //    string sqlString = "select value, name from t_list_exist_prob order by value";
+        //    return this.provider.Query(sqlString);
+        //}
     }
 }

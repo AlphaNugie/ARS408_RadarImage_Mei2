@@ -836,8 +836,6 @@
             this.SocketTcpClient.IsStartTcpThreading = false;
             this.SocketTcpClient.LocalEndPoint = null;
             this.SocketTcpClient.LocalIp = null;
-            this.SocketTcpClient.RaiseInterval = ((uint)(5000u));
-            this.SocketTcpClient.RaiseThreshold = ((ulong)(5000ul));
             this.SocketTcpClient.ReceiveBufferSize = 2048;
             this.SocketTcpClient.ReConnectedCount = 0;
             this.SocketTcpClient.ReconnectWhenReceiveNone = true;
@@ -860,7 +858,7 @@
             this.SocketTcpServer.ServerPort = 5000;
             this.SocketTcpServer.ServerSocket = null;
             this.SocketTcpServer.StartSockst = null;
-            this.SocketTcpServer.Received += new SocketHelper.SocketTcpServer.ReceivedEventHandler(this.SocketTcpServer_TcpServerRecevice);
+            this.SocketTcpServer.Received += new SocketHelper.SocketTcpServer.ReceivedEventHandler(this.SocketTcpServer_TcpServerReceived);
             // 
             // FormDisplay
             // 

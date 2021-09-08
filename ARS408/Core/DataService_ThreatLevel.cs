@@ -10,8 +10,8 @@ namespace ARS408.Core
 {
     public class DataService_ThreatLevel
     {
-        //private readonly SqliteProvider provider = new SqliteProvider();
-        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
 
         /// <summary>
         /// 获取所有报警级数

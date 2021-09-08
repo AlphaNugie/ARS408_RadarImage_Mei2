@@ -14,8 +14,8 @@ namespace ARS408.Core
     /// </summary>
     public class DataService_RadarGroup
     {
-        //private readonly SqliteProvider provider = new SqliteProvider();
-        private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
+        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
 
         /// <summary>
         /// 获取所有雷达组，按ID排序

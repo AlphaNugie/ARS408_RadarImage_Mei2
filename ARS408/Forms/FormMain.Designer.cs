@@ -44,6 +44,7 @@
             this.toolStrip_ThreatLevels = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip_ShowDeserted = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStrip_WriteItemValues = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip_OpcConfig = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip_CoorsLimitConfig = new System.Windows.Forms.ToolStripMenuItem();
@@ -87,20 +88,20 @@
             // toolStripMenu_Monitor
             // 
             this.toolStripMenu_Monitor.Name = "toolStripMenu_Monitor";
-            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenu_Monitor.Size = new System.Drawing.Size(188, 26);
             this.toolStripMenu_Monitor.Text = "打开监视页面";
             this.toolStripMenu_Monitor.Click += new System.EventHandler(this.ToolStripMenu_Monitor_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(185, 6);
             // 
             // toolStripMenu_AutoMonitor
             // 
             this.toolStripMenu_AutoMonitor.CheckOnClick = true;
             this.toolStripMenu_AutoMonitor.Name = "toolStripMenu_AutoMonitor";
-            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenu_AutoMonitor.Size = new System.Drawing.Size(188, 26);
             this.toolStripMenu_AutoMonitor.Text = "自动开始监视";
             this.toolStripMenu_AutoMonitor.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoMonitor_CheckedChanged);
             // 
@@ -108,15 +109,14 @@
             // 
             this.toolStripMenu_AutoConnect.CheckOnClick = true;
             this.toolStripMenu_AutoConnect.Name = "toolStripMenu_AutoConnect";
-            this.toolStripMenu_AutoConnect.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenu_AutoConnect.Size = new System.Drawing.Size(188, 26);
             this.toolStripMenu_AutoConnect.Text = "自动连接";
             this.toolStripMenu_AutoConnect.CheckedChanged += new System.EventHandler(this.ToolStripMenu_AutoConnect_CheckedChanged);
-            this.toolStripMenu_AutoConnect.Click += new System.EventHandler(this.ToolStripMenu_AutoConnect_Click);
             // 
             // toolStripMenu_Exit
             // 
             this.toolStripMenu_Exit.Name = "toolStripMenu_Exit";
-            this.toolStripMenu_Exit.Size = new System.Drawing.Size(224, 26);
+            this.toolStripMenu_Exit.Size = new System.Drawing.Size(188, 26);
             this.toolStripMenu_Exit.Text = "退出";
             this.toolStripMenu_Exit.Click += new System.EventHandler(this.ToolStripMenu_Exit_Click);
             // 
@@ -163,6 +163,7 @@
             // 
             this.设置ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStrip_ShowDeserted,
+            this.toolStrip_WriteItemValues,
             this.toolStripSeparator2,
             this.toolStrip_OpcConfig,
             this.toolStrip_CoorsLimitConfig,
@@ -179,6 +180,14 @@
             this.toolStrip_ShowDeserted.Size = new System.Drawing.Size(220, 26);
             this.toolStrip_ShowDeserted.Text = "是否显示被过滤点";
             this.toolStrip_ShowDeserted.CheckedChanged += new System.EventHandler(this.ToolStrip_ShowDeserted_CheckedChanged);
+            // 
+            // toolStrip_WriteItemValues
+            // 
+            this.toolStrip_WriteItemValues.CheckOnClick = true;
+            this.toolStrip_WriteItemValues.Name = "toolStrip_WriteItemValues";
+            this.toolStrip_WriteItemValues.Size = new System.Drawing.Size(220, 26);
+            this.toolStrip_WriteItemValues.Text = "是否写入OPC标签";
+            this.toolStrip_WriteItemValues.CheckedChanged += new System.EventHandler(this.ToolStrip_WriteItemValues_CheckedChanged);
             // 
             // toolStripSeparator2
             // 
@@ -336,5 +345,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStrip_ShowDeserted;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem toolStrip_RadarBehavior;
+        private System.Windows.Forms.ToolStripMenuItem toolStrip_WriteItemValues;
     }
 }

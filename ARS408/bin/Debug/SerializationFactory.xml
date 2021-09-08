@@ -54,6 +54,81 @@
             其它情况
             </summary>
         </member>
+        <member name="T:SerializationFactory.RadarGroupType">
+            <summary>
+            雷达组类型
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.None">
+            <summary>
+            无归属
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.Arm">
+            <summary>
+            臂架
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.Wheel">
+            <summary>
+            斗轮
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.Feet">
+            <summary>
+            门腿
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.Belt">
+            <summary>
+            皮带
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.RadarGroupType.Counterweight">
+            <summary>
+            配重
+            </summary>
+        </member>
+        <member name="T:SerializationFactory.Directions">
+            <summary>
+            方向
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.None">
+            <summary>
+            无归属
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Front">
+            <summary>
+            前方
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Left">
+            <summary>
+            左方
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Back">
+            <summary>
+            后方
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Right">
+            <summary>
+            右方
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Up">
+            <summary>
+            上
+            </summary>
+        </member>
+        <member name="F:SerializationFactory.Directions.Down">
+            <summary>
+            下
+            </summary>
+        </member>
         <member name="T:SerializationFactory.GnssProtoInfo">
             <summary>
             用于GNSS数据传输的protobuf数据实体类
@@ -65,6 +140,11 @@
             </summary>
         </member>
         <member name="P:SerializationFactory.GnssProtoInfo.IsFixed">
+            <summary>
+            是否为固定解
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.GnssProtoInfo.TrackDirection_Received">
             <summary>
             是否为固定解
             </summary>
@@ -229,6 +309,84 @@
             端口号
             </summary>
         </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.GroupType">
+            <summary>
+            雷达组类型
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarInfoDetail.Direction">
+            <summary>
+            方向
+            </summary>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.GetHashCode">
+            <summary>
+            返回此实例的哈希代码
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.Equals(System.Object)">
+            <summary>
+            判断当前实例与某对象是否相等
+            </summary>
+            <param name="obj"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_Equality(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的相等符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_Inequality(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的不等符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.CompareTo(SerializationFactory.RadarInfoDetail)">
+            <summary>
+            将当前实例与另一实例相比较，并返回比较结果符号：-1 小于，0 相等，1 大于
+            </summary>
+            <param name="other">与当前实例比较的另一实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_LessThan(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的小于符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_LessThanOrEqual(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的小于等于符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_GreaterThan(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的大于符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:SerializationFactory.RadarInfoDetail.op_GreaterThanOrEqual(SerializationFactory.RadarInfoDetail,SerializationFactory.RadarInfoDetail)">
+            <summary>
+            重新定义的大于等于符号
+            </summary>
+            <param name="left">左侧实例</param>
+            <param name="right">右侧实例</param>
+            <returns></returns>
+        </member>
         <member name="T:SerializationFactory.RadarProtoInfo">
             <summary>
             用于雷达数据传输的protobuf数据实体类
@@ -257,6 +415,31 @@
         <member name="P:SerializationFactory.RadarProtoInfo.DistWheelDiff">
             <summary>
             两侧斗轮距离的差值（绝对值）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.AngleWheelLeft">
+            <summary>
+            斗轮左侧角度（假如为堆料机则为落料口左侧角度）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.AngleWheelRight">
+            <summary>
+            斗轮右侧角度（假如为堆料机则为落料口右侧角度）
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.AngleWheelAverage">
+            <summary>
+            斗轮平均角度
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.AngleWheelMin">
+            <summary>
+            两侧斗轮角度的最小值
+            </summary>
+        </member>
+        <member name="P:SerializationFactory.RadarProtoInfo.AngleWheelDiff">
+            <summary>
+            两侧斗轮角度的差值（绝对值）
             </summary>
         </member>
         <member name="P:SerializationFactory.RadarProtoInfo.DistBelt">

@@ -80,6 +80,7 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -94,6 +95,7 @@
     <Compile Include="Core\Base.cs" />
     <Compile Include="Core\BlockConst.cs" />
     <Compile Include="Core\DataService_GroupType.cs" />
+    <Compile Include="Core\DataService_OpcItem.cs" />
     <Compile Include="Core\DataService_Radar.cs" />
     <Compile Include="Core\DataService_RadarGroup.cs" />
     <Compile Include="Core\DataService_Shiploader.cs" />
@@ -184,6 +186,7 @@
     <Compile Include="Model\ObjectGeneral.cs" />
     <Compile Include="Model\ObjectQuality.cs" />
     <Compile Include="Model\ObjectStatus.cs" />
+    <Compile Include="Model\OpcItem.cs" />
     <Compile Include="Model\OpcTask.cs" />
     <Compile Include="Model\Radar.cs" />
     <Compile Include="Model\RadarGroup.cs" />
@@ -255,9 +258,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="bin\Debug\ars_coor.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="dot-chart_pink_purple_512.ico" />

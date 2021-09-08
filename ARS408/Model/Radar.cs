@@ -13,11 +13,11 @@ namespace ARS408.Model
     /// 雷达实体类
     /// </summary>
     [ProtoContract]
-    public class Radar
+    public class Radar : IComparable<Radar>
     {
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
-        internal double _current, _curve_slope, _surface_angle, _radius_average; //当前距离，当前斜率
+        internal double _current_dist, _current_angle, _curve_slope, _surface_angle, _radius_average; //当前距离，当前斜率
         internal bool _out_of_stack;
         internal string _threat_level_binary = "00";
 
@@ -70,8 +70,17 @@ namespace ARS408.Model
         [ProtoMember(4)]
         public double CurrentDistance
         {
-            get { return _current; }
-            set { _current = value; }
+            get { return _current_dist; }
+            set { _current_dist = value; }
+        }
+
+        /// <summary>
+        /// 当前障碍物所处角度
+        /// </summary>
+        public double CurrentAngle
+        {
+            get { return _current_angle; }
+            set { _current_angle = value; }
         }
 
         /// <summary>
@@ -188,6 +197,7 @@ namespace ARS408.Model
         /// <summary>
         /// 雷达组类型，1 臂架，2 溜桶，3 门腿
         /// </summary>
+        [ProtoMember(9)]
         public RadarGroupType GroupType { get; set; }
 
         #region 角度与转换
@@ -271,6 +281,7 @@ namespace ARS408.Model
         /// <summary>
         /// 方向：123456，海北陆南上下
         /// </summary>
+        [ProtoMember(10)]
         public Directions Direction { get; set; }
 
         /// <summary>
@@ -533,20 +544,20 @@ namespace ARS408.Model
         /// </summary>
         public string Remark { get; set; }
 
-        /// <summary>
-        /// 雷达状态标签
-        /// </summary>
-        public string ItemNameRadarState { get; set; }
+        ///// <summary>
+        ///// 雷达状态标签
+        ///// </summary>
+        //public string ItemNameRadarState { get; set; }
 
-        /// <summary>
-        /// 雷达碰撞状态标签1
-        /// </summary>
-        public string ItemNameCollisionState { get; set; }
+        ///// <summary>
+        ///// 雷达碰撞状态标签1
+        ///// </summary>
+        //public string ItemNameCollisionState { get; set; }
 
-        /// <summary>
-        /// 雷达碰撞状态标签2
-        /// </summary>
-        public string ItemNameCollisionState2 { get; set; }
+        ///// <summary>
+        ///// 雷达碰撞状态标签2
+        ///// </summary>
+        //public string ItemNameCollisionState2 { get; set; }
 
         ///// <summary>
         ///// 存在概率最低值
@@ -615,9 +626,9 @@ namespace ARS408.Model
             YOffset = double.Parse(row["y_offset"].ToString());
             ZOffset = double.Parse(row["z_offset"].ToString());
             Remark = row["remark"].ToString();
-            ItemNameRadarState = row["item_name_radar_state"].ToString();
-            ItemNameCollisionState = row["item_name_collision_state"].ToString();
-            ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
+            //ItemNameRadarState = row["item_name_radar_state"].ToString();
+            //ItemNameCollisionState = row["item_name_collision_state"].ToString();
+            //ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
             RcsMinimum = int.Parse(row["rcs_min"].ToString());
             RcsMaximum = int.Parse(row["rcs_max"].ToString());
             RadarHeight = double.Parse(row["radar_height"].ToString());
@@ -653,6 +664,113 @@ namespace ARS408.Model
             //ProbOfExistFilter = row["prob_exist_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
             #endregion
         }
+        #endregion
+
+        /// <summary>
+        /// 返回此实例的哈希代码
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return CurrentDistance.GetHashCode() | ThreatLevel.GetHashCode();
+        }
+
+        #region 对象比较
+        #region 是否相等的比较
+        /// <summary>
+        /// 判断当前实例与某对象是否相等
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            return obj is Radar && CurrentDistance == ((Radar)obj).CurrentDistance && ThreatLevel == ((Radar)obj).ThreatLevel;
+        }
+
+        /// <summary>
+        /// 重新定义的相等符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator ==(Radar left, Radar right)
+        {
+            return (object)left == null ? (object)right == null : left.Equals(right);
+        }
+
+        /// <summary>
+        /// 重新定义的不等符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator !=(Radar left, Radar right)
+        {
+            return !(left == right);
+        }
+        #endregion
+
+        #region 大小的比较
+        /// <summary>
+        /// 将当前实例与另一实例相比较，并返回比较结果符号：-1 小于，0 相等，1 大于
+        /// </summary>
+        /// <param name="other">与当前实例比较的另一实例</param>
+        /// <returns></returns>
+        public int CompareTo(Radar other)
+        {
+            int d = CurrentDistance.CompareTo(other.CurrentDistance), a = ThreatLevel.CompareTo(other.ThreatLevel);
+            int result;
+            if (d == 0 && a == 0)
+                result = 0;
+            else
+                result = (d == -1 && a != -1) || (d != -1 && a == 1) ? -1 : 1;
+            return result;
+        }
+
+        /// <summary>
+        /// 重新定义的小于符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator <(Radar left, Radar right)
+        {
+            return left.CompareTo(right) < 0;
+        }
+
+        /// <summary>
+        /// 重新定义的小于等于符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator <=(Radar left, Radar right)
+        {
+            return left.CompareTo(right) <= 0;
+        }
+
+        /// <summary>
+        /// 重新定义的大于符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator >(Radar left, Radar right)
+        {
+            return left.CompareTo(right) > 0;
+        }
+
+        /// <summary>
+        /// 重新定义的大于等于符号
+        /// </summary>
+        /// <param name="left">左侧实例</param>
+        /// <param name="right">右侧实例</param>
+        /// <returns></returns>
+        public static bool operator >=(Radar left, Radar right)
+        {
+            return left.CompareTo(right) >= 0;
+        }
+        #endregion
         #endregion
 
         /// <summary>

@@ -30,8 +30,8 @@ namespace ARS408.Forms
         private readonly string display_field = "name"; //显示字段
         private readonly float column_width = 0;
         private readonly int shiploader_id = 0;
-        private uint radarState, bucketAlarms, armAlarms, feetAlarms;
-        private readonly Thread threadUpdateItems, threadWriteItems;
+        //private uint radarState, bucketAlarms, armAlarms, feetAlarms;
+        private readonly Thread threadUpdateItems/*, threadWriteItems*/;
         #endregion
 
         #region 属性
@@ -84,8 +84,8 @@ namespace ARS408.Forms
             DataSourceRefresh();
 
             threadUpdateItems = new Thread(new ThreadStart(UpdateItemsLoop)) { IsBackground = true };
-            threadWriteItems = new Thread(new ThreadStart(WriteItemValuesLoop)) { IsBackground = true };
-            AddGroupItemsAsync();
+            //threadWriteItems = new Thread(new ThreadStart(WriteItemValuesLoop)) { IsBackground = true };
+            //AddGroupItemsAsync();
             threadUpdateItems.Start();
             //threadWriteitems.Start();
 
@@ -117,21 +117,6 @@ namespace ARS408.Forms
                     Name = row["shiploader_name"].ToString(),
                     OpcServerIp = row["opcserver_ip"].ToString(),
                     OpcServerName = row["opcserver_name"].ToString(),
-                    TopicName = row["topic_name"].ToString(),
-                    TopicNameWalkingPos = row["topic_name_walking_pos"].ToString(),
-                    TopicNamePitchAngle = row["topic_name_pitch_angle"].ToString(),
-                    TopicNameStretchLength = row["topic_name_stretch_length"].ToString(),
-                    TopicNameBucketPitch = row["topic_name_bucket_pitch"].ToString(),
-                    TopicNameBucketYaw = row["topic_name_bucket_yaw"].ToString(),
-                    TopicNameBeltSpeed = row["topic_name_belt_speed"].ToString(),
-                    TopicNameStream = row["topic_name_stream"].ToString(),
-                    ItemNameWalkingPos = row["item_name_walking_pos"].ToString(),
-                    ItemNamePitchAngle = row["item_name_pitch_angle"].ToString(),
-                    ItemNameStretchLength = row["item_name_stretch_length"].ToString(),
-                    ItemNameBucketPitch = row["item_name_bucket_pitch"].ToString(),
-                    ItemNameBucketYaw = row["item_name_bucket_yaw"].ToString(),
-                    ItemNameBeltSpeed = row["item_name_belt_speed"].ToString(),
-                    ItemNameStream = row["item_name_stream"].ToString()
                 };
             }
             Shiploader = loader;
@@ -139,10 +124,7 @@ namespace ARS408.Forms
 
         private void DataSourceRefresh()
         {
-            try
-            {
-                DataSource = dataService.GetAllLevels();
-            }
+            try { DataSource = dataService.GetAllLevels(); }
             catch (Exception e)
             {
                 string errorMessage = "查询时出现问题：" + e.Message;
@@ -220,12 +202,13 @@ namespace ARS408.Forms
                 }
             }
 
-            Form display = radar != null ? BaseConst.DictForms[radar] : form;
+            Form display = radar != null ? BaseConst.DictForms[radar.Id] : form;
 
             //在TabControl中显示包含该页面的TabPage
             TabPage page = new TabPage();
             display.TopLevel = false; //不置顶
-            display.Dock = radar != null ? DockStyle.Fill : DockStyle.None; //控件停靠方式
+            //display.Dock = radar != null ? DockStyle.Fill : DockStyle.None; //控件停靠方式
+            display.Dock = DockStyle.Fill; //控件停靠方式
             display.FormBorderStyle = FormBorderStyle.None; //页面无边框
             page.Controls.Add(display);
             page.Text = display.Text;
@@ -273,80 +256,19 @@ namespace ARS408.Forms
         private void InitOpcTask()
         {
             OpcTask = new OpcTask(Shiploader);
+            if (!BaseConst.OpcEnabled)
+                return;
+
             OpcTask.Init();
             OpcTask.Run();
             label_opc.SafeInvoke(() => label_opc.Text = OpcTask.ErrorMessage);
-            //new Thread(new ThreadStart(() =>
-            //{
-            //    OpcTask.Init();
-            //    label_opc.SafeInvoke(() => label_opc.Text = OpcTask.LastErrorMessage);
-            //}))
-            //{ IsBackground = true }.Start();
-        }
-
-        /// <summary>
-        /// 异步添加OPC组与标签
-        /// </summary>
-        public void AddGroupItemsAsync()
-        {
-            new Thread(new ThreadStart(() =>
-            {
-                AddGroupItems();
-                if (OpcTask != null && !string.IsNullOrWhiteSpace(OpcTask.ErrorMessage))
-                    label_opc.SafeInvoke(() => { label_opc.Text = OpcTask.ErrorMessage; });
-                if (BaseConst.RadarList != null && BaseConst.RadarList.Count > 0 && OpcTask != null)
-                    threadWriteItems.Start();
-            }))
-            { IsBackground = true }.Start();
-        }
-
-        /// <summary>
-        /// 添加OPC组与标签
-        /// </summary>
-        /// <returns></returns>
-        public bool AddGroupItems()
-        {
-            bool result = false;
-            if (Shiploader == null || BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || OpcTask == null)
-                return result;
-            try
-            {
-                OpcGroup = OpcTask.OpcHelper.OpcServer.OPCGroups.Add("Group_Radar_All");
-                string basic = "[" + Shiploader.TopicName + "]" + "{0}";
-                OpcItemNames = new List<string>() { string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_HMBLeiDaZhuangtai"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_LiuTongFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_BiJiaFangPeng"), string.Format(basic, "ANTICOLL_SYS.SL_SystoPLC_MenTuiFangPeng") };
-                OpcItemNames.AddRange(BaseConst.RadarList.Select(r => string.Format(basic, string.Format("ANTICOLL_SYS.Spare_Real[{0}]", 10 + r.Id))));
-
-                int count = OpcItemNames.Count;
-                string[] itemIds = new string[count + 1];
-                int[] clientHandlers = new int[count + 1];
-
-                for (int i = 1; i <= count; i++)
-                {
-                    clientHandlers[i] = i;
-                    itemIds[i] = OpcItemNames[i - 1];
-                }
-
-                Array errors, strit = itemIds.ToArray(), lci = clientHandlers.ToArray();
-                OpcGroup.OPCItems.AddItems(count, ref strit, ref lci, out ServerHandles, out errors);
-                OpcGroup.IsSubscribed = true;
-                OpcGroup.UpdateRate = 30;
-            }
-            catch (Exception e)
-            {
-                string errorMessage = "添加OPC组与标签时出现问题. " + e.Message;
-                FileClient.WriteExceptionInfo(e, errorMessage, false);
-                return result;
-            }
-            return !result;
         }
 
         private void UpdateItemsLoop()
         {
-            //int interval = 50;
             while (true)
             {
                 UpdateItems();
-                //Thread.Sleep(interval);
                 Thread.Sleep(BlockConst.ProcessInternal);
             }
         }
@@ -357,154 +279,7 @@ namespace ARS408.Forms
             if (BaseConst.RadarList == null)
                 return;
 
-            StringBuilder states = new StringBuilder(), buckets = new StringBuilder(), arms = new StringBuilder(), feet = new StringBuilder();
-            foreach (Radar radar in BaseConst.RadarList)
-            {
-                if (radar == null)
-                    continue;
-                states.Insert(0, radar.State.Working);
-                if (radar.GroupType == RadarGroupType.Wheel)
-                    buckets.Insert(0, radar.ThreatLevelBinary);
-                else if (radar.GroupType == RadarGroupType.Arm)
-                    arms.Insert(0, radar.ThreatLevelBinary);
-                else
-                    feet.Insert(0, radar.ThreatLevelBinary);
-            }
-            radarState = Convert.ToUInt32(states.Length > 0 ? states.ToString() : "0", 2);
-            bucketAlarms = Convert.ToUInt32(buckets.Length > 0 ? buckets.ToString() : "0", 2);
-            armAlarms = Convert.ToUInt32(arms.Length > 0 ? arms.ToString() : "0", 2);
-            feetAlarms = Convert.ToUInt32(feet.Length > 0 ? feet.ToString() : "0", 2);
-
             BaseFunc.ProcessBlockUnits();
-            #region 网格化处理（注释）
-            //BlockConst.Blocks.Clear();
-            //BlockConst.CommonBlocks.Clear();
-            //BlockConst.BlockClusters.Clear();
-            //_leftDists.ResetDistances(BlockConst.DefaultDistance);
-            //_rightDists.ResetDistances(BlockConst.DefaultDistance);
-            ////遍历雷达并将雷达扫描点填入网格单元中
-            //foreach (var radar in BaseConst.RadarList)
-            //{
-            //    if (radar.GroupType != RadarGroupType.Arm)
-            //        continue;
-            //    List<SensorGeneral> list = null;
-            //    //try { list = radar.Infos.ListToSendAll.ToList(); }
-            //    try { list = radar.Infos.ListToSend.ToList(); }
-            //    catch (Exception) { }
-            //    if (list == null)
-            //        continue;
-            //    //List<SensorGeneral> list = radar.Infos.ListToSend.ToList();
-            //    foreach (var general in list)
-            //    {
-            //        //假如单点测距在大臂范围内或测距临界值之外，则跳过
-            //        if (general == null || general.DistanceToBorder <= BlockConst.MainArmScopeX || (BaseConst.BorderDistThres > 0 && general.DistanceToBorder >= BaseConst.BorderDistThres))
-            //            continue;
-            //        //根据点坐标找到其应归属的网格单元列索引、行索引；假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸）直接前往下一个循环
-            //        int columnIndex = (int)Math.Floor((general.X - BlockConst.UpLeftCorner[0]) / BlockConst.UnitSize[0]), rowIndex = (int)Math.Floor((BlockConst.UpLeftCorner[1] - general.Y) / BlockConst.UnitSize[1]);
-            //        if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 || rowIndex >= BlockConst.MatrixSize[1])
-            //            continue;
-            //        BlockUnit block = BlockConst.Blocks[columnIndex, rowIndex];
-            //        block.AddSensorGeneral(general);
-            //        if (block.TypeChanged && block.Type == BlockType.Common)
-            //            BlockConst.CommonBlocks.Add(block);
-            //        //if (block.TypeChanged && block.Type == BlockType.Core)
-            //        //    BlockConst.BlockClusters.Add(new BlockCluster(block));
-            //    }
-            //}
-            //BlockConst.CommonBlocks = BaseFunc.GetOutlierFilteredBlocks(BlockConst.CommonBlocks); //对符合第一阈值的网格单元进行统计滤波
-            ////记录核心网格
-            //foreach (BlockUnit block in BlockConst.CommonBlocks)
-            //    if (block.Type == BlockType.Core)
-            //        BlockConst.BlockClusters.Add(new BlockCluster(block));
-            //foreach (var cluster in BlockConst.BlockClusters)
-            //{
-            //    BlockUnit core = cluster.CoreBlock;
-            //    if (core == null)
-            //        continue;
-            //    //int columnIndex = cluster.CoreBlock.ColumnIndex, rowIndex = cluster.CoreBlock.RowIndex;
-            //    int columnIndex = 0, rowIndex = 0;
-            //    ////遍历核心网格周围5x5的网格单元（从核心网格向四周延伸2格）
-            //    //for (int i = -2; i <= 2; i++)
-            //    //{
-            //    //    for (int j = -2; j <= 2; j++)
-            //    //    {
-            //    //        columnIndex = core.ColumnIndex + j;
-            //    //        rowIndex = core.RowIndex + i;
-            //    //        //假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸），假如i与j均为0（代表循环将回到当前网格），直接前往下一个循环
-            //    //        if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 ||rowIndex >= BlockConst.MatrixSize[1] || (i == 0 && j == 0))
-            //    //            continue;
-            //    //        cluster.AddCommonBlock(BlockConst.Blocks[columnIndex, rowIndex]);
-            //    //    }
-            //    //}
-            //    //遍历核心网格周围半径内的网格单元（从核心网格向四周延伸若干格，具体数量见配置文件）
-            //    for (int i = 0 - BlockConst.BlockClusterRadius[1]; i <= BlockConst.BlockClusterRadius[1]; i++)
-            //    {
-            //        for (int j = 0 - BlockConst.BlockClusterRadius[0]; j <= BlockConst.BlockClusterRadius[0]; j++)
-            //        {
-            //            columnIndex = core.ColumnIndex + j;
-            //            rowIndex = core.RowIndex + i;
-            //            //假如新的行列索引超出索引范围（小于0或大于等于网格矩阵尺寸），假如i与j均为0（代表循环将回到当前网格），直接前往下一个循环
-            //            if (columnIndex < 0 || columnIndex >= BlockConst.MatrixSize[0] || rowIndex < 0 ||rowIndex >= BlockConst.MatrixSize[1] || (i == 0 && j == 0))
-            //                continue;
-            //            cluster.AddCommonBlock(BlockConst.Blocks[columnIndex, rowIndex]);
-            //        }
-            //    }
-            //    //遍历完四周网格单元后更新网格聚类属性，迭代左右距离值
-            //    cluster.RefreshProperties();
-            //    if (cluster.Type == BlockClusterType.Normal && cluster.CenterX < 0)
-            //        _leftDists.Iterate(cluster.Distances);
-            //    else if (cluster.Type == BlockClusterType.Normal && cluster.CenterX > 0)
-            //        _rightDists.Iterate(cluster.Distances);
-            //    //if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX < 0)
-            //    //    _leftDists.Iterate(cluster.Distances);
-            //    //else if (cluster.Type != BlockClusterType.MainArm && cluster.CenterX > 0)
-            //    //    _rightDists.Iterate(cluster.Distances);
-            //}
-            //BlockConst.DistancesLeft.Copy(_leftDists);
-            //BlockConst.DistancesRight.Copy(_rightDists);
-            #endregion
-        }
-
-        /// <summary>
-        /// 向OPC服务写入OPC项的值
-        /// </summary>
-        private void WriteItemValuesLoop()
-        {
-            while (true)
-            {
-                Thread.Sleep(400);
-                if (!BaseConst.WriteItemValue)
-                    continue;
-                try { WriteItemValues(); }
-                catch (Exception) { }
-            }
-        }
-
-        /// <summary>
-        /// 向PLC写入信息
-        /// </summary>
-        public void WriteItemValues()
-        {
-            if (BaseConst.RadarList == null || BaseConst.RadarList.Count == 0 || OpcTask == null || OpcGroup == null)
-                return;
-
-            try
-            {
-                //假如未添加任何OPC项
-                if (OpcGroup.OPCItems.Count == 0)
-                    return;
-
-                List<object> values = new List<object>() { 0, radarState, bucketAlarms, armAlarms, feetAlarms };
-                values.AddRange(BaseConst.RadarList.Select(r => (object)r.CurrentDistance));
-                Array itemValues = values.ToArray(), errors;
-                OpcGroup.SyncWrite(OpcItemNames.Count, ref ServerHandles, ref itemValues, out errors);
-            }
-            catch (Exception ex)
-            {
-                string info = string.Format("OPC写入时出现问题. {0}. ip_address: {1}", ex.Message, OpcTask.Shiploader.OpcServerIp);
-                label_opc.SafeInvoke(() => { label_opc.Text = info; });
-                FileClient.WriteExceptionInfo(ex, info, false);
-            }
         }
         #endregion
 

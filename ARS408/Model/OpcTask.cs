@@ -12,12 +12,12 @@ namespace ARS408.Model
 {
     public class OpcTask : Task
     {
-        private readonly OpcUtilHelper opcHelper = new OpcUtilHelper(1000, true);
+        private readonly OpcUtilHelper _opcHelper = new OpcUtilHelper(1000, true);
 
         /// <summary>
         /// OPC操作对象
         /// </summary>
-        public OpcUtilHelper OpcHelper { get { return opcHelper; } }
+        public OpcUtilHelper OpcHelper { get { return _opcHelper; } }
 
         /// <summary>
         /// 装船机信息
@@ -68,9 +68,9 @@ namespace ARS408.Model
         private void OpcInit()
         {
             BaseConst.Log.WriteLogsToFile(string.Format("开始连接IP地址为{0}的OPC SERVER {1}...", Shiploader.OpcServerIp, Shiploader.OpcServerName));
-            DataService_Sqlite dataService_Opc = new DataService_Sqlite();
+            //DataService_Sqlite dataService_Opc = new DataService_Sqlite();
             //opcHelper = new OpcUtilHelper(1000, true);
-            string[] servers = opcHelper.ServerEnum(Shiploader.OpcServerIp, out _errorMessage);
+            string[] servers = _opcHelper.ServerEnum(Shiploader.OpcServerIp, out _errorMessage);
             if (!string.IsNullOrWhiteSpace(_errorMessage))
             {
                 BaseConst.Log.WriteLogsToFile(string.Format("枚举过程中出现问题：{0}", _errorMessage));
@@ -81,7 +81,7 @@ namespace ARS408.Model
                 BaseConst.Log.WriteLogsToFile(string.Format("无法找到指定OPC SERVER：{0}", Shiploader.OpcServerName));
                 goto END_OF_OPC;
             }
-            DataTable table = dataService_Opc.GetOpcInfo();
+            DataTable table = new DataService_OpcItem().GetOpcInfo();
             if (table == null || table.Rows.Count == 0)
             {
                 BaseConst.Log.WriteLogsToFile(string.Format("在表中未找到任何OPC记录，将不进行读取或写入", Shiploader.OpcServerName));
@@ -108,9 +108,9 @@ namespace ARS408.Model
                 }
                 items.Add(new OpcItemInfo(itemId, clientHandle, fieldName));
             }
-            opcHelper.ListGroupInfo = groups;
-            opcHelper.ConnectRemoteServer(Shiploader.OpcServerIp, Shiploader.OpcServerName, out _errorMessage);
-            BaseConst.Log.WriteLogsToFile(string.Format("OPC连接状态：{0}", opcHelper.OpcConnected));
+            _opcHelper.ListGroupInfo = groups;
+            _opcHelper.ConnectRemoteServer(Shiploader.OpcServerIp, Shiploader.OpcServerName, out _errorMessage);
+            BaseConst.Log.WriteLogsToFile(string.Format("OPC连接状态：{0}", _opcHelper.OpcConnected));
             if (!string.IsNullOrWhiteSpace(_errorMessage))
                 BaseConst.Log.WriteLogsToFile(string.Format("连接过程中出现问题：{0}", _errorMessage));
             END_OF_OPC:;
@@ -121,8 +121,8 @@ namespace ARS408.Model
         /// </summary>
         private void SetOpcGroupsDataSource()
         {
-            if (opcHelper != null && opcHelper.ListGroupInfo != null)
-                opcHelper.ListGroupInfo.ForEach(group => group.DataSource = BaseConst.OpcDataSource);
+            if (_opcHelper != null && _opcHelper.ListGroupInfo != null)
+                _opcHelper.ListGroupInfo.ForEach(group => group.DataSource = BaseConst.OpcDataSource);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace ARS408.Model
         /// </summary>
         private void OpcReadValues()
         {
-            opcHelper.ListGroupInfo.ForEach(group =>
+            _opcHelper.ListGroupInfo.ForEach(group =>
             {
                 if (group.GroupType != GroupType.READ)
                     return;
@@ -148,7 +148,7 @@ namespace ARS408.Model
             if (!BaseConst.WriteItemValue)
                 return;
 
-            opcHelper.ListGroupInfo.ForEach(group =>
+            _opcHelper.ListGroupInfo.ForEach(group =>
             {
                 if (group.GroupType != GroupType.WRITE)
                     return;

@@ -139,7 +139,7 @@ namespace ARS408.Core
                 if (_walkFor != 1)
                     return;
                 //假如回转角绝对值过小，则无所谓向左或向右
-                if (Math.Abs(YawAngle_Plc) <= 5)
+                if (Math.Abs(YawAngle_Plc) <= 10)
                     WalkDirection = Directions.None;
                 //当行走向前时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
                 else

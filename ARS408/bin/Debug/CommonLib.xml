@@ -1462,6 +1462,11 @@
             打印任务日志
             </summary>
         </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.PrintErrorMessage">
+            <summary>
+            打印错误信息
+            </summary>
+        </member>
         <member name="T:CommonLib.Clients.ConnClient">
             <summary>
             传输层连接的Client，或UDP或TCP
@@ -3064,6 +3069,13 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:CommonLib.Function.Functions.GetIPAddressV4(System.String)">
+            <summary>
+            获取IPV4的地址
+            </summary>
+            <param name="start_with">用于过滤地址的地址起始匹配条件，假如为空则不过滤</param>
+            <returns></returns>
+        </member>
         <member name="M:CommonLib.Function.Functions.GetIPAddressV4(System.String@)">
             <summary>
             获取IPV4的地址
@@ -3083,6 +3095,15 @@
             根据地址类型获取第一个IP地址
             </summary>
             <param name="family">地址类型(IPV4，IPV6或其它)</param>
+            <param name="hostName">主机名称</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.Functions.GetIpAddressByAddressFamily(System.Net.Sockets.AddressFamily,System.String,System.String@)">
+            <summary>
+            根据地址类型获取第一个IP地址
+            </summary>
+            <param name="family">地址类型(IPV4，IPV6或其它)</param>
+            <param name="start_with">用于过滤地址的地址起始匹配条件，假如为空则不过滤</param>
             <param name="hostName">主机名称</param>
             <returns></returns>
         </member>
@@ -3196,6 +3217,74 @@
             <param name="row">DataRow对象</param>
             <param name="column">列名称</param>
             <returns></returns>
+        </member>
+        <member name="T:CommonLib.Function.ExitWindowsUtils">
+            <summary>
+            Windows操作系统关闭、重启、注销操作类
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_LOGOFF">
+            <summary>
+            结束所有进程，注销当前用户，显示登录对话框来切换用户
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_SHUTDOWN">
+            <summary>
+            只关闭系统，不重启，不关电源
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_REBOOT">
+            <summary>
+            关闭系统，重新启动
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_POWEROFF">
+            <summary>
+            关闭系统，关闭电源（只对支持此性质的系统有效）
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_FORCE">
+            <summary>
+            立即强制终止所有应用程序。使用此选项可能会是正在运行的程序丢失数据
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.ExitWindowsUtils.EWX_FORCEIFHUNG">
+            <summary>
+            终止无响应的应用程序
+            </summary>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Reboot(System.Boolean)">
+            <summary>
+            重新启动操作系统
+            </summary>
+            <param name="force">是否强制终止所有应用程序</param>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Reboot">
+            <summary>
+            重新启动操作系统，终止无响应的应用程序
+            </summary>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Shutdown(System.Boolean)">
+            <summary>
+            关闭操作系统
+            </summary>
+            <param name="force">是否强制终止所有应用程序</param>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Shutdown">
+            <summary>
+            关闭操作系统，终止无响应的应用程序
+            </summary>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Logoff(System.Boolean)">
+            <summary>
+            注销当前用户
+            </summary>
+            <param name="force">是否强制终止所有应用程序</param>
+        </member>
+        <member name="M:CommonLib.Function.ExitWindowsUtils.Logoff">
+            <summary>
+            注销当前用户，终止无响应的应用程序
+            </summary>
         </member>
         <member name="T:CommonLib.Function.Fitting.CurveFitting">
             <summary>

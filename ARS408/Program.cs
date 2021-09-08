@@ -16,6 +16,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Forms;
 
 namespace ARS408
@@ -30,6 +31,32 @@ namespace ARS408
         {
             BaseFunc.InitConfigs(); //配置初始化
             #region 测试
+            //Radar radara = new Radar(), radarb = null;
+            //bool res = radara == radarb;
+            //return;
+
+            //string source = "首钢京唐A"; //源中文字符串
+            //byte[] bytes = Encoding.Default.GetBytes(source); //用默认编码编码为byte数组
+            //int[] numbers = bytes.Select(b => b > 127 ? b - 256 : b).ToArray(); //调整取值范围（AB公司PLC内字符串每一位字符取值范围为-128~127）
+            ////int[] numbers = new int[] { -54, -41, -72, -42, -66, -87, -52, -58, 65 };
+            ////方法1：转化为URL编码并通过GB2312解码为字符串
+            //string step1 = string.Join(string.Empty, numbers.Select(n => n < 0 ? n + 256 : n).Select(n => '%' + n.ToString("X2")).ToArray());
+            //string test = HttpUtility.UrlDecode(step1, Encoding.GetEncoding("GB2312"));
+            ////string test = HttpUtility.UrlDecode("%CA%D7%B8%D6%BE%A9%CC%C6%41", Encoding.GetEncoding("GB2312"));
+            ////方法2：调整回byte类型取值范围并解码为字符串
+            //byte[] step2 = numbers.Select(n => (byte)(n < 0 ? n + 256 : n)).ToArray();
+            //test = Encoding.Default.GetString(step2);
+            //return;
+
+            //Distance dist = new Distance(true, 15, 20);
+            //dist.SlideIntoRunway();
+            //int[] levels = new int[] { 0, 1, 2, 1, 0, 2, 0, 3, 0, 1, 3, 1, 2, 3, 2, 0, 1, 1, 1, 2, 3, 0, 3, 0, 1 };
+            //foreach (var level in levels)
+            //    dist.Level = level;
+            //double[] values = new double[] { 12, 11, 9, 7.5, 6, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1.5, 3, 3, 3, 3, 3, 3, 8, 8, 8, 8, 8, 15, 15, 15, 15, 15, 15, 15 };
+            //foreach (var value in values)
+            //    dist.SetValue(value);
+
             //Distance dist = new Distance(true, 50, 42);
             //dist.DistCorr = -4;
             ////dist.SlideIntoRunway();

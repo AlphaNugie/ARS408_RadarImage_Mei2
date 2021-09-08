@@ -219,19 +219,21 @@ namespace ARS408.Model
         public Distance Back { get; set; }
 
         /// <summary>
-        /// 默认构造器，距离设为网格测距默认距离，默认不移除毛刺
+        /// 默认构造器，距离设为网格测距默认距离，默认不移除毛刺、无明确朝向
         /// </summary>
         public Distances() : this(Directions.None, BlockConst.DefaultDistance, false) { }
 
         /// <summary>
-        /// 根据是否移除毛刺初始化，距离设为网格测距默认距离
+        /// 根据给定的朝向、是否移除毛刺初始化，距离设为网格测距默认距离
         /// </summary>
+        /// <param name="dir">所朝方向</param>
         /// <param name="glitchRemoving">是否移除突变毛刺</param>
         public Distances(Directions dir, bool glitchRemoving) : this(dir, BlockConst.DefaultDistance, glitchRemoving) { }
 
         /// <summary>
-        /// 根据给定的距离值、是否移除毛刺初始化
+        /// 根据给定的朝向、距离值、是否移除毛刺初始化
         /// </summary>
+        /// <param name="dir">所朝方向</param>
         /// <param name="def">给定距离值</param>
         /// <param name="glitchRemoving">是否移除突变毛刺</param>
         public Distances(Directions dir, double def, bool glitchRemoving)
@@ -347,19 +349,21 @@ namespace ARS408.Model
             }
         }
 
-        private int _level, _level_prev;
+        private int _level/*, _level_prev*/;
         /// <summary>
         /// 距离级别
         /// </summary>
         public int Level
         {
             get { return _level; }
-            private set {
-                _level_prev = _level;
-                //TODO 当上一个报警级别为3时，只在最新报警级别为0时更新，否则维持3
-                if (_level_prev == 3 && value != 0)
-                    return;
-                _level = value;
+            private set
+            {
+                //_level_prev = _level;
+                ////TODO 当上一个报警级别为3时，只在最新报警级别为0时更新，否则维持3
+                //if (_level_prev == 3 && value != 0)
+                //    return;
+                //_level = value;
+                _level = _level == 3 && value != 0 ? 3 : value;
             }
         }
 
