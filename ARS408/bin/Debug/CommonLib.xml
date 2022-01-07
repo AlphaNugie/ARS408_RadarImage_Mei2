@@ -4,6 +4,66 @@
         <name>CommonLib</name>
     </assembly>
     <members>
+        <member name="T:CommonLib.Clients.ColorSmoother">
+            <summary>
+            颜色渐变器，具有6个节点，分别是红（RGB 255 0 0），黄（RGB 255 255 0），绿（RGB 0 255 0），青（RGB 0 255 255），蓝（RGB 0 0 255），紫（RGB 255 0 255）
+            R G B三个通道值随着“距离”变化轮流周期性振动的过程，每两个相邻节点之间的分段长度为256（当实数落在[0,256)区间内时向下取整），6个节点存在5个分段，总距离为256x5=1280
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ColorSmoother.Bottom">
+            <summary>
+            最低数值，对应紫色，RGB(255, 0, 255)
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ColorSmoother.Top">
+            <summary>
+            最高数值，对应红色，
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ColorSmoother.Value">
+            <summary>
+            当前数值
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.ColorSmoother.Color">
+            <summary>
+            当前颜色
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.ColorSmoother.#ctor">
+            <summary>
+            默认构造器
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.ColorSmoother.#ctor(System.Double,System.Double)">
+            <summary>
+            用一个最低数值与最高数值初始化颜色渐变器
+            </summary>
+            <param name="bottom">最低数值</param>
+            <param name="top">最高数值</param>
+        </member>
+        <member name="M:CommonLib.Clients.ColorSmoother.SetBottomTop(System.Double,System.Double)">
+            <summary>
+            设置极值
+            </summary>
+            <param name="bottom">最低数值</param>
+            <param name="top">最高数值</param>
+        </member>
+        <member name="M:CommonLib.Clients.ColorSmoother.GetColor(System.Double)">
+            <summary>
+            根据给定值获取对应颜色
+            </summary>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Clients.ColorSmoother.GetBounced(System.Int32,System.Int32)">
+            <summary>
+            根据给定的步数返回在振动周期中的位置
+            </summary>
+            <param name="basic">基础步数</param>
+            <param name="step">在基础步数之后再继续振动的步数</param>
+            <returns></returns>
+        </member>
         <member name="T:CommonLib.Clients.CommandStorage">
             <summary>
             指令存储器
@@ -19,6 +79,108 @@
             <summary>
             以默认最大容量初始化指令存储器
             </summary>
+        </member>
+        <member name="T:CommonLib.Clients.DerivedHttpListener">
+            <summary>
+            HTTP监听服务端
+            </summary>
+        </member>
+        <member name="E:CommonLib.Clients.DerivedHttpListener.DataReceived">
+            <summary>
+            数据接收事件
+            </summary>
+        </member>
+        <member name="E:CommonLib.Clients.DerivedHttpListener.ServiceStateChanged">
+            <summary>
+            服务状态改变事件
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.BaseListener">
+            <summary>
+            HttpListener对象
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.IpAddress">
+            <summary>
+            HTTP监听的地址
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.Port">
+            <summary>
+            HTTP服务的访问端口（默认8080）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.Suffix">
+            <summary>
+            地址后缀
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.Name">
+            <summary>
+            HTTP监听服务的名称
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.GUID">
+            <summary>
+            有新请求时生成的全局唯一标识符
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.ResponseDescription">
+            <summary>
+            定制化返回的POST响应消息
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.WebExplorerMessage">
+            <summary>
+            网页浏览器访问的返回信息
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.LastErrorMessage">
+            <summary>
+            最新的错误消息
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedHttpListener.ReceiveBufferSize">
+            <summary>
+            接收缓冲区大小（字节数）
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.#ctor">
+            <summary>
+            以默认端口号初始化HTTP监听服务端
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.#ctor(System.String,System.Int32,System.String)">
+            <summary>
+            以指定端口号初始化HTTP监听服务端
+            </summary>
+            <param name="ip">监听服务的地址</param>
+            <param name="port">假如端口号不大于0，以默认端口号启动</param>
+            <param name="suffix">地址后缀</param>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.Start">
+            <summary>
+            启动监听器
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.Stop">
+            <summary>
+            停止监听器
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.Result(System.IAsyncResult)">
+            <summary>
+            异步监听回调
+            </summary>
+            <param name="ar"></param>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedHttpListener.HandleRequest(System.Net.HttpListenerRequest,System.Net.HttpListenerResponse)">
+            <summary>
+            处理HTTP请求并设定对请求的响应
+            </summary>
+            <param name="request">HTTP请求的对象</param>
+            <param name="response">对HTTP请求的响应的对象</param>
+            <returns></returns>
         </member>
         <member name="T:CommonLib.Clients.DerivedTcpListener">
             <summary>
@@ -237,7 +399,7 @@
         </member>
         <member name="T:CommonLib.Clients.DerivedUdpClient">
             <summary>
-            TCP连接客户端
+            UDP连接客户端
             </summary>
         </member>
         <member name="E:CommonLib.Clients.DerivedUdpClient.Connected">
@@ -260,6 +422,11 @@
             数据接收事件
             </summary>
         </member>
+        <member name="E:CommonLib.Clients.DerivedUdpClient.OnNoneReceived">
+            <summary>
+            持续一段时间未接收到任何数据的事件
+            </summary>
+        </member>
         <member name="F:CommonLib.Clients.DerivedUdpClient.autoReceive">
             <summary>
             UdpClient对象
@@ -272,22 +439,32 @@
         </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.ServerIp">
             <summary>
-            与之建立TCP连接的主机IP地址
+            与之建立UDP连接的主机IP地址
             </summary>
         </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.ServerPort">
             <summary>
-            建立TCP连接的端口
-            </summary>
-        </member>
-        <member name="P:CommonLib.Clients.DerivedUdpClient.LocalEndPoint">
-            <summary>
-            本地IP终结点，未初始化则为空
+            建立UDP连接的端口
             </summary>
         </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.RemoteEndPoint">
             <summary>
             远程IP终结点，未连接则为空
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.LocalIp">
+            <summary>
+            指定的本地IP
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.LocalPort">
+            <summary>
+            指定的本地端口
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.LocalEndPoint">
+            <summary>
+            本地IP终结点，未初始化则为空
             </summary>
         </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.HoldLocalPort">
@@ -330,6 +507,21 @@
             Tcp Socket的
             </summary>
         </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.ReconnectWhenReceiveNone">
+            <summary>
+            在无返回数据时是否重新连接（默认为false），超过5秒重连，触发最短间隔5秒
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.RaiseThreshold">
+            <summary>
+            计时阈值，计时达到此值触发事件，单位毫秒，默认5000
+            </summary>
+        </member>
+        <member name="P:CommonLib.Clients.DerivedUdpClient.RaiseInterval">
+            <summary>
+            触发间隔，两次触发事件间允许的最短时间长度，单位毫秒，默认5000
+            </summary>
+        </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.ReconnTimer">
             <summary>
             重新连接成功的次数
@@ -337,12 +529,12 @@
         </member>
         <member name="P:CommonLib.Clients.DerivedUdpClient.Thread_Reconnect">
             <summary>
-            监听TCP服务端，并在连接断开后试着重新连接
+            监听UDP服务端，并在连接断开后试着重新连接
             </summary>
         </member>
-        <member name="P:CommonLib.Clients.DerivedUdpClient.Auto_TcpReconnect">
+        <member name="P:CommonLib.Clients.DerivedUdpClient.Auto_UdpReconnect">
             <summary>
-            控制TCP重连线程的AutoResetEvent，初始状态为非终止
+            控制UDP重连线程的AutoResetEvent，初始状态为非终止
             </summary>
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.SetName">
@@ -358,6 +550,11 @@
             <param name="local_port">本地端口号</param>
             <param name="auto_receive">是否自动接收</param>
             <param name="hold_port">重新连接时是否维持相同本地端口</param>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedUdpClient.Finalize">
+            <summary>
+            析构函数
+            </summary>
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.#ctor(System.String,System.Int32)">
             <summary>
@@ -386,23 +583,23 @@
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.Connect">
             <summary>
-            与TCP服务端连接
+            与UDP服务端连接
             </summary>
             <returns>假如建立连接成功，返回1，否则返回0</returns>
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.Connect(System.String,System.Int32)">
             <summary>
-            与TCP服务端与端口连接
+            与UDP服务端与端口连接
             </summary>
-            <param name="server">TCP服务端IP</param>
+            <param name="server">UDP服务端IP</param>
             <param name="port">端口号</param>
             <returns>假如建立连接成功，返回1，否则返回0</returns>
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.Connect(System.String,System.Int32,System.String,System.Int32)">
             <summary>
-            利用特定的本地端口与TCP服务端连接
+            利用特定的本地端口与UDP服务端连接
             </summary>
-            <param name="server">TCP服务端IP</param>
+            <param name="server">UDP服务端IP</param>
             <param name="port">端口号</param>
             <param name="localIp">本地IP</param>
             <param name="localPort">指定的本地端口（假如小于等于0则随机）</param>
@@ -410,7 +607,18 @@
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.TcpAutoReconnect">
             <summary>
-            TCP重新连接方法
+            UDP重新连接方法
+            </summary>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedUdpClient.Close">
+            <summary>
+            关闭UDP连接
+            </summary>
+            <returns>假如关闭成功，返回1，否则返回0</returns>
+        </member>
+        <member name="M:CommonLib.Clients.DerivedUdpClient.Reconnect_TheWholeDeal">
+            <summary>
+            重连方法，假如曾建立过连接，则断开然后重新连接一下
             </summary>
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.ReceiveCallBack(System.IAsyncResult)">
@@ -431,21 +639,9 @@
             终止线程
             </summary>
         </member>
-        <member name="M:CommonLib.Clients.DerivedUdpClient.Close">
-            <summary>
-            关闭TCP连接
-            </summary>
-            <returns>假如关闭成功，返回1，否则返回0</returns>
-        </member>
-        <member name="M:CommonLib.Clients.DerivedUdpClient.IsSocketConnected">
-            <summary>
-            更新并返回TcpClient的连接状态
-            </summary>
-            <returns>假如处于连接状态，返回true，否则返回false</returns>
-        </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.SendData(System.Object,System.String,System.Int32,System.String@)">
             <summary>
-            TCP客户端以byte数组或16进制格式字符串发送数据
+            UDP客户端以byte数组或16进制格式字符串发送数据
             </summary>
             <param name="data_origin">待发送数据，byte数组或16进制格式字符串</param>
             <param name="ip">远程IP</param>
@@ -455,7 +651,7 @@
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.SendData(System.Object,System.Net.IPEndPoint,System.String@)">
             <summary>
-            TCP客户端以byte数组或16进制格式字符串发送数据
+            UDP客户端以byte数组或16进制格式字符串发送数据
             </summary>
             <param name="data_origin">待发送数据，byte数组或16进制格式字符串</param>
             <param name="endPoint">远程IP终结点</param>
@@ -464,7 +660,7 @@
         </member>
         <member name="M:CommonLib.Clients.DerivedUdpClient.SendData(System.Object,System.String@)">
             <summary>
-            TCP客户端以byte数组或16进制格式字符串发送数据
+            UDP客户端以byte数组或16进制格式字符串发送数据
             </summary>
             <param name="data_origin">待发送数据，byte数组或16进制格式字符串</param>
             <param name="errorMessage">返回的错误信息，假如未报错则为空</param>
@@ -790,6 +986,11 @@
             <param name="value">当前观测值</param>
             <param name="a">加速度</param>
             <param name="v">速度</param>
+        </member>
+        <member name="M:CommonLib.Clients.KalmanFilter.Reset">
+            <summary>
+            状态重置
+            </summary>
         </member>
         <member name="T:CommonLib.Clients.ValueSet">
             <summary>
@@ -1456,6 +1657,25 @@
             <summary>
             循环体
             </summary>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.AddLog(System.String)">
+            <summary>
+            添加单个日志
+            </summary>
+            <param name="log"></param>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.AddLogs(System.String[])">
+            <summary>
+            
+            </summary>
+            <param name="logs"></param>
+        </member>
+        <member name="M:CommonLib.Clients.Tasks.Task.AddLogs(System.Collections.Generic.IEnumerable{System.String},System.Boolean)">
+            <summary>
+            批量添加日志
+            </summary>
+            <param name="logs"></param>
+            <param name="trim">是否过滤空字符串与前后空格</param>
         </member>
         <member name="M:CommonLib.Clients.Tasks.Task.PrintTaskLogs">
             <summary>
@@ -2285,12 +2505,13 @@
             <param name="sqlString">执行的查询语句</param>
             <returns>返回查询结果数据表</returns>
         </member>
-        <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSql(System.String,System.String)">
+        <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSql(System.String,System.String,System.Collections.Generic.IEnumerable{`4})">
             <summary>
-            执行SQL语句，返回影响的记录数
+            执行SQL语句，添加指定的Command参数，返回影响的记录数
             </summary>
             <param name="connStr">连接字符串</param>
-            <param name="sqlString">执行的查询语句</param>
+            <param name="sqlString">执行的SQL语句</param>
+            <param name="_params">输入的额外Command类参数</param>
             <returns>返回影响的记录行数</returns>
         </member>
         <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSqlTrans(System.String,System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
@@ -2368,6 +2589,22 @@
             执行SQL语句并返回受影响行数
             </summary>
             <param name="sqlString">待执行的SQL语句</param>
+            <returns>返回影响的记录行数</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSql(System.String,`4[])">
+            <summary>
+            执行SQL语句，添加指定的Command参数，返回影响的记录数
+            </summary>
+            <param name="sqlString">执行的查询语句</param>
+            <param name="_params">输入的额外Command类参数</param>
+            <returns>返回影响的记录行数</returns>
+        </member>
+        <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSql(System.String,System.Collections.Generic.IEnumerable{`4})">
+            <summary>
+            执行SQL语句，添加指定的Command参数，返回影响的记录数
+            </summary>
+            <param name="sqlString">执行的SQL语句</param>
+            <param name="_params">输入的额外Command类参数</param>
             <returns>返回影响的记录行数</returns>
         </member>
         <member name="M:CommonLib.DataUtil.DataProvider`5.ExecuteSqlTrans(System.Collections.Generic.IEnumerable{System.String},System.Data.IsolationLevel)">
@@ -2543,6 +2780,51 @@
             MySQL数据库
             </summary>
         </member>
+        <member name="T:CommonLib.Enums.ServiceState">
+            <summary>
+            服务状态
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ServiceState.Stopped">
+            <summary>
+            已停止
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ServiceState.Started">
+            <summary>
+            已启动
+            </summary>
+        </member>
+        <member name="T:CommonLib.Enums.ShapeEnum">
+            <summary>
+            与System.Drawing.Graphics的填充函数所关联的一系列形状枚举
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ShapeEnum.Ellipse">
+            <summary>
+            椭圆
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ShapeEnum.Rectangle">
+            <summary>
+            矩形
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ShapeEnum.ClosedCurve">
+            <summary>
+            封闭曲线
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ShapeEnum.Pie">
+            <summary>
+            扇形（椭圆的一部分）
+            </summary>
+        </member>
+        <member name="F:CommonLib.Enums.ShapeEnum.Polygon">
+            <summary>
+            多边形
+            </summary>
+        </member>
         <member name="T:CommonLib.Enums.ConnTypes">
             <summary>
             连接方式
@@ -2658,6 +2940,207 @@
             热键
             </summary>
         </member>
+        <member name="T:CommonLib.Events.NoneReceivedEventArgs">
+            <summary>
+            持续未接收到任何数据的事件数据类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.NoneReceivedEventArgs.RaiseThreshold">
+            <summary>
+            触发时间阈值（单位毫秒）
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.NoneReceivedEventArgs.Socket">
+            <summary>
+            发送所接收数据的套接字
+            </summary>
+        </member>
+        <member name="M:CommonLib.Events.NoneReceivedEventArgs.#ctor">
+            <summary>
+            默认构造器
+            </summary>
+        </member>
+        <member name="M:CommonLib.Events.NoneReceivedEventArgs.#ctor(System.UInt64)">
+            <summary>
+            触发事件阈值初始化
+            </summary>
+            <param name="threshold">触发时间阈值（单位毫秒）</param>
+        </member>
+        <member name="T:CommonLib.Events.ServiceStateEventArgs">
+            <summary>
+            服务状态变化事件参数
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.ServiceStateEventArgs.StateInfo">
+            <summary>
+            服务状态消息
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.ServiceStateEventArgs.State">
+            <summary>
+            服务状态
+            </summary>
+        </member>
+        <member name="M:CommonLib.Events.ServiceStateEventArgs.#ctor(System.String,CommonLib.Enums.ServiceState)">
+            <summary>
+            以给定的状态信息以及状态对象初始化
+            </summary>
+            <param name="stateInfo"></param>
+            <param name="state"></param>
+        </member>
+        <member name="T:CommonLib.Events.DataReceivedEventArgs">
+            <summary>
+            数据接收事件的事件数据类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedData">
+            <summary>
+            接收到的byte数组
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedInfo_String">
+            <summary>
+            接收数据的字符串格式
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedInfo_HexString">
+            <summary>
+            接收数据的16进制字符串格式
+            </summary>
+        </member>
+        <member name="M:CommonLib.Events.DataReceivedEventArgs.#ctor">
+            <summary>
+            默认构造器
+            </summary>
+        </member>
+        <member name="M:CommonLib.Events.DataReceivedEventArgs.#ctor(System.Byte[])">
+            <summary>
+            用byte数组初始化
+            </summary>
+            <param name="data">接收到的byte[]数组</param>
+        </member>
+        <member name="T:CommonLib.Events.DataSendEventArgs">
+            <summary>
+            数据发送事件的事件数据类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.DataSendEventArgs.SentData">
+            <summary>
+            发送的byte数组
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.DataSendEventArgs.SentInfo">
+            <summary>
+            发送的字符串
+            </summary>
+        </member>
+        <member name="T:CommonLib.Events.IdChangedEventHandler">
+            <summary>
+            实体类ID改变事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.ConnectedEventHandler">
+            <summary>
+            连接事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.DisconnectedEventHandler">
+            <summary>
+            断开事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.RoutineStatusChangedEventHandler">
+            <summary>
+            数据维护状态改变事件（新增、更新、删除或无操作）委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.ReconnTimerChangedEventHandler">
+            <summary>
+            TcpClient重连成功次数改变事件委托
+            </summary>
+            <param name="sender"></param>
+            <param name="timerCount"></param>
+        </member>
+        <member name="T:CommonLib.Events.DataReceivedEventHandler">
+            <summary>
+            数据接收事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.NoneReceivedEventHandler">
+            <summary>
+            持续一段时间未接收到任何数据的事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="args">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.DataSendEventHandler">
+            <summary>
+            数据发送事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.DataSendEventHandler_ByteArray">
+            <summary>
+            发送数据事件(byte数组)委托
+            </summary>
+            <param name="data">待发送byte数组</param>
+            <returns>返回操作结果</returns>
+        </member>
+        <member name="T:CommonLib.Events.DataSendEventHandler_String">
+            <summary>
+            发送数据事件(字符串)委托
+            </summary>
+            <param name="content">待发送字符串</param>
+            <returns>返回操作结果</returns>
+        </member>
+        <member name="T:CommonLib.Events.ServiceStateEventHandler">
+            <summary>
+            服务状态改变事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="eventArgs">事件数据类对象</param>
+        </member>
+        <member name="T:CommonLib.Events.IdChangedEventArgs">
+            <summary>
+            BaseModel中ID改变事件的事件数据类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.IdChangedEventArgs.FormerId">
+            <summary>
+            上一个ID
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.IdChangedEventArgs.CurrentId">
+            <summary>
+            现在的ID
+            </summary>
+        </member>
+        <member name="T:CommonLib.Events.RoutineStatusChangedEventArgs">
+            <summary>
+            RoutineStatus枚举类的值改变的事件数据类
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.RoutineStatusChangedEventArgs.FormerStatus">
+            <summary>
+            上一个状态
+            </summary>
+        </member>
+        <member name="P:CommonLib.Events.RoutineStatusChangedEventArgs.CurrentStatus">
+            <summary>
+            当前状态
+            </summary>
+        </member>
         <member name="T:CommonLib.Extensions.EnumExtension">
             <summary>
             枚举扩展类
@@ -2714,6 +3197,37 @@
             PropertyMapper扩展类
             </summary>
         </member>
+        <member name="F:CommonLib.Extensions.Property.PropertyMapperExtension._regexBrackets">
+            <summary>
+            匹配包含任意内容的一对方括号的正则表达式
+            </summary>
+        </member>
+        <member name="F:CommonLib.Extensions.Property.PropertyMapperExtension._regexIndexes">
+            <summary>
+            匹配枚举数方括号索引的正则表达式
+            </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperExtension.GetEntityProperty_InConstruction(System.Object,System.String,System.Boolean,System.Object@,System.Int32[]@)">
+            <summary>
+            根据给定的属性名称在实体中查找指定属性的值，可查找子属性
+            </summary>
+            <param name="entity">待查询的实体</param>
+            <param name="propMapper">指定属性的名称，形如“Class.Student.Name”</param>
+            <param name="initProp">假如查找指定属性的过程中有任意一层属性为空，决定是否初始化</param>
+            <param name="upperLevelEntity">指定属性所属的实体：假如不查找子属性，则该实体就是当前待查询的实体；假如属性名形如“Class.Student.Name”，则所属实体就是Student</param>
+            <param name="indexes">假如最底层属性名称中带有枚举数的索引，则将这些索引以uint数组的形式输出出来，否则输出null</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Extensions.Property.PropertyMapperExtension.GetEntityProperty(System.Object,System.String,System.Boolean,System.Object@)">
+            <summary>
+            根据给定的属性名称在实体中查找指定属性的值，可查找子属性
+            </summary>
+            <param name="entity">待查询的实体</param>
+            <param name="propMapper">指定属性的名称，形如“Class.Student.Name”</param>
+            <param name="initProp">假如查找指定属性的过程中有任意一层属性为空，决定是否初始化</param>
+            <param name="upperLevelEntity">指定属性所属的实体：假如不查找子属性，则该实体就是当前待查询的实体；假如属性名形如“Class.Student.Name”，则所属实体就是Student</param>
+            <returns></returns>
+        </member>
         <member name="M:CommonLib.Extensions.Property.PropertyMapperExtension.CopyPropertyValueTo``1(System.Object,``0@)">
             <summary>
             获取源实体中每个属性的PropertyMapper特性，根据特性值在目标实体中寻找对应属性并为该属性赋值（可由'.'符号指定子属性）
@@ -2766,6 +3280,16 @@
             <summary>
             类功能扩展类
             </summary>
+        </member>
+        <member name="M:CommonLib.Extensions.ExtensionClass.Shrink``1(System.Collections.Generic.IEnumerable{``0},System.Double,System.Boolean)">
+            <summary>
+            按比例或按数量缩小列表内元素数量（从两侧或从起始处缩减）
+            </summary>
+            <typeparam name="T">列表元素的泛型类型</typeparam>
+            <param name="list">待缩减的列表</param>
+            <param name="prop">比例或数量，小于1则缩减到此比例，否则为需要缩减的元素的数量（不可为负数）</param>
+            <param name="both_end">是否从两侧缩减，假如为false，则仅从起始处缩减</param>
+            <returns></returns>
         </member>
         <member name="M:CommonLib.Extensions.ExtensionClass.Reverse(System.String)">
             <summary>
@@ -2884,144 +3408,39 @@
             <param name="set">待从中寻找符合条件的数据的源数据集</param>
             <returns></returns>
         </member>
-        <member name="T:CommonLib.Events.DataReceivedEventArgs">
+        <member name="M:CommonLib.Extensions.MathExtension.Exchange``1(``0@,``0@)">
             <summary>
-            数据接收事件的事件数据类
+            对两个值类型的值进行交换
+            </summary>
+            <typeparam name="T">要交换的值的类型</typeparam>
+            <param name="t1">值1</param>
+            <param name="t2">值2</param>
+        </member>
+        <member name="T:CommonLib.Function.ReflectionUtil">
+            <summary>
+            反射功能类（程序集、类型等）
             </summary>
         </member>
-        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedData">
+        <member name="P:CommonLib.Function.ReflectionUtil.SystemCoreAssembly">
             <summary>
-            接收到的byte数组
+            System.Core程序集
             </summary>
         </member>
-        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedInfo_String">
+        <member name="P:CommonLib.Function.ReflectionUtil.EnumerableType">
             <summary>
-            接收数据的字符串格式
+            System.Linq.Enumerable的类型对象
             </summary>
         </member>
-        <member name="P:CommonLib.Events.DataReceivedEventArgs.ReceivedInfo_HexString">
+        <member name="P:CommonLib.Function.ReflectionUtil.ElementAtMethod">
             <summary>
-            接收数据的16进制字符串格式
+            System.Linq.Enumerable.ElementAt[T]的方法对象
             </summary>
         </member>
-        <member name="M:CommonLib.Events.DataReceivedEventArgs.#ctor">
+        <member name="M:CommonLib.Function.ReflectionUtil.GetSystemCoreAssembly">
             <summary>
-            默认构造器
+            获取System.Core程序集
             </summary>
-        </member>
-        <member name="M:CommonLib.Events.DataReceivedEventArgs.#ctor(System.Byte[])">
-            <summary>
-            用byte数组初始化
-            </summary>
-            <param name="data">接收到的byte[]数组</param>
-        </member>
-        <member name="T:CommonLib.Events.DataSendEventArgs">
-            <summary>
-            数据发送事件的事件数据类
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.DataSendEventArgs.SentData">
-            <summary>
-            发送的byte数组
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.DataSendEventArgs.SentInfo">
-            <summary>
-            发送的字符串
-            </summary>
-        </member>
-        <member name="T:CommonLib.Events.IdChangedEventHandler">
-            <summary>
-            实体类ID改变事件委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.ConnectedEventHandler">
-            <summary>
-            连接事件委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.DisconnectedEventHandler">
-            <summary>
-            断开事件委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.RoutineStatusChangedEventHandler">
-            <summary>
-            数据维护状态改变事件（新增、更新、删除或无操作）委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.ReconnTimerChangedEventHandler">
-            <summary>
-            TcpClient重连成功次数改变事件委托
-            </summary>
-            <param name="sender"></param>
-            <param name="timerCount"></param>
-        </member>
-        <member name="T:CommonLib.Events.DataReceivedEventHandler">
-            <summary>
-            数据接收事件委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.DataSendEventHandler">
-            <summary>
-            数据发送事件委托
-            </summary>
-            <param name="sender">触发事件的对象</param>
-            <param name="eventArgs">事件数据类对象</param>
-        </member>
-        <member name="T:CommonLib.Events.DataSendEventHandler_ByteArray">
-            <summary>
-            发送数据事件(byte数组)委托
-            </summary>
-            <param name="data">待发送byte数组</param>
-            <returns>返回操作结果</returns>
-        </member>
-        <member name="T:CommonLib.Events.DataSendEventHandler_String">
-            <summary>
-            发送数据事件(字符串)委托
-            </summary>
-            <param name="content">待发送字符串</param>
-            <returns>返回操作结果</returns>
-        </member>
-        <member name="T:CommonLib.Events.IdChangedEventArgs">
-            <summary>
-            BaseModel中ID改变事件的事件数据类
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.IdChangedEventArgs.FormerId">
-            <summary>
-            上一个ID
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.IdChangedEventArgs.CurrentId">
-            <summary>
-            现在的ID
-            </summary>
-        </member>
-        <member name="T:CommonLib.Events.RoutineStatusChangedEventArgs">
-            <summary>
-            RoutineStatus枚举类的值改变的事件数据类
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.RoutineStatusChangedEventArgs.FormerStatus">
-            <summary>
-            上一个状态
-            </summary>
-        </member>
-        <member name="P:CommonLib.Events.RoutineStatusChangedEventArgs.CurrentStatus">
-            <summary>
-            当前状态
-            </summary>
+            <returns></returns>
         </member>
         <member name="T:CommonLib.Function.Base">
             <summary>
@@ -3606,6 +4025,33 @@
             <param name="key">每条配置的关键字（形如Key = Value）</param>
             <returns>返回配置文件内容</returns>
         </member>
+        <member name="M:CommonLib.Function.IniFileHelper.ReadInt(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            读取INI文件内的整型数据
+            </summary>
+            <param name="section">内容区域（用中括号[ ] 括起的部分）</param>
+            <param name="key">每条配置的关键字（形如Key = Value）</param>
+            <param name="def">没有该项配置的默认值</param>
+            <param name="iniFilePath">INI配置文件路径</param>
+            <returns>返回配置文件内容</returns>
+        </member>
+        <member name="M:CommonLib.Function.IniFileHelper.ReadInt(System.String,System.String,System.Int32)">
+            <summary>
+            读取INI文件内的整型数据
+            </summary>
+            <param name="section">内容区域（用中括号[ ] 括起的部分）</param>
+            <param name="key">每条配置的关键字（形如Key = Value）</param>
+            <param name="def">没有该项配置的默认值</param>
+            <returns>返回配置文件内容</returns>
+        </member>
+        <member name="M:CommonLib.Function.IniFileHelper.ReadInt(System.String,System.String)">
+            <summary>
+            读取INI文件内的整型数据
+            </summary>
+            <param name="section">内容区域（用中括号[ ] 括起的部分）</param>
+            <param name="key">每条配置的关键字（形如Key = Value）</param>
+            <returns>返回配置文件内容</returns>
+        </member>
         <member name="M:CommonLib.Function.IniFileHelper.WriteData(System.String,System.String,System.String,System.String)">
             <summary>
             写INI配置文件
@@ -3637,13 +4083,23 @@
         </member>
         <member name="M:CommonLib.Function.IniFileHelper.GetPrivateProfileString(System.String,System.String,System.String,System.Text.StringBuilder,System.Int32,System.String)">
             <summary>
-            获取INI配置文件内容
+            获取INI配置文件中字符串类型数据
             </summary>
             <param name="section">内容区域（用中括号[ ] 括起的部分）</param>
             <param name="key">每条配置的关键字（形如Key = Value）</param>
             <param name="def">默认值</param>
             <param name="retVal">负责拼接配置项内容的StringBuilder对象</param>
             <param name="size">配置项内容最大尺寸</param>
+            <param name="filePath">INI配置文件路径</param>
+            <returns></returns>
+        </member>
+        <member name="M:CommonLib.Function.IniFileHelper.GetPrivateProfileInt(System.String,System.String,System.Int32,System.String)">
+            <summary>
+            获取INI配置文件中32位有符号整型类型数据
+            </summary>
+            <param name="section">内容区域（用中括号[ ] 括起的部分）</param>
+            <param name="key">每条配置的关键字（形如Key = Value）</param>
+            <param name="def">默认值</param>
             <param name="filePath">INI配置文件路径</param>
             <returns></returns>
         </member>
@@ -4197,64 +4653,44 @@
             进行正则表达式匹配的类
             </summary>
         </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_65535">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_65535">
             <summary>
             表示0-65535的正整数的正则表达式
             </summary>
         </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_Ip">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_Ip">
             <summary>
             表示IP地址的正则表达式（0-255.0-255.0-255.0-255或localhost）
             </summary>
         </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_DateTime">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_DateTime">
             <summary>
             匹配日期或日期时间的表达式；格式：yyyy/m/d(或yyyy-m-d)( h:mm(:ss))
             </summary>
         </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_DigitHash">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_DigitHash">
             <summary>
             匹配数字+#符号的表达式，如：34..#
             </summary>
         </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_BeltType">
-            <summary>
-            匹配皮带秤类型（名称）的正则表达式，大小写字母若干(至少1)+数字若干+大小写字母若干，可能跟有 _+数字若干(至少1)
-            </summary>
-        </member>
-        <member name="F:CommonLib.Function.RegexMatcher.reg_BatisParam">
-            <summary>
-            匹配MyBatis参数格式的正则表达式，如 #{property,jdbcType=INTEGER} 或 #{some}
-            </summary>
-        </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_65535">
-            <summary>
-            表示0-65535的正整数的正则表达式
-            </summary>
-        </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_Ip">
-            <summary>
-            表示IP地址的正则表达式（0-255.0-255.0-255.0-255或localhost）
-            </summary>
-        </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_DateTime">
-            <summary>
-            匹配日期或日期时间的表达式；格式：yyyy/m/d(或yyyy-m-d)( h:mm(:ss))
-            </summary>
-        </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_DigitHash">
-            <summary>
-            匹配数字+#符号的表达式，如：34..#
-            </summary>
-        </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_BeltType">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_BeltType">
             <summary>
             匹配皮带秤类型（名称）的正则表达式，大写字母+若干数字（数字数目可为0），后面可能跟有_+至少一个数字
             </summary>
         </member>
-        <member name="P:CommonLib.Function.RegexMatcher.RegexPattern_BatisParam">
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_BatisParam">
             <summary>
             匹配MyBatis参数格式的正则表达式，如 #{property,jdbcType=INTEGER} 或 #{some}
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_EnumIndexes">
+            <summary>
+            匹配枚举数某元素索引的正则表达式（索引为为非负整数），形如：[123]
+            </summary>
+        </member>
+        <member name="F:CommonLib.Function.RegexMatcher.RegexPattern_Brackets">
+            <summary>
+            匹配一对方括号的正则表达式，中间可包含任意数量的任意字符，形如：[1][2][3] 或 [a*b_c]
             </summary>
         </member>
         <member name="M:CommonLib.Function.RegexMatcher.IsMatchRegex(System.String,System.String,System.Text.RegularExpressions.RegexOptions)">
@@ -4443,7 +4879,7 @@
         </member>
         <member name="M:CommonLib.UIControlUtil.ControlUtil.SafeInvoke(System.Windows.Forms.Control,CommonLib.UIControlUtil.TaskDelegate)">
             <summary>
-            控件线程安全访问
+            控件线程安全访问（注意：当空间窗体句柄未创建时将不执行任何操作）
             .Net2.0中线程安全访问控件扩展方法，可以获取返回值，可能还有其它问题
             CrossThreadCalls.SafeInvoke(this.statusStrip1, new CrossThreadCalls.TaskDelegate(delegate()
             {
@@ -4548,6 +4984,50 @@
             释放TabControl的选中TabPage资源
             </summary>
             <param name="tabControl">需释放选中TabPage资源的TabControl控件</param>
+        </member>
+        <member name="T:CommonLib.UIControlUtil.TextBoxWrapper">
+            <summary>
+            文本框包裹类
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.Id">
+            <summary>
+            ID
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.Control">
+            <summary>
+            被包裹的控件
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.ControlName">
+            <summary>
+            控件名称
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.Tag">
+            <summary>
+            标签
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.Width">
+            <summary>
+            控件宽度
+            </summary>
+        </member>
+        <member name="P:CommonLib.UIControlUtil.TextBoxWrapper.Height">
+            <summary>
+            控件高度
+            </summary>
+        </member>
+        <member name="M:CommonLib.UIControlUtil.TextBoxWrapper.#ctor(System.Int32,System.String,System.Int32,System.Int32)">
+            <summary>
+            构造器
+            </summary>
+            <param name="id">控件ID</param>
+            <param name="name">控件名称</param>
+            <param name="width">控件宽度</param>
+            <param name="height">控件高度</param>
         </member>
         <member name="T:CommonLib.UIControlUtil.TreeViewUtil">
             <summary>

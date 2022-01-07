@@ -108,7 +108,7 @@ select i.*, 0 changed from t_plc_opcitem i
         {
             string sql = string.Empty;
             if (item != null)
-                sql = string.Format(item.RecordId <= 0 ? "insert into t_plc_opcitem (item_id, opcgroup_id, field_name, enabled) values ('{1}', {2}, '{3}', {4})" : "update t_plc_opcitem set item_id = '{1}', opcgroup_id = {2}, field_name = '{3}', enabled = {4} where record_id = {0}", item.RecordId, item.ItemId, item.OpcGroupId, item.FieldName, item.Enabled ? 1 : 0);
+                sql = string.Format(item.RecordId <= 0 ? "insert into t_plc_opcitem (item_id, opcgroup_id, field_name, enabled, coeff) values ('{1}', {2}, '{3}', {4}, {5})" : "update t_plc_opcitem set item_id = '{1}', opcgroup_id = {2}, field_name = '{3}', enabled = {4}, coeff = {5} where record_id = {0}", item.RecordId, item.ItemId, item.OpcGroupId, item.FieldName, item.Enabled ? 1 : 0, item.Coeff);
             return sql;
         }
     }

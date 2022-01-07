@@ -28,6 +28,15 @@ namespace ARS408.Model
         //private readonly int _pushf_max_count = 1; //push finalization的最大次数
         private int _pushf_counter = 0; //计算push finalization的次数
         private readonly int _id_step = 500; //累积不同帧的点时为防止ID重复所添加的ID步长（与_pushf_counter结合使用）
+        private readonly DataService_Radar dataService_Radar = new DataService_Radar();
+        #endregion
+
+        #region 属性
+        /// <summary>
+        /// 雷达数据库服务对象
+        /// </summary>
+        public DataService_Radar DataService_Radar { get { return dataService_Radar; } }
+
 
         /// <summary>
         /// push finalization的最大次数
@@ -51,14 +60,44 @@ namespace ARS408.Model
         /// </summary>
         private List<bool> Flags { get; set; }
 
+        //private int _rcsMinimum = -64;
+        ///// <summary>
+        ///// RCS最小值
+        ///// </summary>
+        //public int RcsMinimum
+        //{
+        //    get { return _rcsMinimum; }
+        //    set { _rcsMinimum = value; }
+        //}
+
+        //private int _rcsMaximum = 64;
+        ///// <summary>
+        ///// RCS最大值
+        ///// </summary>
+        //public int RcsMaximum
+        //{
+        //    get { return _rcsMaximum; }
+        //    set { _rcsMaximum = value; }
+        //}
+
         private int _rcsMinimum = -64;
         /// <summary>
         /// RCS最小值
         /// </summary>
         public int RcsMinimum
         {
-            get { return _rcsMinimum; }
-            set { _rcsMinimum = value; }
+            //是否使用公共RCS值范围
+            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : _rcsMinimum; }
+            set
+            {
+                if (BaseConst.UsePublicRcsRange)
+                    BaseConst.RcsMinimum = value;
+                else
+                {
+                    _rcsMinimum = value;
+                    dataService_Radar.UpdateRadarRcsValueById(_rcsMinimum, Radar.Id, Radar.RcsMinField); //向数据库保存RCS值最小值
+                }
+            }
         }
 
         private int _rcsMaximum = 64;
@@ -67,8 +106,17 @@ namespace ARS408.Model
         /// </summary>
         public int RcsMaximum
         {
-            get { return _rcsMaximum; }
-            set { _rcsMaximum = value; }
+            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : _rcsMaximum; }
+            set
+            {
+                if (BaseConst.UsePublicRcsRange)
+                    BaseConst.RcsMaximum = value;
+                else
+                {
+                    _rcsMaximum = value;
+                    dataService_Radar.UpdateRadarRcsValueById(_rcsMaximum, Radar.Id, Radar.RcsMaxField); //向数据库保存RCS值最小值
+                }
+            }
         }
 
         /// <summary>
@@ -341,12 +389,6 @@ namespace ARS408.Model
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标、角度在限定范围内，距边界范围在阈值内
             bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9] && !Flags[1];
-            ////YOZ角度加上俯仰角记为相对于水平方向的角度，取向下30°范围内的点
-            //if (save2list && Radar.GroupType == RadarGroupType.Wheel && Radar.Name.Contains("斗轮"))
-            //    save2list = (general.AngleYoz + BaseConst.OpcDataSource.PitchAngle_Plc).Between(-30, 0); //水平以下30°
-            //TODO (其余数据)过滤条件Lv2：RCS值在范围内
-            //bool save2other = !save2list && !Flags[2];
-            //bool save2allother = !save2list;
             #endregion
 
             general.PushfCounter = _pushf_counter;
@@ -355,8 +397,6 @@ namespace ARS408.Model
                 ListBuffer.Add(general);
             if (!save2list)
                 ListBuffer_AllOther.Add(general);
-            //if (save2other)
-            //    ListBuffer_Other.Add(general);
         }
 
         public void DataQualityUpdate<T>(T q) where T : SensorQuality
@@ -451,30 +491,27 @@ namespace ARS408.Model
                 ListToSendAll.AddRange(ListBuffer_AllOther);
                 Radar.ProcFlag = true; //设置雷达处理标志，表示未处理过
                 #region 斗轮雷达处理
-                ////计算斗轮雷达点的1次拟合斜率，纵向坐标1~15，横向坐标-10~10，剔除10个距离其它点最远的点
-                //if (Radar.GroupType == RadarGroupType.Wheel && Radar.Name.Contains("斗轮"))
-                //{
-                //    string message;
-                //    bool onLeft = Radar.Name.Contains("左");
-                //    //double[] modelArray;
-                //    //根据距其它点的距离和来排除的点比例
-                //    double dist_ex_count = 0.2;
-                //    //xy坐标取值范围，xy坐标偏移量
-                //    double[] xybias = new double[] { Radar.YOffset, Radar.ZOffset };
-                //    double rangle = Radar.DegreeXoz;
-                //    //最后处理角度为90°-返回结果（后两个角度均带正负号）
-                //    //double angle = 90 - (BaseFunc.GetSurfaceAngle(ListToSend, xlimit, ylimit, xybias, radar_angle, dist_ex_count, false, out Radar._radius_average, out message)/* + radar_angle + BaseConst.OpcDataSource.PitchAngle_Plc*/);
-                //    //double angle = 90 - BaseFunc.GetSurfaceAngle(ListToSend, 1, 11.652 - Radar.YOffset, -10, 10, 0.2, false, out message) - Radar.DegreeXoz - BaseConst.OpcDataSource.PitchAngle_Plc;
-                //    //double angle = 90 - BaseFunc.GetSurfaceAngleV1(ListToSend, 1, 11.652 - Radar.YOffset, -10, 10, 0.2, false, out Radar._radius_average, out message) - Radar.DegreeXoz - BaseConst.OpcDataSource.PitchAngle_Plc;
-                //    double angle = 90 - BaseFunc.GetSurfaceAngleV2(ListToSend, xybias, rangle, BaseConst.OpcDataSource.PitchAngle_Plc, dist_ex_count, false, out Radar._radius_average, out message);
-                //    //angle = double.IsNaN(angle) ? -1 : angle;
-                //    if (!double.IsNaN(angle))
-                //        surfaceAnglesQueue.Enqueue(angle);
-                //    while(surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
-                //        surfaceAnglesQueue.Dequeue();
-                //    Radar._surface_angle = surfaceAnglesQueue.Count == 0 ? 0 : surfaceAnglesQueue.Average();
-                //    //Radar._out_of_stack = MatlabFunctions.IsOutOfStack(modelArray);
-                //}
+                //计算斗轮雷达点的1次拟合斜率，纵向坐标1~15，横向坐标-10~10，剔除10个距离其它点最远的点
+                if (Radar.GroupType == RadarGroupType.Wheel && Radar.Name.Contains("斗轮"))
+                {
+                    string message;
+                    bool onLeft = Radar.Name.Contains("左");
+                    //double[] modelArray;
+                    //根据距其它点的距离和来排除的点比例
+                    double dist_ex_count = 0.2;
+                    //xy坐标取值范围，xy坐标偏移量
+                    double[] xybias = new double[] { Radar.YOffset, Radar.ZOffset };
+                    double rangle = Radar.DegreeXoz;
+                    //最后处理角度为90°-返回结果（后两个角度均带正负号）
+                    double angle = 90 - BaseFunc.GetSurfaceAngleV2(ListToSend, xybias, rangle, BaseConst.OpcDataSource.PitchAngle_Plc, dist_ex_count, false, out Radar._radius_average, out message);
+                    //angle = double.IsNaN(angle) ? -1 : angle;
+                    if (!double.IsNaN(angle))
+                        surfaceAnglesQueue.Enqueue(angle);
+                    while (surfaceAnglesQueue.Count > BaseConst.SurfaceAngleSampleLength)
+                        surfaceAnglesQueue.Dequeue();
+                    Radar._surface_angle = surfaceAnglesQueue.Count == 0 ? 0 : surfaceAnglesQueue.Average();
+                    //Radar._out_of_stack = MatlabFunctions.IsOutOfStack(modelArray);
+                }
                 #endregion
                 ListBuffer.Clear();
                 //ListBuffer_Other.Clear();

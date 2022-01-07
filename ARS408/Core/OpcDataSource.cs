@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ARS408.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,11 @@ namespace ARS408.Core
 {
     public class OpcDataSource
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public Radar Radar { get; set; }
+
         /// <summary>
         /// 行走位置
         /// </summary>
@@ -102,13 +108,13 @@ namespace ARS408.Core
             set
             {
                 _walkBack = value;
-                if (_walkBack != 1)
-                    return;
-                //假如回转角绝对值过小，则无所谓向左或向右
-                if (Math.Abs(YawAngle_Plc) <= 10)
+                //if (_walkBack != 1)
+                //    return;
+                //假如既没有向前走也没有向后走，或回转角绝对值过小，则无所谓向左或向右
+                if ((_walkBack == 0 && _walkFor == 0) || Math.Abs(YawAngle_Plc) <= 10)
                     WalkDirection = Directions.None;
                 //当行走向后时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
-                else
+                else if (_walkBack == 1)
                     WalkDirection = YawAngle_Plc < 0 ? Directions.Left : Directions.Right;
             }
         }
@@ -136,13 +142,13 @@ namespace ARS408.Core
             set
             {
                 _walkFor = value;
-                if (_walkFor != 1)
-                    return;
+                //if (_walkFor != 1)
+                //    return;
                 //假如回转角绝对值过小，则无所谓向左或向右
-                if (Math.Abs(YawAngle_Plc) <= 10)
+                if ((_walkBack == 0 && _walkFor == 0) || Math.Abs(YawAngle_Plc) <= 10)
                     WalkDirection = Directions.None;
                 //当行走向前时，回转角小于0相当于向左侧靠近，否则相当于向右侧靠近
-                else
+                else if (_walkFor == 1)
                     WalkDirection = YawAngle_Plc > 0 ? Directions.Left : Directions.Right;
             }
         }
@@ -159,6 +165,8 @@ namespace ARS408.Core
                 _pitchDown = value;
                 if (_pitchDown == 1)
                     PitchDirection = Directions.Down;
+                else if (_pitchDown == 0 && _pitchUp == 0)
+                    PitchDirection = Directions.None;
             }
         }
 
@@ -187,6 +195,8 @@ namespace ARS408.Core
                 _pitchUp = value;
                 if (_pitchUp == 1)
                     PitchDirection = Directions.Up;
+                else if (_pitchDown == 0 && _pitchUp == 0)
+                    PitchDirection = Directions.None;
             }
         }
 
@@ -202,6 +212,8 @@ namespace ARS408.Core
                 _yawLeft = value;
                 if (_yawLeft == 1)
                     YawDirection = Directions.Left;
+                else if (_yawLeft == 0 && _yawRight == 0)
+                    YawDirection = Directions.None;
             }
         }
 
@@ -230,7 +242,92 @@ namespace ARS408.Core
                 _yawRight = value;
                 if (_yawRight == 1)
                     YawDirection = Directions.Right;
+                else if (_yawLeft == 0 && _yawRight == 0)
+                    YawDirection = Directions.None;
             }
+        }
+        #endregion
+
+        #region 姿态运动标志布尔量
+        /// <summary>
+        /// 走行向后
+        /// </summary>
+        public bool WalkBackwardBool
+        {
+            get { return WalkBackward == 1; }
+            set { WalkBackward = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 走行停止
+        /// </summary>
+        public bool WalkFixatedBool
+        {
+            get { return WalkFixated == 1; }
+            set { WalkFixated = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 走行向前
+        /// </summary>
+        public bool WalkForwardBool
+        {
+            get { return WalkForward == 1; }
+            set { WalkForward = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 俯仰向下
+        /// </summary>
+        public bool PitchDownwardBool
+        {
+            get { return PitchDownward == 1; }
+            set { PitchDownward = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 俯仰停止
+        /// </summary>
+        public bool PitchFixatedBool
+        {
+            get { return PitchFixated == 1; }
+            set { PitchFixated = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 俯仰向上
+        /// </summary>
+        public bool PitchUpwardBool
+        {
+            get { return PitchUpward == 1; }
+            set { PitchUpward = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 回转向左
+        /// </summary>
+        public bool YawLeftBool
+        {
+            get { return YawLeft == 1; }
+            set { YawLeft = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 回转停止
+        /// </summary>
+        public bool YawFixatedBool
+        {
+            get { return YawFixated == 1; }
+            set { YawFixated = value ? 1 : 0; }
+        }
+
+        /// <summary>
+        /// 回转向右
+        /// </summary>
+        public bool YawRightBool
+        {
+            get { return YawRight == 1; }
+            set { YawRight = value ? 1 : 0; }
         }
         #endregion
 

@@ -15,9 +15,11 @@ namespace ARS408.Model
     [ProtoContract]
     public class Radar : IComparable<Radar>
     {
+        private const string RCS_MIN_FIELD = "rcs_min";
+        private const string RCS_MAX_FIELD = "rcs_max";
         private double degree_xoy, degree_yoz, degree_xoz, degree_general;
         private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
-        internal double _current_dist, _current_angle, _curve_slope, _surface_angle, _radius_average; //当前距离，当前斜率
+        internal double _current_dist, _current_angle, /*_curve_slope, */_surface_angle, _radius_average; //当前距离，当前斜率
         internal bool _out_of_stack;
         internal string _threat_level_binary = "00";
 
@@ -83,14 +85,14 @@ namespace ARS408.Model
             set { _current_angle = value; }
         }
 
-        /// <summary>
-        /// 当前一次拟合斜率
-        /// </summary>
-        public double CurveSlope
-        {
-            get { return _curve_slope; }
-            set { _curve_slope = value; }
-        }
+        ///// <summary>
+        ///// 当前一次拟合斜率
+        ///// </summary>
+        //public double CurveSlope
+        //{
+        //    get { return _curve_slope; }
+        //    set { _curve_slope = value; }
+        //}
 
         /// <summary>
         /// 平面拟合后与水平面的夹角
@@ -309,32 +311,60 @@ namespace ARS408.Model
         /// </summary>
         public double ZOffset { get; private set; }
 
-        private int _rcsMinimum;
+        //private int _rcsMinimum;
+        ///// <summary>
+        ///// RCS最小值
+        ///// </summary>
+        //public int RcsMinimum
+        //{
+        //    get { return _rcsMinimum; }
+        //    set
+        //    {
+        //        _rcsMinimum = value;
+        //        Infos.RcsMinimum = _rcsMinimum;
+        //    }
+        //}
+
+        //private int _rcsMaximum;
+        ///// <summary>
+        ///// RCS最大值
+        ///// </summary>
+        //public int RcsMaximum
+        //{
+        //    get { return _rcsMaximum; }
+        //    set
+        //    {
+        //        _rcsMaximum = value;
+        //        Infos.RcsMaximum = _rcsMaximum;
+        //    }
+        //}
+
+        /// <summary>
+        /// RCS下限值所对应字段
+        /// </summary>
+        public string RcsMinField { get { return RCS_MIN_FIELD; } }
+
+        /// <summary>
+        /// RCS上限值所对应字段
+        /// </summary>
+        public string RcsMaxField { get { return RCS_MAX_FIELD; } }
+
         /// <summary>
         /// RCS最小值
         /// </summary>
         public int RcsMinimum
         {
-            get { return _rcsMinimum; }
-            set
-            {
-                _rcsMinimum = value;
-                Infos.RcsMinimum = _rcsMinimum;
-            }
+            get { return Infos.RcsMinimum; }
+            set { Infos.RcsMinimum = value; }
         }
 
-        private int _rcsMaximum;
         /// <summary>
         /// RCS最大值
         /// </summary>
         public int RcsMaximum
         {
-            get { return _rcsMaximum; }
-            set
-            {
-                _rcsMaximum = value;
-                Infos.RcsMinimum = _rcsMinimum;
-            }
+            get { return Infos.RcsMaximum; }
+            set { Infos.RcsMaximum = value; }
         }
 
         /// <summary>
@@ -348,6 +378,11 @@ namespace ARS408.Model
         /// 是否限制雷达坐标系坐标
         /// </summary>
         public bool RadarCoorsLimited { get; set; }
+
+        /// <summary>
+        /// 限制在雷达坐标范围内或范围外，true则限制在范围内，false则限制在范围外
+        /// </summary>
+        public bool WithinRadarLimit { get; set; }
 
         /// <summary>
         /// 雷达坐标系X轴最小值
@@ -373,6 +408,11 @@ namespace ARS408.Model
         /// 是否限制单机坐标系坐标
         /// </summary>
         public bool ClaimerCoorsLimited { get; set; }
+
+        /// <summary>
+        /// 限制在单机坐标范围内或范围外，true则限制在范围内，false则限制在范围外
+        /// </summary>
+        public bool WithinClaimerLimit { get; set; }
 
         /// <summary>
         /// 单机坐标系X轴最小值
@@ -410,6 +450,11 @@ namespace ARS408.Model
         /// 是否限制角度
         /// </summary>
         public bool AngleLimited { get; set; }
+
+        /// <summary>
+        /// 限制在角度范围内或范围外，true则限制在范围内，false则限制在范围外
+        /// </summary>
+        public bool WithinAngleLimit { get; set; }
 
         /// <summary>
         /// 角度最小值
@@ -585,7 +630,7 @@ namespace ARS408.Model
             UsingLocal = BaseConst.UsingLocal;
             PortLocal = BaseConst.Port_Local;
             RcsMinimum = BaseConst.RcsMinimum;
-            RcsMinimum = BaseConst.RcsMaximum;
+            RcsMaximum = BaseConst.RcsMaximum;
             ApplyFilter = true;
             ApplyIteration = true;
             PushfMaxCount = 1;
@@ -626,18 +671,22 @@ namespace ARS408.Model
             YOffset = double.Parse(row["y_offset"].ToString());
             ZOffset = double.Parse(row["z_offset"].ToString());
             Remark = row["remark"].ToString();
-            //ItemNameRadarState = row["item_name_radar_state"].ToString();
-            //ItemNameCollisionState = row["item_name_collision_state"].ToString();
-            //ItemNameCollisionState2 = row["item_name_collision_state_2"].ToString();
-            RcsMinimum = int.Parse(row["rcs_min"].ToString());
-            RcsMaximum = int.Parse(row["rcs_max"].ToString());
+            //RcsMinimum = int.Parse(row["rcs_min"].ToString());
+            //RcsMaximum = int.Parse(row["rcs_max"].ToString());
+            RefreshRcsLimits();
             RadarHeight = double.Parse(row["radar_height"].ToString());
             RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
+            //WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1");
+            try { WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1"); }
+            catch (Exception) { WithinRadarLimit = true; }
             RadarxMin = double.Parse(row["radar_x_min"].ToString());
             RadarxMax = double.Parse(row["radar_x_max"].ToString());
             RadaryMin = double.Parse(row["radar_y_min"].ToString());
             RadaryMax = double.Parse(row["radar_y_max"].ToString());
             ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
+            //WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1");
+            try { WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1"); }
+            catch (Exception) { WithinClaimerLimit = true; }
             ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
             ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
             ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
@@ -645,6 +694,9 @@ namespace ARS408.Model
             ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
             ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
             AngleLimited = row["angle_limited"].ToString().Equals("1");
+            //WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1");
+            try { WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1"); }
+            catch (Exception) { WithinAngleLimit = true; }
             AngleMin = double.Parse(row["angle_min"].ToString());
             AngleMax = double.Parse(row["angle_max"].ToString());
             #region 检测特性
@@ -657,11 +709,6 @@ namespace ARS408.Model
             InvalidStateFilterString = row["invalid_state_filter"].ToString();
             MeasStateFilterString = row["meas_state_filter"].ToString();
             ProbOfExistFilterString = row["prob_exist_filter"].ToString();
-            //FalseAlarmFilter = row["false_alarm_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (FalseAlarmProbability)int.Parse(p)).ToList();
-            //AmbigStateFilter = row["ambig_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (AmbigState)int.Parse(p)).ToList();
-            //InvalidStateFilter = row["invalid_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (InvalidState)int.Parse(p)).ToList();
-            //MeasStateFilter = row["meas_state_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (MeasState)int.Parse(p)).ToList();
-            //ProbOfExistFilter = row["prob_exist_filter"].ToString().Trim().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(p => (ProbOfExist)int.Parse(p)).ToList();
             #endregion
         }
         #endregion
@@ -782,6 +829,35 @@ namespace ARS408.Model
             YmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * sing + sinphi * cosg, Yratio = costheta * cosphi * cosg - costheta * sinphi * coslamda * sing - sintheta * sinlamda * sing };
             ZmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * sinlamda, Yratio = sintheta * coslamda - costheta * sinphi * sinlamda };
 
+        }
+
+        /// <summary>
+        /// 获取雷达信息字符串
+        /// </summary>
+        /// <param name="radar">Radar实体类对象</param>
+        /// <returns></returns>
+        public string GetRadarString(out double distance)
+        {
+            string result = string.Empty;
+            distance = 0;
+            if (Infos != null)
+            {
+                distance = Infos.CurrentDistance;
+                result = string.Format(@"  雷达ID: {0}
+  是否工作: {1},
+  距离: {2},", PortLocal + "_" + Name, Infos.RadarState.Working, distance);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 刷新RCS值范围
+        /// </summary>
+        public void RefreshRcsLimits()
+        {
+            RcsMinimum = Infos.DataService_Radar.GetRadarRcsValueById(Id, RcsMinField);
+            RcsMaximum = Infos.DataService_Radar.GetRadarRcsValueById(Id, RcsMaxField);
         }
     }
 

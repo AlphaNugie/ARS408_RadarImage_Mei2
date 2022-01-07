@@ -20,7 +20,7 @@ namespace ARS408.Forms
         public FormCoorsLimitationConfig()
         {
             InitializeComponent();
-            this.DataSourceRefresh();
+            DataSourceRefresh();
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace ARS408.Forms
         private void DataSourceRefresh()
         {
             DataTable table;
-            try { table = this.dataService.GetRadarCoorsLimitations(); }
+            try { table = dataService.GetRadarCoorsLimitations(); }
             catch (Exception e)
             {
                 string errorMessage = "查询时出错：" + e.Message;
@@ -37,8 +37,8 @@ namespace ARS408.Forms
                 return;
             }
 
-            this.dataGridView.SetDoubleBuffered(true);
-            this.dataGridView.DataSource = table;
+            dataGridView.SetDoubleBuffered(true);
+            dataGridView.DataSource = table;
         }
 
         /// <summary>
@@ -48,22 +48,25 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void Button_Save_Click(object sender, EventArgs e)
         {
-            if (this.dataGridView.Rows.Count == 0)
+            if (dataGridView.Rows.Count == 0)
                 return;
 
             List<Radar> list = new List<Radar>();
-            foreach (DataGridViewRow row in this.dataGridView.Rows)
+            foreach (DataGridViewRow row in dataGridView.Rows)
                 if (row.Cells["Column_Changed"].Value.ToString().Equals("1"))
                 {
                     Radar radar = DataGridViewUtil.ConvertDataGridViewRow2Obect<Radar>(row, false); //不抛出异常
                     radar.RadarCoorsLimited = row.Cells["Column_RadarCoorsLimited"].Value.ToString().Equals("1");
                     radar.ClaimerCoorsLimited = row.Cells["Column_ClaimerCoorsLimited"].Value.ToString().Equals("1");
                     radar.AngleLimited = row.Cells["Column_AngleLimited"].Value.ToString().Equals("1");
+                    radar.WithinRadarLimit = row.Cells["Column_WithinRadarLimit"].Value.ToString().Equals("1");
+                    radar.WithinClaimerLimit = row.Cells["Column_WithinClaimerLimit"].Value.ToString().Equals("1");
+                    radar.WithinAngleLimit = row.Cells["Column_WithinAngleLimit"].Value.ToString().Equals("1");
                     list.Add(radar);
                 }
 
             bool result;
-            try { result = this.dataService.SaveRadarCoorsLimitations(list); }
+            try { result = dataService.SaveRadarCoorsLimitations(list); }
             catch (Exception ex)
             {
                 string errorMessage = "信息保存时出现问题：" + ex.Message;
@@ -74,7 +77,7 @@ namespace ARS408.Forms
             if (result)
             {
                 MessageBox.Show("保存成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                this.DataSourceRefresh();
+                DataSourceRefresh();
             }
             else
                 MessageBox.Show("保存失败", "错误信息", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -85,9 +88,9 @@ namespace ARS408.Forms
             if (e.RowIndex >= 0)
             {
                 //取消事件，完成代码处理后再添加事件（代码中改变单元格的值会导致死循环）
-                this.dataGridView.CellValueChanged -= new DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
-                this.dataGridView.Rows[e.RowIndex].Cells["Column_Changed"].Value = 1;
-                this.dataGridView.CellValueChanged += new DataGridViewCellEventHandler(this.DataGridView_CellValueChanged);
+                dataGridView.CellValueChanged -= new DataGridViewCellEventHandler(DataGridView_CellValueChanged);
+                dataGridView.Rows[e.RowIndex].Cells["Column_Changed"].Value = 1;
+                dataGridView.CellValueChanged += new DataGridViewCellEventHandler(DataGridView_CellValueChanged);
             }
         }
     }

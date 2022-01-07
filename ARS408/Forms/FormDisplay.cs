@@ -25,15 +25,17 @@ namespace ARS408.Forms
         private bool finalized = false;
         //private readonly Regex pattern = new Regex(BaseConst.Pattern_WrappedStatus, RegexOptions.Compiled);
         private readonly DataService_Sqlite dataService = new DataService_Sqlite();
-        private readonly DataService_Radar dataService_Radar = new DataService_Radar();
+        //private readonly DataService_Radar dataService_Radar = new DataService_Radar();
         private List<SensorGeneral> list_general = null;
         private Bitmap bitmap = null;
         private Graphics graphic = null;
         private string received = string.Empty, wrapped = string.Empty;
-        private Thread thread = null/*, thread_writeitems = null*/;
         private float scale = 1, column_width = 0;
         private readonly float scale_original = 1;
         private int time = 0; //重连次数
+        private Thread thread = null; //循环处理接收数据的线程
+        private readonly AutoResetEvent _procEvent = new AutoResetEvent(true); //控制数据处理线程的AutoResetEvent
+        private bool _procOnHold = true; //数据处理线程是否暂停
         #endregion
         #region 属性
         /// <summary>
@@ -45,7 +47,6 @@ namespace ARS408.Forms
         /// 帧消息处理类
         /// </summary>
         public DataFrameMessages Infos { get { return Radar.Infos; } }
-        //public DataFrameMessages Infos { get; private set; }
 
         /// <summary>
         /// 雷达信息对象，假如为null，则代表为单雷达显示模式
@@ -87,8 +88,19 @@ namespace ARS408.Forms
         /// 本地端口
         /// </summary>
         public int Port_Local { get; set; }
+
+        /// <summary>
+        /// 服务端是否开始监听（TCPSERVER或UDP）
+        /// </summary>
+        public bool ListenerStarted { get; set; }
+
+        /// <summary>
+        /// 客户端是否已连接
+        /// </summary>
+        public bool Connected { get; set; }
         #endregion
 
+        #region 显示
         /// <summary>
         /// 当前的画面比例
         /// </summary>
@@ -111,27 +123,52 @@ namespace ARS408.Forms
         /// 是否在显示
         /// </summary>
         public bool IsShown { get; set; }
+        #endregion
 
-        //private int _rcsMinimum = -64;
-        //private int _rcsMaximum = 64;
+        ///// <summary>
+        ///// RCS最小值
+        ///// </summary>
+        //public int RcsMinimum
+        //{
+        //    //是否使用公共RCS值范围
+        //    get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : Infos.RcsMinimum; }
+        //    set
+        //    {
+        //        if (BaseConst.UsePublicRcsRange)
+        //            BaseConst.RcsMinimum = value;
+        //        else
+        //        {
+        //            Infos.RcsMinimum = value;
+        //            dataService_Radar.UpdateRadarRcsMinById(Infos.RcsMinimum, Radar.Id); //向数据库保存RCS值最小值
+        //        }
+        //    }
+        //}
+
+        ///// <summary>
+        ///// RCS最大值
+        ///// </summary>
+        //public int RcsMaximum
+        //{
+        //    get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : Infos.RcsMaximum; }
+        //    set
+        //    {
+        //        if (BaseConst.UsePublicRcsRange)
+        //            BaseConst.RcsMaximum = value;
+        //        else
+        //        {
+        //            Infos.RcsMaximum = value;
+        //            dataService_Radar.UpdateRadarRcsMaxById(Infos.RcsMaximum, Radar.Id); //向数据库保存RCS值最小值
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// RCS最小值
         /// </summary>
         public int RcsMinimum
         {
-            //是否使用公共RCS值范围
-            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMinimum : Infos.RcsMinimum; }
-            set
-            {
-                if (BaseConst.UsePublicRcsRange)
-                    BaseConst.RcsMinimum = value;
-                else
-                {
-                    Infos.RcsMinimum = value;
-                    dataService_Radar.UpdateRadarRcsMinById(Infos.RcsMinimum, Radar.Id); //向数据库保存RCS值最小值
-                }
-            }
+            get { return Radar.RcsMinimum; }
+            set { Radar.RcsMinimum = value; }
         }
 
         /// <summary>
@@ -139,17 +176,8 @@ namespace ARS408.Forms
         /// </summary>
         public int RcsMaximum
         {
-            get { return BaseConst.UsePublicRcsRange ? BaseConst.RcsMaximum : Infos.RcsMaximum; }
-            set
-            {
-                if (BaseConst.UsePublicRcsRange)
-                    BaseConst.RcsMaximum = value;
-                else
-                {
-                    Infos.RcsMaximum = value;
-                    dataService_Radar.UpdateRadarRcsMaxById(Infos.RcsMaximum, Radar.Id); //向数据库保存RCS值最小值
-                }
-            }
+            get { return Radar.RcsMaximum; }
+            set { Radar.RcsMaximum = value; }
         }
         #endregion
 
@@ -199,11 +227,13 @@ namespace ARS408.Forms
             //Infos.RcsMaximum = Radar.RcsMaximum;
 
             column_width = tableLayoutPanel_Main.ColumnStyles[0].Width;
-            //Infos = new DataFrameMessages(/*this, */Radar);
             list_general = Infos.ListTrigger;
             Name = Title;
             Text = Title;
             S = scale_original;
+
+            thread = new Thread(new ThreadStart(ProcessReceivedData)) { IsBackground = true };
+            thread.Start();
         }
 
         /// <summary>
@@ -238,12 +268,12 @@ namespace ARS408.Forms
             SocketTcpClient.StopConnection();
             SocketTcpServer.Stop();
             ThreadControl(false);
+            thread.Abort();
             Infos.ThreadCheck.Abort();
-            //thread_writeitems.Abort();
             finalized = true;
             BaseConst.IniHelper.WriteData("Detection", "RcsMinimum", RcsMinimum.ToString());
             BaseConst.IniHelper.WriteData("Detection", "RcsMaximum", RcsMaximum.ToString());
-            if (Radar.Id > 0)
+            if (Radar.Id >= 0)
                 return;
 
             BaseConst.IniHelper.WriteData("Connection", "IpAddress", IpAddress);
@@ -254,24 +284,35 @@ namespace ARS408.Forms
             BaseConst.IniHelper.WriteData("Connection", "PortLocal", numeric_Port_Local.Value.ToString());
         }
 
+        ///// <summary>
+        ///// 线程控制
+        ///// </summary>
+        ///// <param name="flag"></param>
+        //private void ThreadControl(bool flag)
+        //{
+        //    if (flag)
+        //    {
+        //        if (thread == null)
+        //            thread = new Thread(new ThreadStart(ProcessReceivedData)) { IsBackground = true };
+        //        thread.Start();
+        //    }
+        //    else
+        //    {
+        //        if (thread != null)
+        //            thread.Abort();
+        //        thread = null;
+        //    }
+        //}
+
         /// <summary>
-        /// 线程控制
+        /// 控制各线程的运行与暂停
         /// </summary>
-        /// <param name="flag"></param>
+        /// <param name="flag">为true则恢复运行，否则暂停</param>
         private void ThreadControl(bool flag)
         {
-            if (flag)
-            {
-                if (thread == null)
-                    thread = new Thread(new ThreadStart(ProcessReceivedData)) { IsBackground = true };
-                thread.Start();
-            }
-            else
-            {
-                if (thread != null)
-                    thread.Abort();
-                thread = null;
-            }
+            _procOnHold = !flag;
+            if (!_procOnHold)
+                _procEvent.Set();
         }
 
         /// <summary>
@@ -287,7 +328,7 @@ namespace ARS408.Forms
                     result = flag ? Connect() : Disconnect();
                     break;
                 case ConnectionMode.UDP:
-                    UdpInitOrClose();
+                    UdpInitOrClose(flag);
                     break;
                 case ConnectionMode.TCP_SERVER:
                     TcpServerInitOrClose(flag);
@@ -378,28 +419,33 @@ namespace ARS408.Forms
         /// <summary>
         /// UDP初始化或关闭
         /// </summary>
-        private void UdpInitOrClose()
+        /// <param name="init">是否正在初始化，假如为false则关闭连接</param>
+        private void UdpInitOrClose(bool init)
         {
-            bool init = button_ServerInit.Text.Equals("初始化"); //初始化或结束
+            //bool init = button_ServerInit.Text.Equals("初始化"); //初始化或结束
             if (init)
             {
                 try { UdpClient = checkBox_UsingLocal.Checked ? new DerivedUdpClient(IpAddress_Local, Port_Local) : new DerivedUdpClient(); }
                 catch (Exception) { return; }
+                UdpClient.ReconnectWhenReceiveNone = true;
                 UdpClient.DataReceived += new DataReceivedEventHandler(Client_DataReceived);
                 UdpClient.ReconnTimerChanged += new ReconnTimerChangedEventHandler(ReconnTimerChanged);
+                UdpClient.OnNoneReceived += new NoneReceivedEventHandler(UdpClient_OnNoneReceived);
             }
             else
             {
                 UdpClient.DataReceived -= new DataReceivedEventHandler(Client_DataReceived);
                 UdpClient.ReconnTimerChanged -= new ReconnTimerChangedEventHandler(ReconnTimerChanged);
+                UdpClient.OnNoneReceived -= new NoneReceivedEventHandler(UdpClient_OnNoneReceived);
                 UdpClient.Close();
                 UdpClient = null;
             }
-            button_ServerInit.Text = init ? "结束" : "初始化";
-            button_Connect.Enabled = init;
+            ListenerStarted = init;
+            //button_ServerInit.Text = init ? "结束" : "初始化";
+            //button_Connect.Enabled = init;
             ThreadControl(init);
-            timer_GraphicRefresh.Enabled = init;
-            timer_GridRefresh.Enabled = init;
+            //timer_GraphicRefresh.Enabled = init;
+            //timer_GridRefresh.Enabled = init;
         }
 
         /// <summary>
@@ -416,8 +462,25 @@ namespace ARS408.Forms
             }
             else
                 SocketTcpServer.Stop();
-            button_ServerInit.Text = init ? "结束" : "初始化";
+            ListenerStarted = init;
+            //button_ServerInit.Text = init ? "结束" : "初始化";
             ThreadControl(init);
+            ListenerInitControls(init);
+            //timer_GraphicRefresh.Enabled = init;
+            //timer_GridRefresh.Enabled = init;
+        }
+
+        /// <summary>
+        /// 根据监听服务（TCPSERVER或UDP）是否正在初始化改变控件属性
+        /// </summary>
+        /// <param name="init">是否正在初始化</param>
+        private void ListenerInitControls(bool init)
+        {
+            if (ConnectionMode != ConnectionMode.UDP && ConnectionMode != ConnectionMode.TCP_SERVER)
+                return;
+
+            button_ServerInit.Text = init ? "结束" : "初始化";
+            button_Connect.Enabled = ConnectionMode == ConnectionMode.UDP ? init : false; //只有UDP模式可以连接
             timer_GraphicRefresh.Enabled = init;
             timer_GridRefresh.Enabled = init;
         }
@@ -450,6 +513,8 @@ namespace ARS408.Forms
         {
             while (true)
             {
+                if (_procOnHold)
+                    _procEvent.WaitOne();
                 try
                 {
                     bool connected = false;
@@ -508,7 +573,6 @@ namespace ARS408.Forms
                     list_new = list_general.Cast<ObjectGeneral>().ToList();
                     binding = new BindingList<ObjectGeneral>(list_new);
                 }
-                //var binding = new BindingList<SensorGeneral>(list_general.ToList());
                 dataGridView_Output.DataSource = null;
                 dataGridView_Output.DataSource = binding;
             }
@@ -543,12 +607,19 @@ namespace ARS408.Forms
                 return;
 
             List<T> list_new = list.ToList();
-            foreach (var dot in list_new)
+            //foreach (var dot in list_new)
+            //    if (dot != null)
+            //        if (dot is ClusterGeneral)
+            //            graphic.FillEllipse(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S, (float)(839 - dot.DistLong * BaseConst.R) * S, BaseConst.T, BaseConst.T); //画实心椭圆
+            //        else if (dot is ObjectGeneral)
+            //            graphic.FillRectangle(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S, (float)(839 - dot.DistLong * BaseConst.R) * S, BaseConst.T * 2, BaseConst.T * 2); //画实心矩形
+            //TODO 将图形显示时的坐标用圆点的半径进行水平和竖直方向的偏移，因为默认的中心点在左上角
+            foreach (dynamic dot in list_new)
                 if (dot != null)
                     if (dot is ClusterGeneral)
-                        graphic.FillEllipse(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S, (float)(839 - dot.DistLong * BaseConst.R) * S, BaseConst.T, BaseConst.T); //画实心椭圆
+                        graphic.FillEllipse(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S - BaseConst.T / 2, (float)(839 - dot.DistLong * BaseConst.R) * S - BaseConst.T / 2, BaseConst.T, BaseConst.T); //画实心椭圆
                     else if (dot is ObjectGeneral)
-                        graphic.FillRectangle(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S, (float)(839 - dot.DistLong * BaseConst.R) * S, BaseConst.T * 2, BaseConst.T * 2); //画实心矩形
+                        graphic.FillRectangle(new SolidBrush(dot.Color), (float)(448 - dot.DistLat * BaseConst.R) * S - BaseConst.T, (float)(839 - dot.DistLong * BaseConst.R) * S - BaseConst.T, BaseConst.T * 2, BaseConst.T * 2); //画实心矩形
         }
 
         /// <summary>
@@ -641,7 +712,7 @@ namespace ARS408.Forms
             switch (ConnectionMode)
             {
                 case ConnectionMode.UDP:
-                    UdpInitOrClose();
+                    UdpInitOrClose(button_ServerInit.Text.Equals("初始化"));
                     break;
                 case ConnectionMode.TCP_SERVER:
                     TcpServerInitOrClose(button_ServerInit.Text.Equals("初始化"));
@@ -663,20 +734,34 @@ namespace ARS408.Forms
         /// <param name="eventArgs"></param>
         private void Client_DataReceived(object sender, DataReceivedEventArgs eventArgs)
         {
-            received += " " + eventArgs.ReceivedInfo_HexString;
+            //received += " " + eventArgs.ReceivedInfo_HexString;
+            received += eventArgs.ReceivedInfo_HexString;
             Infos.Timer = 0;
         }
 
+        /// <summary>
+        /// TCP接收
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void SocketTcpClient_OnRecevice(object sender, ReceivedEventArgs e)
         {
-            received += " " + e.ReceivedHexString;
+            //received += " " + e.ReceivedHexString;
+            received += e.ReceivedHexString;
             Infos.Timer = 0;
         }
 
         private void SocketTcpServer_TcpServerReceived(object sender, ReceivedEventArgs e)
         {
-            received += " " + e.ReceivedHexString;
+            //received += " " + e.ReceivedHexString;
+            received += e.ReceivedHexString;
             Infos.Timer = 0;
+        }
+
+        private void UdpClient_OnNoneReceived(object sender, CommonLib.Events.NoneReceivedEventArgs args)
+        {
+            UdpInitOrClose(false);
+            UdpInitOrClose(true);
         }
 
         /// <summary>
@@ -686,7 +771,6 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void Timer_GraphicRefresh_Tick(object sender, EventArgs e)
         {
-            //DataGridViewRefresh();
             PaintAll();
         }
 
@@ -698,7 +782,6 @@ namespace ARS408.Forms
         private void Timer_GridRefresh_Tick(object sender, EventArgs e)
         {
             DataGridViewRefresh();
-            //PaintAll();
         }
 
         /// <summary>
@@ -708,7 +791,6 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void Button_Zoomin_Click(object sender, EventArgs e)
         {
-            //S *= 1 / BaseConst.ScrollRatio;
             Zoom(1);
         }
 
@@ -719,7 +801,6 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void Button_Zoomout_Click(object sender, EventArgs e)
         {
-            //S *= BaseConst.ScrollRatio;
             Zoom(-1);
         }
 
@@ -731,7 +812,6 @@ namespace ARS408.Forms
         private void Button_Fullsize_Click(object sender, EventArgs e)
         {
             S = scale_original;
-            //Zoom(0);
         }
 
         int mousex = 0, mousey = 0, hscrollv = 0, vscrollv = 0;
@@ -813,7 +893,6 @@ namespace ARS408.Forms
 
         private void Timer_WriteItems_Tick(object sender, EventArgs e)
         {
-            //WriteItemValues();
         }
 
         private void Timer_UIUpdate_Tick(object sender, EventArgs e)
@@ -821,6 +900,7 @@ namespace ARS408.Forms
             label_ReconnCounter.Text = SocketTcpClient.ReConnectedCount.ToString();
             trackBar_RcsMax.Value = RcsMaximum;
             trackBar_RcsMin.Value = RcsMinimum;
+            ListenerInitControls(ListenerStarted);
         }
 
         private void CheckBox_UsingLocal_CheckedChanged(object sender, EventArgs e)

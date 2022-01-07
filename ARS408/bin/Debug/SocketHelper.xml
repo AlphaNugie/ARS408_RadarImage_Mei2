@@ -447,6 +447,32 @@
             <param name="buffer"></param>
             <returns></returns>
         </member>
+        <member name="T:SocketHelper.NoneReceivedEventArgs">
+            <summary>
+            持续未接收到任何数据的事件数据类
+            </summary>
+        </member>
+        <member name="P:SocketHelper.NoneReceivedEventArgs.RaiseThreshold">
+            <summary>
+            触发时间阈值（单位毫秒）
+            </summary>
+        </member>
+        <member name="P:SocketHelper.NoneReceivedEventArgs.Socket">
+            <summary>
+            发送所接收数据的套接字
+            </summary>
+        </member>
+        <member name="M:SocketHelper.NoneReceivedEventArgs.#ctor">
+            <summary>
+            默认构造器
+            </summary>
+        </member>
+        <member name="M:SocketHelper.NoneReceivedEventArgs.#ctor(System.UInt64)">
+            <summary>
+            触发事件阈值初始化
+            </summary>
+            <param name="threshold">触发时间阈值（单位毫秒）</param>
+        </member>
         <member name="T:SocketHelper.ReceivedEventArgs">
             <summary>
             数据接收事件的事件数据类
@@ -509,17 +535,6 @@
             <summary>
             TCP客户端对象
             </summary>
-        </member>
-        <member name="M:SocketHelper.SocketTcpClient.#ctor">
-            <summary>
-            构造器
-            </summary>
-        </member>
-        <member name="M:SocketHelper.SocketTcpClient.#ctor(System.ComponentModel.IContainer)">
-            <summary>
-            构造器
-            </summary>
-            <param name="container">父容器</param>
         </member>
         <member name="P:SocketHelper.SocketTcpClient.ServerIp">
             <summary>
@@ -620,6 +635,17 @@
             <summary>
             重新连接成功次数
             </summary>
+        </member>
+        <member name="M:SocketHelper.SocketTcpClient.#ctor">
+            <summary>
+            构造器
+            </summary>
+        </member>
+        <member name="M:SocketHelper.SocketTcpClient.#ctor(System.ComponentModel.IContainer)">
+            <summary>
+            构造器
+            </summary>
+            <param name="container">父容器</param>
         </member>
         <member name="M:SocketHelper.SocketTcpClient.GetTcpClientInstance">
             <summary>
@@ -730,9 +756,21 @@
             <param name="sender">触发事件的对象</param>
             <param name="args">事件数据类对象</param>
         </member>
+        <member name="T:SocketHelper.SocketTcpClient.NoneReceivedEventHandler">
+            <summary>
+            持续一段时间未接收到任何数据的事件委托
+            </summary>
+            <param name="sender">触发事件的对象</param>
+            <param name="args">事件数据类对象</param>
+        </member>
         <member name="E:SocketHelper.SocketTcpClient.OnReceive">
             <summary>
             接收数据事件
+            </summary>
+        </member>
+        <member name="E:SocketHelper.SocketTcpClient.OnNoneReceived">
+            <summary>
+            持续一段时间未接收到任何数据的事件
             </summary>
         </member>
         <member name="M:SocketHelper.SocketTcpClient.OnTcpClientRecevice(System.Object,SocketHelper.ReceivedEventArgs)">

@@ -98,6 +98,9 @@ namespace ARS408.Model
                     continue;
                 int groupId = row["group_id"].ConvertType<int>(), clientHandle = row["record_id"].ConvertType<int>();
                 string groupName = row["group_name"].ConvertType<string>(), fieldName = row["field_name"].ConvertType<string>();
+                //值的系数，假如列不存在默认为0
+                double coeff = 0;
+                try { coeff = row["coeff"].ConvertType<double>(); } catch (Exception) { }
                 GroupType type = (GroupType)row["group_type"].ConvertType<int>();
                 if (groupId != id)
                 {
@@ -106,7 +109,8 @@ namespace ARS408.Model
                     OpcGroupInfo groupInfo = groups.Last();
                     items = groupInfo.ListItemInfo;
                 }
-                items.Add(new OpcItemInfo(itemId, clientHandle, fieldName));
+                //items.Add(new OpcItemInfo(itemId, clientHandle, fieldName));
+                items.Add(new OpcItemInfo(itemId, clientHandle, fieldName, coeff));
             }
             _opcHelper.ListGroupInfo = groups;
             _opcHelper.ConnectRemoteServer(Shiploader.OpcServerIp, Shiploader.OpcServerName, out _errorMessage);
@@ -148,6 +152,10 @@ namespace ARS408.Model
             if (!BaseConst.WriteItemValue)
                 return;
 
+            //BaseConst.OpcDataSource.Radar.Id = 59;
+            //BaseConst.OpcDataSource.Radar.Name = "sash";
+            //BaseConst.OpcDataSource.Radar.CurrentDistance = 12.2;
+            //BaseConst.OpcDataSource.Radar.Infos.RcsMinimum = 43;
             _opcHelper.ListGroupInfo.ForEach(group =>
             {
                 if (group.GroupType != GroupType.WRITE)

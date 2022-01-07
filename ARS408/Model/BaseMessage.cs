@@ -68,13 +68,13 @@ namespace ARS408.Model
             if (array == null || array.Length < 13)
                 return;
 
-            this.DataLength = array[0]; //有效字节数
+            DataLength = array[0]; //有效字节数
             int messageid = array[3] * 256 + array[4], messageid_0; //实际的MESSAGE_ID
-            this.SensorId = BaseFunc.GetSensorIdByMessageId(messageid, out messageid_0); //从MESSAGE_ID中提取的SENSOR_ID
-            this.MessageId = (SensorMessageId_0)messageid_0; //得到MESSAGE_ID_0（数据类型）
-            this.MessageName = this.MessageId.GetDescription();
-            this.DataArray = array.Skip(5).Take(this.DataLength).ToArray(); //提取有效字节
-            this.DataString_Binary = string.Join("", this.DataArray.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
+            SensorId = BaseFunc.GetSensorIdByMessageId(messageid, out messageid_0); //从MESSAGE_ID中提取的SENSOR_ID
+            MessageId = (SensorMessageId_0)messageid_0; //得到MESSAGE_ID_0（数据类型）
+            MessageName = MessageId.GetDescription();
+            DataArray = array.Skip(5).Take(DataLength).ToArray(); //提取有效字节
+            DataString_Binary = string.Join("", DataArray.Select(b => Convert.ToString(b, 2).PadLeft(8, '0')));
         }
     }
 }

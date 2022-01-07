@@ -174,7 +174,8 @@ namespace ARS408.Forms
         private void Button_Add_Click(object sender, EventArgs e)
         {
             //按数据库字段的顺序排列，最后一列为remark
-            object[] values = new object[] { 0, string.Empty, 1, string.Empty, 0, 0 };
+            //object[] values = new object[] { 0, string.Empty, 1, string.Empty, 0, 0 };
+            object[] values = new object[] { 0, string.Empty, 1, string.Empty, 0, 0, 0 };
             ((DataTable)dataGridView_Main.DataSource).Rows.Add(values);
             if (dataGridView_Main.Rows.Count == 0)
                 return;
