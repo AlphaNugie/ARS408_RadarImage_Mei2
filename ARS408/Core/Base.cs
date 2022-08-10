@@ -9,6 +9,7 @@ using ProtoBuf;
 using SerializationFactory;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -39,10 +40,12 @@ namespace ARS408.Core
         /// </summary>
         public static Thread Thread_RefreshConfigs = new Thread(new ThreadStart(BaseFunc.RefreshConfigs)) { IsBackground = true };
 
+        private static readonly string _confName = ConfigurationManager.AppSettings["ConfigFileName"];
         /// <summary>
-        /// 配置文件处理对象
+        /// INI文件操作工具
         /// </summary>
-        public static IniFileHelper IniHelper = new IniFileHelper("Config.ini");
+        //public static readonly IniFileHelper IniHelper = new IniFileHelper("Config.ini");
+        public static readonly IniFileHelper IniHelper = new IniFileHelper(string.IsNullOrWhiteSpace(_confName) ? "Config.ini" : _confName);
 
         private static bool _opcEnabled = true;
         /// <summary>
@@ -628,11 +631,25 @@ property float rcs";
             #endregion
             BaseConst.RadarInfo.WheelLeftCoorList.Clear();
             BaseConst.RadarInfo.WheelRightCoorList.Clear();
-            BaseConst.RadarInfo.RadarList = BaseConst.RadarList.Select(radar => Serializer.ChangeType<Radar, RadarInfoDetail>(radar)).ToList();
+            BaseConst.RadarInfo.RadarList = BaseConst.RadarList.Select(radar =>
+            {
+                var detail = Serializer.ChangeType<Radar, RadarInfoDetail>(radar);
+                detail.CurrentDistance = radar.CurrentDistance;
+                return detail;
+            }).ToList();
             //BaseConst.RadarInfo.RadarList.Clear();
             //BaseConst.RadarList.ForEach(radar =>
             //{
-            //    BaseConst.RadarInfo.RadarList.Add(Serializer.ChangeType<Radar, RadarInfoDetail>(radar));
+            //    //BaseConst.RadarInfo.RadarList.Add(Serializer.ChangeType<Radar, RadarInfoDetail>(radar));
+            //    if (radar.GroupType != RadarGroupType.Wheel || !radar.Name.Contains("斗轮"))
+            //        return;
+            //    List<SensorGeneral> olist = radar.Infos.ListToSend.ToList();
+            //    List<RadarCoor> list = new List<RadarCoor>(olist.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+            //    //list.AddRange(radar.Infos.ListBuffer_Other.Select(g => Serializer.ChangeType<SensorGeneral, RadarCoor>(g)));
+            //    if (radar.Name.Contains("左"))
+            //        BaseConst.RadarInfo.WheelLeftCoorList.AddRange(list);
+            //    else if (radar.Name.Contains("右"))
+            //        BaseConst.RadarInfo.WheelRightCoorList.AddRange(list);
             //});
         }
 

@@ -380,7 +380,9 @@ namespace ARS408.Model
         {
             #region 目标点的过滤
             Flags[2] = !general.RCS.Between(RcsMinimum, RcsMaximum); //RCS值是否不在范围内
-            if (Radar != null)
+            //if (Radar != null)
+            //假如为从配置初始化的雷达
+            if (Radar.Id >= 0)
             {
                 Flags[1] = BaseConst.BorderDistThres > 0 && general.DistanceToBorder > BaseConst.BorderDistThres; //距边界距离是否小于0或超出阈值
                 Flags[7] = !Radar.RadarCoorsLimited || general.WithinRadarLimits; //雷达坐标系坐标的限制
@@ -388,7 +390,7 @@ namespace ARS408.Model
                 Flags[9] = !Radar.AngleLimited || general.WithinAngleLimits; //角度的限制
             }
             //TODO (所有雷达)过滤条件Lv1：RCS值、坐标、角度在限定范围内，距边界范围在阈值内
-            bool save2list = !Flags[2] && Flags[7] && Flags[8] && Flags[9] && !Flags[1];
+            bool save2list = !Flags[1] && !Flags[2] && Flags[7] && Flags[8] && Flags[9];
             #endregion
 
             general.PushfCounter = _pushf_counter;

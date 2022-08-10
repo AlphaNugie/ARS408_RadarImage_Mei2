@@ -12,10 +12,19 @@ namespace ARS408.Core
     /// <summary>
     /// 雷达组信息SQLITE操作类
     /// </summary>
-    public class DataService_RadarGroup
+    public class DataService_RadarGroup : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_RadarGroup() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        protected override void SetTableName()
+        {
+            TableName = "t_base_radargroup_info";
+        }
+
+        protected override void AddMustHaveColumns() { }
 
         /// <summary>
         /// 获取所有雷达组，按ID排序
@@ -23,7 +32,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllRadarGroupsOrderbyId()
         {
-            return this.GetAllRadarGroups("group_id");
+            return GetAllRadarGroups("group_id");
         }
 
         /// <summary>
@@ -32,7 +41,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllRadarGroupsOrderbyName()
         {
-            return this.GetAllRadarGroups("group_name");
+            return GetAllRadarGroups("group_name");
         }
 
         /// <summary>
@@ -43,7 +52,7 @@ namespace ARS408.Core
         public DataTable GetAllRadarGroups(string orderby)
         {
             string sql = "select t.*, 0 changed from t_base_radargroup_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return this.provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -54,7 +63,7 @@ namespace ARS408.Core
         public int DeleteRadarGroupById(int id)
         {
             string sql = string.Format("delete from t_base_radargroup_info where group_id = {0}", id);
-            return this.provider.ExecuteSql(sql);
+            return Provider.ExecuteSql(sql);
         }
 
         /// <summary>
@@ -77,7 +86,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public int SaveRadarGroup(RadarGroup group)
         {
-            return this.provider.ExecuteSql(this.GetRadarGroupSqlString(group));
+            return Provider.ExecuteSql(GetRadarGroupSqlString(group));
         }
 
         /// <summary>
@@ -87,8 +96,8 @@ namespace ARS408.Core
         /// <returns></returns>
         public bool SaveRadarGroups(IEnumerable<RadarGroup> groups)
         {
-            string[] sqls = groups == null ? null : groups.Select(group => this.GetRadarGroupSqlString(group)).ToArray();
-            return this.provider.ExecuteSqlTrans(sqls);
+            string[] sqls = groups == null ? null : groups.Select(group => GetRadarGroupSqlString(group)).ToArray();
+            return Provider.ExecuteSqlTrans(sqls);
         }
     }
 
@@ -130,8 +139,8 @@ namespace ARS408.Core
     //    /// <param name="topicName">TOPIC名称</param>
     //    public RadarGroup(int id, string name)
     //    {
-    //        this.Id = id;
-    //        this.Name = name;
+    //        Id = id;
+    //        Name = name;
     //    }
     //}
 }

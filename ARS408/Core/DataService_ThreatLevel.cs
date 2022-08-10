@@ -8,10 +8,19 @@ using System.Threading.Tasks;
 
 namespace ARS408.Core
 {
-    public class DataService_ThreatLevel
+    public class DataService_ThreatLevel : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_ThreatLevel() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        protected override void SetTableName()
+        {
+            TableName = "t_base_threatlevels";
+        }
+
+        protected override void AddMustHaveColumns() { }
 
         /// <summary>
         /// 获取所有报警级数
@@ -20,7 +29,7 @@ namespace ARS408.Core
         public DataTable GetThreatLevels()
         {
             string sqlString = "select t.*, 0 changed from t_base_threatlevels t order by t.level_num";
-            return this.provider.Query(sqlString);
+            return Provider.Query(sqlString);
         }
 
         /// <summary>
@@ -43,7 +52,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public int SaveThreatLevel(ThreatLevel level)
         {
-            return this.provider.ExecuteSql(this.GetThreatLevelSqlString(level));
+            return Provider.ExecuteSql(GetThreatLevelSqlString(level));
         }
 
         /// <summary>
@@ -53,8 +62,8 @@ namespace ARS408.Core
         /// <returns></returns>
         public bool SaveThreatLevels(IEnumerable<ThreatLevel> levels)
         {
-            string[] sqls = levels == null ? null : levels.Select(level => this.GetThreatLevelSqlString(level)).ToArray();
-            return this.provider.ExecuteSqlTrans(sqls);
+            string[] sqls = levels == null ? null : levels.Select(level => GetThreatLevelSqlString(level)).ToArray();
+            return Provider.ExecuteSqlTrans(sqls);
         }
     }
 
@@ -86,8 +95,8 @@ namespace ARS408.Core
         /// <param name="topicName">TOPIC名称</param>
         public ThreatLevel(int id, string name)
         {
-            this.Id = id;
-            this.Name = name;
+            Id = id;
+            Name = name;
         }
     }
 }

@@ -1,4 +1,7 @@
 ﻿using ARS408.Core;
+using CommonLib.Function;
+using CommonLib.Function.Fitting;
+using MathNet.Numerics.LinearAlgebra;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -17,8 +20,9 @@ namespace ARS408.Model
     {
         private const string RCS_MIN_FIELD = "rcs_min";
         private const string RCS_MAX_FIELD = "rcs_max";
-        private double degree_xoy, degree_yoz, degree_xoz, degree_general;
-        private double sinphi, cosphi, sintheta, costheta, sinlamda, coslamda, sing, cosg;
+        private double _degree_yoz, _degree_xoy, _degree_xoz, _degree_base_yoz, _degree_general;
+        //private double _sinphi, _cosphi, _sintheta, _costheta, _sinlamda, _coslamda, _sing, _cosg;
+        private Matrix<double> _mat_yoz, _mat_xoy, _mat_xoz, _mat_base_yoz, _mat_general, _mat_overall;
         internal double _current_dist, _current_angle, /*_curve_slope, */_surface_angle, _radius_average; //当前距离，当前斜率
         internal bool _out_of_stack;
         internal string _threat_level_binary = "00";
@@ -204,31 +208,33 @@ namespace ARS408.Model
 
         #region 角度与转换
         /// <summary>
-        /// XOY平面内旋转角度
+        /// YOZ平面内旋转角度
         /// </summary>
-        public double DegreeXoy
+        public double DegreeYoz
         {
-            get { return degree_xoy; }
+            get { return _degree_yoz; }
             set
             {
-                degree_xoy = value;
-                sinphi = Math.Sin(degree_xoy * Math.PI / 180);
-                cosphi = Math.Cos(degree_xoy * Math.PI / 180);
+                _degree_yoz = value;
+                //_sintheta = Math.Sin(_degree_yoz * Math.PI / 180);
+                //_costheta = Math.Cos(_degree_yoz * Math.PI / 180);
+                _mat_yoz = SpaceOrienting.GetAngleOrientedMatrix(_degree_yoz, AxisType.X);
                 UpdateRatios();
             }
         }
 
         /// <summary>
-        /// YOZ平面内旋转角度
+        /// XOY平面内旋转角度
         /// </summary>
-        public double DegreeYoz
+        public double DegreeXoy
         {
-            get { return degree_yoz; }
+            get { return _degree_xoy; }
             set
             {
-                degree_yoz = value;
-                sintheta = Math.Sin(degree_yoz * Math.PI / 180);
-                costheta = Math.Cos(degree_yoz * Math.PI / 180);
+                _degree_xoy = value;
+                //_sinphi = Math.Sin(_degree_xoy * Math.PI / 180);
+                //_cosphi = Math.Cos(_degree_xoy * Math.PI / 180);
+                _mat_xoy = SpaceOrienting.GetAngleOrientedMatrix(_degree_xoy, AxisType.Z);
                 UpdateRatios();
             }
         }
@@ -238,12 +244,27 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeXoz
         {
-            get { return degree_xoz; }
+            get { return _degree_xoz; }
             set
             {
-                degree_xoz = value;
-                sinlamda = Math.Sin(degree_xoz * Math.PI / 180);
-                coslamda = Math.Cos(degree_xoz * Math.PI / 180);
+                _degree_xoz = value;
+                //_sinlamda = Math.Sin(_degree_xoz * Math.PI / 180);
+                //_coslamda = Math.Cos(_degree_xoz * Math.PI / 180);
+                _mat_xoz = SpaceOrienting.GetAngleOrientedMatrix(_degree_xoz, AxisType.Y);
+                UpdateRatios();
+            }
+        }
+
+        /// <summary>
+        /// 第四个角度：垂直于地面的轴的整体旋转角度，面向正南为0，面向海（东）为90，面向北为180，面向陆地（西）为270（或-90）
+        /// </summary>
+        public double DegreeBaseYoz
+        {
+            get { return _degree_base_yoz; }
+            set
+            {
+                _degree_base_yoz = value;
+                _mat_base_yoz = SpaceOrienting.GetAngleOrientedMatrix(_degree_base_yoz, AxisType.X);
                 UpdateRatios();
             }
         }
@@ -253,12 +274,13 @@ namespace ARS408.Model
         /// </summary>
         public double DegreeGeneral
         {
-            get { return degree_general; }
+            get { return _degree_general; }
             set
             {
-                degree_general = value;
-                sing = Math.Sin(degree_general * Math.PI / 180);
-                cosg = Math.Cos(degree_general * Math.PI / 180);
+                _degree_general = value;
+                //_sing = Math.Sin(_degree_general * Math.PI / 180);
+                //_cosg = Math.Cos(_degree_general * Math.PI / 180);
+                _mat_general = SpaceOrienting.GetAngleOrientedMatrix(_degree_general, AxisType.Z);
                 UpdateRatios();
             }
         }
@@ -638,6 +660,80 @@ namespace ARS408.Model
             FalseAlarmFilterString = AmbigStateFilterString = InvalidStateFilterString = MeasStateFilterString = ProbOfExistFilterString = string.Empty;
         }
 
+        ///// <summary>
+        ///// 构造器，从公共变量获取属性值，再用给定的DataRow对象覆盖各属性的值
+        ///// </summary>
+        ///// <param name="row"></param>
+        //public Radar(DataRow row) : this()
+        //{
+        //    if (row == null)
+        //        return;
+
+        //    Id = int.Parse(row["radar_id"].ToString());
+        //    Name = row["radar_name"].ToString();
+        //    RefreshInterval = int.Parse(row["refresh_interval"].ToString());
+        //    IpAddress = row["ip_address"].ToString();
+        //    Port = ushort.Parse(row["port"].ToString());
+        //    ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());
+        //    UsingLocal = row["using_local"].ToString().Equals("1");
+        //    IpAddressLocal = row["ip_address_local"].ToString();
+        //    PortLocal = int.Parse(row["port_local"].ToString());
+        //    OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString());
+        //    TopicName = row["topic_name"].ToString();
+        //    OwnerGroupId = int.Parse(row["owner_group_id"].ToString());
+        //    GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString());
+        //    DegreeYoz = double.Parse(row["degree_yoz"].ToString());
+        //    DegreeXoy = double.Parse(row["degree_xoy"].ToString());
+        //    DegreeXoz = double.Parse(row["degree_xoz"].ToString());
+        //    DegreeGeneral = double.Parse(row["degree_general"].ToString());
+        //    Direction = (Directions)int.Parse(row["direction_id"].ToString());
+        //    DefenseMode = int.Parse(row["defense_mode_id"].ToString());
+        //    Offset = double.Parse(row["offset"].ToString());
+        //    XOffset = double.Parse(row["x_offset"].ToString());
+        //    YOffset = double.Parse(row["y_offset"].ToString());
+        //    ZOffset = double.Parse(row["z_offset"].ToString());
+        //    Remark = row["remark"].ToString();
+        //    //RcsMinimum = int.Parse(row["rcs_min"].ToString());
+        //    //RcsMaximum = int.Parse(row["rcs_max"].ToString());
+        //    RefreshRcsLimits();
+        //    RadarHeight = double.Parse(row["radar_height"].ToString());
+        //    RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
+        //    //WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1");
+        //    try { WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1"); }
+        //    catch (Exception) { WithinRadarLimit = true; }
+        //    RadarxMin = double.Parse(row["radar_x_min"].ToString());
+        //    RadarxMax = double.Parse(row["radar_x_max"].ToString());
+        //    RadaryMin = double.Parse(row["radar_y_min"].ToString());
+        //    RadaryMax = double.Parse(row["radar_y_max"].ToString());
+        //    ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
+        //    //WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1");
+        //    try { WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1"); }
+        //    catch (Exception) { WithinClaimerLimit = true; }
+        //    ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
+        //    ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
+        //    ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
+        //    ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
+        //    ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
+        //    ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
+        //    AngleLimited = row["angle_limited"].ToString().Equals("1");
+        //    //WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1");
+        //    try { WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1"); }
+        //    catch (Exception) { WithinAngleLimit = true; }
+        //    AngleMin = double.Parse(row["angle_min"].ToString());
+        //    AngleMax = double.Parse(row["angle_max"].ToString());
+        //    #region 检测特性
+        //    ApplyFilter = row["apply_filter"].ToString().Equals("1");
+        //    ApplyIteration = row["apply_iteration"].ToString().Equals("1");
+        //    PushfMaxCount = int.Parse(row["pushf_max_count"].ToString());
+        //    UsePublicFilters = row["use_public_filters"].ToString().Equals("1");
+        //    FalseAlarmFilterString = row["false_alarm_filter"].ToString();
+        //    AmbigStateFilterString = row["ambig_state_filter"].ToString();
+        //    InvalidStateFilterString = row["invalid_state_filter"].ToString();
+        //    MeasStateFilterString = row["meas_state_filter"].ToString();
+        //    ProbOfExistFilterString = row["prob_exist_filter"].ToString();
+        //    #endregion
+        //}
+
         /// <summary>
         /// 构造器，从公共变量获取属性值，再用给定的DataRow对象覆盖各属性的值
         /// </summary>
@@ -647,68 +743,60 @@ namespace ARS408.Model
             if (row == null)
                 return;
 
-            Id = int.Parse(row["radar_id"].ToString());
-            Name = row["radar_name"].ToString();
-            RefreshInterval = int.Parse(row["refresh_interval"].ToString());
-            IpAddress = row["ip_address"].ToString();
-            Port = ushort.Parse(row["port"].ToString());
-            ConnectionMode = (ConnectionMode)int.Parse(row["conn_mode_id"].ToString());
-            UsingLocal = row["using_local"].ToString().Equals("1");
-            IpAddressLocal = row["ip_address_local"].ToString();
-            PortLocal = int.Parse(row["port_local"].ToString());
-            OwnerShiploaderId = int.Parse(row["shiploader_id"].ToString());
-            TopicName = row["topic_name"].ToString();
-            OwnerGroupId = int.Parse(row["owner_group_id"].ToString());
-            GroupType = (RadarGroupType)int.Parse(row["group_type"].ToString());
-            DegreeYoz = double.Parse(row["degree_yoz"].ToString());
-            DegreeXoy = double.Parse(row["degree_xoy"].ToString());
-            DegreeXoz = double.Parse(row["degree_xoz"].ToString());
-            DegreeGeneral = double.Parse(row["degree_general"].ToString());
-            Direction = (Directions)int.Parse(row["direction_id"].ToString());
-            DefenseMode = int.Parse(row["defense_mode_id"].ToString());
-            Offset = double.Parse(row["offset"].ToString());
-            XOffset = double.Parse(row["x_offset"].ToString());
-            YOffset = double.Parse(row["y_offset"].ToString());
-            ZOffset = double.Parse(row["z_offset"].ToString());
-            Remark = row["remark"].ToString();
-            //RcsMinimum = int.Parse(row["rcs_min"].ToString());
-            //RcsMaximum = int.Parse(row["rcs_max"].ToString());
+            Id = row.Convert<int>("radar_id");
+            Name = row.Convert<string>("radar_name");
+            RefreshInterval = row.Convert("refresh_interval", 100);
+            IpAddress = row.Convert<string>("ip_address");
+            Port = row.Convert<ushort>("port");
+            ConnectionMode = (ConnectionMode)row.Convert("conn_mode_id", 1);
+            UsingLocal = row.Convert<int>("using_local") == 1;
+            IpAddressLocal = row.Convert<string>("ip_address_local");
+            PortLocal = row.Convert<int>("port_local");
+            OwnerShiploaderId = row.Convert<int>("shiploader_id");
+            TopicName = row.Convert<string>("topic_name");
+            OwnerGroupId = row.Convert<int>("owner_group_id");
+            GroupType = (RadarGroupType)row.Convert<int>("group_type");
+            DegreeYoz = row.Convert<double>("degree_yoz");
+            DegreeXoy = row.Convert<double>("degree_xoy");
+            DegreeXoz = row.Convert<double>("degree_xoz");
+            DegreeBaseYoz = row.Convert<double>("degree_base_yoz");
+            DegreeGeneral = row.Convert<double>("degree_general");
+            Direction = (Directions)row.Convert<int>("direction_id");
+            DefenseMode = row.Convert<int>("defense_mode_id");
+            Offset = row.Convert<double>("offset");
+            XOffset = row.Convert<double>("x_offset");
+            YOffset = row.Convert<double>("y_offset");
+            ZOffset = row.Convert<double>("z_offset");
+            Remark = row.Convert<string>("remark");
             RefreshRcsLimits();
-            RadarHeight = double.Parse(row["radar_height"].ToString());
-            RadarCoorsLimited = row["radar_coors_limited"].ToString().Equals("1");
-            //WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1");
-            try { WithinRadarLimit = row["within_radar_limit"].ToString().Equals("1"); }
-            catch (Exception) { WithinRadarLimit = true; }
-            RadarxMin = double.Parse(row["radar_x_min"].ToString());
-            RadarxMax = double.Parse(row["radar_x_max"].ToString());
-            RadaryMin = double.Parse(row["radar_y_min"].ToString());
-            RadaryMax = double.Parse(row["radar_y_max"].ToString());
-            ClaimerCoorsLimited = row["claimer_coors_limited"].ToString().Equals("1");
-            //WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1");
-            try { WithinClaimerLimit = row["within_claimer_limit"].ToString().Equals("1"); }
-            catch (Exception) { WithinClaimerLimit = true; }
-            ClaimerxMin = double.Parse(row["claimer_x_min"].ToString());
-            ClaimerxMax = double.Parse(row["claimer_x_max"].ToString());
-            ClaimeryMin = double.Parse(row["claimer_y_min"].ToString());
-            ClaimeryMax = double.Parse(row["claimer_y_max"].ToString());
-            ClaimerzMin = double.Parse(row["claimer_z_min"].ToString());
-            ClaimerzMax = double.Parse(row["claimer_z_max"].ToString());
-            AngleLimited = row["angle_limited"].ToString().Equals("1");
-            //WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1");
-            try { WithinAngleLimit = row["within_angle_limit"].ToString().Equals("1"); }
-            catch (Exception) { WithinAngleLimit = true; }
-            AngleMin = double.Parse(row["angle_min"].ToString());
-            AngleMax = double.Parse(row["angle_max"].ToString());
+            RadarCoorsLimited = row.Convert<int>("radar_coors_limited") == 1;
+            WithinRadarLimit = row.Convert("within_radar_limit", 1) == 1;
+            RadarxMin = row.Convert<double>("radar_x_min");
+            RadarxMax = row.Convert<double>("radar_x_max");
+            RadaryMin = row.Convert<double>("radar_y_min");
+            RadaryMax = row.Convert<double>("radar_y_max");
+            ClaimerCoorsLimited = row.Convert<int>("claimer_coors_limited") == 1;
+            WithinClaimerLimit = row.Convert("within_claimer_limit", 1) == 1;
+            ClaimerxMin = row.Convert<double>("claimer_x_min");
+            ClaimerxMax = row.Convert<double>("claimer_x_max");
+            ClaimeryMin = row.Convert<double>("claimer_y_min");
+            ClaimeryMax = row.Convert<double>("claimer_y_max");
+            ClaimerzMin = row.Convert<double>("claimer_z_min");
+            ClaimerzMax = row.Convert<double>("claimer_z_max");
+            AngleLimited = row.Convert<int>("angle_limited") == 1;
+            WithinAngleLimit = row.Convert("within_angle_limit", 1) == 1;
+            AngleMin = row.Convert<double>("angle_min");
+            AngleMax = row.Convert<double>("angle_max");
             #region 检测特性
-            ApplyFilter = row["apply_filter"].ToString().Equals("1");
-            ApplyIteration = row["apply_iteration"].ToString().Equals("1");
-            PushfMaxCount = int.Parse(row["pushf_max_count"].ToString());
-            UsePublicFilters = row["use_public_filters"].ToString().Equals("1");
-            FalseAlarmFilterString = row["false_alarm_filter"].ToString();
-            AmbigStateFilterString = row["ambig_state_filter"].ToString();
-            InvalidStateFilterString = row["invalid_state_filter"].ToString();
-            MeasStateFilterString = row["meas_state_filter"].ToString();
-            ProbOfExistFilterString = row["prob_exist_filter"].ToString();
+            ApplyFilter = row.Convert<int>("apply_filter") == 1;
+            ApplyIteration = row.Convert<int>("apply_iteration") == 1;
+            PushfMaxCount = row.Convert<int>("pushf_max_count");
+            UsePublicFilters = row.Convert<int>("use_public_filters") == 1;
+            FalseAlarmFilterString = row.Convert<string>("false_alarm_filter");
+            AmbigStateFilterString = row.Convert<string>("ambig_state_filter");
+            InvalidStateFilterString = row.Convert<string>("invalid_state_filter");
+            MeasStateFilterString = row.Convert<string>("meas_state_filter");
+            ProbOfExistFilterString = row.Convert<string>("prob_exist_filter");
             #endregion
         }
         #endregion
@@ -732,6 +820,7 @@ namespace ARS408.Model
         public override bool Equals(object obj)
         {
             return obj is Radar && CurrentDistance == ((Radar)obj).CurrentDistance && ThreatLevel == ((Radar)obj).ThreatLevel;
+            //return obj is Radar radar && CurrentDistance == radar.CurrentDistance && ThreatLevel == radar.ThreatLevel;
         }
 
         /// <summary>
@@ -825,9 +914,25 @@ namespace ARS408.Model
         /// </summary>
         public void UpdateRatios()
         {
-            XmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * cosg - sinphi * sing, Yratio = 0 - sintheta * sinlamda * cosg - costheta * sinphi * coslamda * cosg - costheta * cosphi * sing };
-            YmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * coslamda * sing + sinphi * cosg, Yratio = costheta * cosphi * cosg - costheta * sinphi * coslamda * sing - sintheta * sinlamda * sing };
-            ZmodifiedRatios = new CoordinateRatios() { Xratio = cosphi * sinlamda, Yratio = sintheta * coslamda - costheta * sinphi * sinlamda };
+            //每个旋转角度均有变换矩阵，计算所有这些矩阵相乘之后的最终矩阵，假如计算失败，直接跳出
+            //第一次初始化时可能有为空的矩阵
+            if (_mat_general == null || _mat_base_yoz == null || _mat_xoz == null || _mat_xoy == null || _mat_yoz == null)
+                return;
+            try { _mat_overall = _mat_general * _mat_base_yoz * _mat_xoz * _mat_xoy * _mat_yoz; }
+            catch (Exception) { return; }
+            double[,] F = _mat_overall.ToArray();
+            //X          x
+            //Y =   F *  y
+            //Z          0
+            //最终矩阵F为3X3矩阵，此矩阵中与最终坐标XYZ所对应的每行的第一个元素为雷达坐标x的系数、第二个元素为雷达坐标y的系数，索引1（逗号前索引）为行索引，索引2（逗号后索引）为列索引
+            XmodifiedRatios = new CoordinateRatios { Xratio = F[0, 0], Yratio = F[0, 1] };
+            YmodifiedRatios = new CoordinateRatios { Xratio = F[1, 0], Yratio = F[1, 1] };
+            ZmodifiedRatios = new CoordinateRatios { Xratio = F[2, 0], Yratio = F[2, 1] };
+
+            ////不考虑底座YOZ角度的XY坐标系数计算公式
+            //XmodifiedRatios = new CoordinateRatios() { Xratio = _cosphi * _coslamda * _cosg - _sinphi * _sing, Yratio = 0 - _sintheta * _sinlamda * _cosg - _costheta * _sinphi * _coslamda * _cosg - _costheta * _cosphi * _sing };
+            //YmodifiedRatios = new CoordinateRatios() { Xratio = _cosphi * _coslamda * _sing + _sinphi * _cosg, Yratio = _costheta * _cosphi * _cosg - _costheta * _sinphi * _coslamda * _sing - _sintheta * _sinlamda * _sing };
+            //ZmodifiedRatios = new CoordinateRatios() { Xratio = _cosphi * _sinlamda, Yratio = _sintheta * _coslamda - _costheta * _sinphi * _sinlamda };
 
         }
 

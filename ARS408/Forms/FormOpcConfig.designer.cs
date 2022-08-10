@@ -49,6 +49,7 @@
             this.Column_FieldName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Enabled = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.Column_Coeff = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column_Offset = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_GetValue = new System.Windows.Forms.DataGridViewButtonColumn();
             this.Column_ItemValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Column_Changed = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -155,6 +156,7 @@
             this.Column_FieldName,
             this.Column_Enabled,
             this.Column_Coeff,
+            this.Column_Offset,
             this.Column_GetValue,
             this.Column_ItemValue,
             this.Column_Changed});
@@ -291,6 +293,15 @@
             this.Column_Coeff.Name = "Column_Coeff";
             this.Column_Coeff.Width = 68;
             // 
+            // Column_Offset
+            // 
+            this.Column_Offset.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
+            this.Column_Offset.DataPropertyName = "OFFSET";
+            this.Column_Offset.HeaderText = "偏移量";
+            this.Column_Offset.MinimumWidth = 6;
+            this.Column_Offset.Name = "Column_Offset";
+            this.Column_Offset.Width = 83;
+            // 
             // Column_GetValue
             // 
             this.Column_GetValue.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
@@ -362,6 +373,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_FieldName;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Column_Enabled;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Coeff;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Column_Offset;
         private System.Windows.Forms.DataGridViewButtonColumn Column_GetValue;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_ItemValue;
         private System.Windows.Forms.DataGridViewTextBoxColumn Column_Changed;

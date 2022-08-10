@@ -9,10 +9,16 @@ using System.Threading.Tasks;
 
 namespace ARS408.Core
 {
-    public class DataService_Sqlite
+    public class DataService_Sqlite : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_Sqlite() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        protected override void SetTableName() { }
+
+        protected override void AddMustHaveColumns() { }
 
         /// <summary>
         /// 获取所有装船机、雷达组、雷达中每一项的本层id、名称与上层id
@@ -20,7 +26,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllLevels()
         {
-            return this.GetLevels(0);
+            return GetLevels(0);
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ select * from (
   select 'radar_' || r.radar_id id, r.radar_name name, 'group_' || r.owner_group_id parent_id, s.shiploader_id from t_base_radar_info r left join t_base_radargroup_info g on r.owner_group_id = g.group_id left join t_base_shiploader_info s on g.owner_shiploader_id = s.shiploader_id order by name)
 where {0} = 0 or shiploader_id = {0}
 ", shiploader_id);
-            return this.provider.Query(sqlString);
+            return Provider.Query(sqlString);
         }
 
         /// <summary>
@@ -50,7 +56,7 @@ where {0} = 0 or shiploader_id = {0}
         public DataTable GetConnModes()
         {
             string sqlString = "select * from t_base_conn_mode order by mode_id";
-            return this.provider.Query(sqlString);
+            return Provider.Query(sqlString);
         }
 
         /// <summary>
@@ -60,7 +66,7 @@ where {0} = 0 or shiploader_id = {0}
         public DataTable GetDirections()
         {
             string sqlString = "select * from t_base_directions order by direction_id";
-            return this.provider.Query(sqlString);
+            return Provider.Query(sqlString);
         }
 
         /// <summary>
@@ -70,7 +76,7 @@ where {0} = 0 or shiploader_id = {0}
         public DataTable GetDefenseModes()
         {
             string sqlString = "select * from t_base_defense_mode order by mode_id";
-            return this.provider.Query(sqlString);
+            return Provider.Query(sqlString);
         }
 
         ///// <summary>
@@ -80,7 +86,7 @@ where {0} = 0 or shiploader_id = {0}
         //public DataTable GetAllExistProbs()
         //{
         //    string sqlString = "select value, name from t_list_exist_prob order by value";
-        //    return this.provider.Query(sqlString);
+        //    return Provider.Query(sqlString);
         //}
     }
 }

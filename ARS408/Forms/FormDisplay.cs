@@ -881,7 +881,7 @@ namespace ARS408.Forms
             else if (ConnectionMode == ConnectionMode.UDP && UdpClient.IsConnected)
                 UdpClient.SendString(textBox_SendContent.Text);
             else if (ConnectionMode == ConnectionMode.TCP_SERVER)
-                SocketTcpServer.ClientSocketList.ForEach(client => SocketTcpServer.SendData(client, textBox_SendContent.Text));
+                SocketTcpServer.ClientSocketList.ForEach(client => SocketTcpServer.SendToClient(client, textBox_SendContent.Text));
         }
 
         private void ComboBox_ConnMode_SelectedIndexChanged(object sender, EventArgs e)

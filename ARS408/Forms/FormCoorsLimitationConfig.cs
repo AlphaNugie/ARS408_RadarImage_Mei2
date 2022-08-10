@@ -42,6 +42,16 @@ namespace ARS408.Forms
         }
 
         /// <summary>
+        /// 刷新按钮
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Refresh_Click(object sender, EventArgs e)
+        {
+            DataSourceRefresh();
+        }
+
+        /// <summary>
         /// 保存按钮
         /// </summary>
         /// <param name="sender"></param>

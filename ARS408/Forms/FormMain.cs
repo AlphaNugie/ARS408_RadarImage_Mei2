@@ -2,6 +2,7 @@
 using CommonLib.Clients;
 using CommonLib.Function;
 using CommonLib.UIControlUtil;
+using CommonLib.UIControlUtil.ControlTemplates;
 using ProtobufNetLibrary;
 using SerializationFactory;
 using SocketHelper;
@@ -19,7 +20,7 @@ using System.Windows.Forms;
 
 namespace ARS408.Forms
 {
-    public partial class FormMain : Form
+    public partial class FormMain : FormNotifyBasis
     {
         #region 私有变量
         //private FormMonitor first_monitor;
@@ -66,6 +67,10 @@ namespace ARS408.Forms
         /// <param name="e"></param>
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            //窗体关闭原因为单击"关闭"按钮或Alt+F4  
+            if (e.CloseReason == CloseReason.UserClosing)
+                return;
+
             tabControl_Main.DisposeAllTabPages();
             tcpServer_Watchdog.Stop();
             timer1.Stop();
@@ -132,15 +137,51 @@ namespace ARS408.Forms
 
         #region 事件
         /// <summary>
+        /// Tab页双击事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TabControl_Main_DoubleClick(object sender, EventArgs e)
+        {
+            tabControl_Main.DisposeSelectedTabPage();
+        }
+
+        #region 主菜单
+        #region Main
+        /// <summary>
         /// 退出按钮
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void ToolStripMenu_Exit_Click(object sender, EventArgs e)
         {
-            Close();
+            //Close();
+            Exit();
         }
 
+        /// <summary>
+        /// 监视页面
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ToolStripMenu_Monitor_Click(object sender, EventArgs e)
+        {
+            CloseMonitors();
+            ShowMonitors();
+        }
+
+        private void ToolStripMenu_AutoMonitor_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("Main", "AutoMonitor", toolStripMenu_AutoMonitor.Checked ? "1" : "0");
+        }
+
+        private void ToolStripMenu_AutoConnect_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("Main", "AutoConnect", toolStripMenu_AutoConnect.Checked ? "1" : "0");
+        }
+        #endregion
+
+        #region 字典
         /// <summary>
         /// 装船机字典按钮
         /// </summary>
@@ -172,27 +213,6 @@ namespace ARS408.Forms
         }
 
         /// <summary>
-        /// Tab页双击事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void TabControl_Main_DoubleClick(object sender, EventArgs e)
-        {
-            tabControl_Main.DisposeSelectedTabPage();
-        }
-
-        /// <summary>
-        /// 监视页面双击事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ToolStripMenu_Monitor_Click(object sender, EventArgs e)
-        {
-            CloseMonitors();
-            ShowMonitors();
-        }
-
-        /// <summary>
         /// 威胁级数按钮
         /// </summary>
         /// <param name="sender"></param>
@@ -201,7 +221,9 @@ namespace ARS408.Forms
         {
             tabControl_Main.ShowForm(new FormThreatLevels());
         }
+        #endregion
 
+        #region 设置
         /// <summary>
         /// OPC配置按钮
         /// </summary>
@@ -224,6 +246,28 @@ namespace ARS408.Forms
             FormCoorsLimitationConfig form = new FormCoorsLimitationConfig { StartPosition = FormStartPosition.CenterScreen };
             form.ShowDialog();
         }
+
+        private void ToolStrip_RadarBehavior_Click(object sender, EventArgs e)
+        {
+            new FormRadarBehavior().Show();
+        }
+
+        private void ToolStrip_Preferences_Click(object sender, EventArgs e)
+        {
+            new FormPreferences().Show();
+        }
+
+        private void ToolStrip_ShowDeserted_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", toolStrip_ShowDeserted.Checked ? "1" : "0");
+        }
+
+        private void ToolStrip_WriteItemValues_CheckedChanged(object sender, EventArgs e)
+        {
+            BaseConst.IniHelper.WriteData("OPC", "WriteItemValue", toolStrip_WriteItemValues.Checked ? "1" : "0");
+        }
+        #endregion
+        #endregion
 
         /// <summary>
         /// TcpServer出现错误事件
@@ -295,36 +339,6 @@ namespace ARS408.Forms
             label_Error.Text = tcp_info_error;
             label_State.Text = tcp_info_state;
             label_Receive.Text = tcp_info_receive;
-        }
-
-        private void ToolStripMenu_AutoMonitor_CheckedChanged(object sender, EventArgs e)
-        {
-            BaseConst.IniHelper.WriteData("Main", "AutoMonitor", toolStripMenu_AutoMonitor.Checked ? "1" : "0");
-        }
-
-        private void ToolStripMenu_AutoConnect_CheckedChanged(object sender, EventArgs e)
-        {
-            BaseConst.IniHelper.WriteData("Main", "AutoConnect", toolStripMenu_AutoConnect.Checked ? "1" : "0");
-        }
-
-        private void ToolStrip_RadarBehavior_Click(object sender, EventArgs e)
-        {
-            new FormRadarBehavior().Show();
-        }
-
-        private void ToolStrip_Preferences_Click(object sender, EventArgs e)
-        {
-            new FormPreferences().Show();
-        }
-
-        private void ToolStrip_ShowDeserted_CheckedChanged(object sender, EventArgs e)
-        {
-            BaseConst.IniHelper.WriteData("Main", "ShowDesertedPoints", toolStrip_ShowDeserted.Checked ? "1" : "0");
-        }
-
-        private void ToolStrip_WriteItemValues_CheckedChanged(object sender, EventArgs e)
-        {
-            BaseConst.IniHelper.WriteData("OPC", "WriteItemValue", toolStrip_WriteItemValues.Checked ? "1" : "0");
         }
         #endregion
     }

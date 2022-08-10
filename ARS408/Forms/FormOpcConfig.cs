@@ -54,6 +54,7 @@ namespace ARS408.Forms
         /// </summary>
         private void DataSourceRefresh()
         {
+            CheckForTableColumns();
             DataTable table;
             try { table = dataService.GetAllOpcItemsOrderbyId(); }
             catch (Exception e)
@@ -64,6 +65,36 @@ namespace ARS408.Forms
             }
 
             dataGridView_Main.DataSource = table;
+        }
+
+        /// <summary>
+        /// 检查数据项表的字段，假如缺少字段则增加
+        /// </summary>
+        /// <param name="table"></param>
+        private void CheckForTableColumns()
+        {
+            try
+            {
+                DataTable table = dataService.GetAllOpcItemRecords();
+                List<string> columns = table.Columns.Cast<DataColumn>().Select(column => column.ColumnName).ToList(), fields = new List<string>(), sqls = new List<string>();
+                if (!columns.Contains("coeff"))
+                {
+                    fields.Add("coeff");
+                    sqls.Add("alter table t_plc_opcitem add column coeff DOUBLE NOT NULL ON CONFLICT FAIL DEFAULT 0;");
+                }
+                if (!columns.Contains("offset"))
+                {
+                    fields.Add("offset");
+                    sqls.Add("alter table t_plc_opcitem add column offset DOUBLE NOT NULL ON CONFLICT FAIL DEFAULT 0;");
+                }
+                bool result = sqls.Count > 0 ? dataService.Provider.ExecuteSqlTrans(sqls) : false;
+                if (result)
+                {
+                    string message = string.Format("已添加列{0}", string.Join(", ", fields.ToArray()).TrimEnd(',', ' '));
+                    MessageBox.Show(message, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception e) { }
         }
 
         private void Button_ServerEnum_Click(object sender, EventArgs e)

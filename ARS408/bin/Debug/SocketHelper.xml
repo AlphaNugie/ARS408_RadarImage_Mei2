@@ -138,6 +138,25 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="T:SocketHelper.Helper.HexHelper">
+            <summary>
+            16进制操作相关操作类
+            </summary>
+        </member>
+        <member name="M:SocketHelper.Helper.HexHelper.HexStringArray2Bytes(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            将16进制格式字符串数组转换为byte数组
+            </summary>
+            <param name="hexStrings">16进制格式字符串数组，如[ "FE", "FE", ... ]</param>
+            <returns>返回byte数组</returns>
+        </member>
+        <member name="M:SocketHelper.Helper.HexHelper.HexString2Bytes(System.String)">
+            <summary>
+            将16进制格式字符串转换为byte数组
+            </summary>
+            <param name="hexString">16进制格式字符串，如"FE FE FE ..."</param>
+            <returns>返回byte数组</returns>
+        </member>
         <member name="T:SocketHelper.Helper.SocketExtensionClass">
             <summary>
             套接字扩展类
@@ -315,54 +334,54 @@
             客户端模组
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.RecevidMsg">
+        <member name="P:SocketHelper.ClientModel.RecevidMsg">
             <summary>
             接受的数据缓存
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.RecevidBuffer">
+        <member name="P:SocketHelper.ClientModel.RecevidBuffer">
             <summary>
             缓存数据
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.ClientSocket">
+        <member name="P:SocketHelper.ClientModel.ClientSocket">
             <summary>
             PC嵌套字
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.ClientType">
-            <summary>
-            客户端类型1
-            </summary>
-        </member>
-        <member name="F:SocketHelper.ClientModel.ClientStyle">
+        <member name="P:SocketHelper.ClientModel.ClientStyle">
             <summary>
             Socket类型（网页版或者PC版）
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.Id">
+        <member name="P:SocketHelper.ClientModel.Id">
             <summary>
             客户端编号
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.ClientNo">
+        <member name="P:SocketHelper.ClientModel.ClientNo">
             <summary>
-            若是小车类型，则该标示表示车辆编号，若是信号机类型，则该标示表示信号机编号，其他则不使用该类型
+            客户端编号
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.UserName">
+        <member name="P:SocketHelper.ClientModel.UserName">
             <summary>
-            若是PC客户端类型，则下面两个表示表示用户登陆账号和密码
+            若是PC客户端类型，则表示用户登陆账号
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.Password">
+        <member name="P:SocketHelper.ClientModel.Password">
             <summary>
-            密码
+            若是PC客户端类型，则表示用户密码
             </summary>
         </member>
-        <member name="F:SocketHelper.ClientModel.IsOnline">
+        <member name="P:SocketHelper.ClientModel.IsOnline">
             <summary>
             是否在线
+            </summary>
+        </member>
+        <member name="M:SocketHelper.ClientModel.#ctor">
+            <summary>
+            构造器
             </summary>
         </member>
         <member name="T:SocketHelper.ClientStyle">
@@ -370,39 +389,19 @@
             客户端类型
             </summary>
         </member>
+        <member name="F:SocketHelper.ClientStyle.None">
+            <summary>
+            未判明类型
+            </summary>
+        </member>
         <member name="F:SocketHelper.ClientStyle.WebSocket">
             <summary>
-            
+            WebSocket
             </summary>
         </member>
         <member name="F:SocketHelper.ClientStyle.PcSocket">
             <summary>
-            
-            </summary>
-        </member>
-        <member name="T:SocketHelper.ClientType">
-            <summary>
-            客户端类型（根据需求自己增加）
-            </summary>
-        </member>
-        <member name="F:SocketHelper.ClientType.None">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:SocketHelper.ClientType.Client1">
-            <summary>
-            Client1
-            </summary>
-        </member>
-        <member name="F:SocketHelper.ClientType.Client2">
-            <summary>
-            Client2
-            </summary>
-        </member>
-        <member name="F:SocketHelper.ClientType.Client3">
-            <summary>
-            Client3
+            PC端SOCKET
             </summary>
         </member>
         <member name="T:SocketHelper.LogType">
@@ -410,9 +409,14 @@
             
             </summary>
         </member>
-        <member name="F:SocketHelper.LogType.SendData">
+        <member name="F:SocketHelper.LogType.SendDataSuccess">
             <summary>
-            
+            发送数据成功
+            </summary>
+        </member>
+        <member name="F:SocketHelper.LogType.SendDataFailure">
+            <summary>
+            发送数据失败
             </summary>
         </member>
         <member name="F:SocketHelper.LogType.GetData">
@@ -773,7 +777,7 @@
             持续一段时间未接收到任何数据的事件
             </summary>
         </member>
-        <member name="M:SocketHelper.SocketTcpClient.OnTcpClientRecevice(System.Object,SocketHelper.ReceivedEventArgs)">
+        <member name="M:SocketHelper.SocketTcpClient.OnTcpClientReceive(System.Object,SocketHelper.ReceivedEventArgs)">
             <summary>
             数据接收事件方法
             </summary>
@@ -2495,22 +2499,6 @@
             TCP监听服务
             </summary>
         </member>
-        <member name="F:SocketHelper.SocketTcpServer.semap">
-            <summary>
-            信号量
-            </summary>
-        </member>
-        <member name="M:SocketHelper.SocketTcpServer.#ctor">
-            <summary>
-            默认构造器
-            </summary>
-        </member>
-        <member name="M:SocketHelper.SocketTcpServer.#ctor(System.ComponentModel.IContainer)">
-            <summary>
-            构造器
-            </summary>
-            <param name="container">控件容器</param>
-        </member>
         <member name="P:SocketHelper.SocketTcpServer.ServerSocket">
             <summary>
             监听Socket
@@ -2571,10 +2559,21 @@
             是否已启动监听
             </summary>
         </member>
-        <member name="F:SocketHelper.SocketTcpServer.ClientSocketList">
+        <member name="P:SocketHelper.SocketTcpServer.ClientSocketList">
             <summary>
             客户端列表
             </summary>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.#ctor">
+            <summary>
+            默认构造器
+            </summary>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.#ctor(System.ComponentModel.IContainer)">
+            <summary>
+            构造器
+            </summary>
+            <param name="container">控件容器</param>
         </member>
         <member name="M:SocketHelper.SocketTcpServer.HeartBeatCheckThread">
             <summary>
@@ -2601,7 +2600,7 @@
             设置Tcp连接名称，格式：本地端口->服务端IP:端口
             </summary>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.ShutdownClient">
+        <member name="M:SocketHelper.SocketTcpServer.ShutdownAllClients">
             <summary>
             关闭所有连接的TCP客户端
             </summary>
@@ -2624,13 +2623,58 @@
             <param name="cModel"></param>
             <param name="args"></param>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.AnalyticData(System.Byte[],System.Int32)">
+        <member name="M:SocketHelper.SocketTcpServer.AnalyseWebSocketData(System.Byte[],System.Int32)">
             <summary>
             解析WebSocket数据
             </summary>
             <param name="recBytes"></param>
             <param name="recByteLength"></param>
             <returns></returns>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.PackHandShakeData(System.String)">
+            <summary>
+            打包握手信息
+            </summary>
+            <param name="secKeyAccept">Sec-WebSocket-Accept</param>
+            <returns>数据包</returns>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.GetSecKey(System.Byte[],System.Int32)">
+            <summary>
+            通过握手协议字节组获取WebSocket密钥
+            </summary>
+            <param name="handShakeBytes">握手协议字节组</param>
+            <param name="bytesLength">握手协议字节组长度</param>
+            <returns></returns>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.SendToPcClient(System.String,System.Int32,System.String)">
+            <summary>
+            向指定IP端口发送字符串，假如不是已连接的客户端则忽视
+            </summary>
+            <param name="ip">远程IP</param>
+            <param name="port">远程端口</param>
+            <param name="data">待发送字符串，ANSI编码</param>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.SendToPcClient(System.String,System.Int32,System.Byte[])">
+            <summary>
+            向指定IP端口发送字符串，假如不是已连接的客户端则忽视
+            </summary>
+            <param name="ip">远程IP</param>
+            <param name="port">远程端口</param>
+            <param name="data">待发送byte数组</param>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.SendToPcClient(SocketHelper.ClientModel,System.String)">
+            <summary>
+            向指定客户端发送数据
+            </summary>
+            <param name="cModel">客户端</param>
+            <param name="data">字符串数据，ANSI编码</param>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.SendToPcClient(SocketHelper.ClientModel,System.Byte[])">
+            <summary>
+            向指定客户端发送数据
+            </summary>
+            <param name="cModel">客户端</param>
+            <param name="data">字节数组数据</param>
         </member>
         <member name="M:SocketHelper.SocketTcpServer.SendToWebClient(SocketHelper.ClientModel,System.String)">
             <summary>
@@ -2646,50 +2690,27 @@
             <param name="client">客户端</param>
             <param name="sendData">发送的byte数组数据包</param>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.PackHandShakeData(System.String)">
+        <member name="M:SocketHelper.SocketTcpServer.SendToClient(SocketHelper.ClientModel,System.Byte[])">
             <summary>
-            打包握手信息
+            向所有客户端发送命令（byte数组）
             </summary>
-            <param name="secKeyAccept">Sec-WebSocket-Accept</param>
-            <returns>数据包</returns>
+            <param name="clientModel">客户端对象</param>
+            <param name="data">待发送的数据（byte数组）</param>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.GetSecKeyAccetp(System.Byte[],System.Int32)">
+        <member name="M:SocketHelper.SocketTcpServer.SendToClient(SocketHelper.ClientModel,System.String)">
             <summary>
-            生成Sec-WebSocket-Accept
+            向所有客户端发送命令（字符串）
             </summary>
-            <param name="handShakeBytes">客户端握手信息</param>
-            <param name="bytesLength">客户端握手信息长度</param>
-            <returns>Sec-WebSocket-Accept</returns>
+            <param name="clientModel">客户端对象</param>
+            <param name="data">待发送的数据（字符串）</param>
         </member>
-        <member name="M:SocketHelper.SocketTcpServer.GetSecKey(System.Byte[],System.Int32)">
+        <member name="M:SocketHelper.SocketTcpServer.SendToClient(SocketHelper.ClientModel,System.String,SocketHelper.StringType)">
             <summary>
-            通过握手协议字节组获取WebSocket密钥
+            向所有客户端发送命令（字符串）
             </summary>
-            <param name="handShakeBytes">握手协议字节组</param>
-            <param name="bytesLength">握手协议字节组长度</param>
-            <returns></returns>
-        </member>
-        <member name="M:SocketHelper.SocketTcpServer.SendData(System.String,System.Int32,System.String)">
-            <summary>
-            向指定IP端口发送字符串，假如不是已连接的客户端则忽视
-            </summary>
-            <param name="ip">远程IP</param>
-            <param name="port">远程端口</param>
-            <param name="data">待发送字符串，ANSI编码</param>
-        </member>
-        <member name="M:SocketHelper.SocketTcpServer.SendData(SocketHelper.ClientModel,System.String)">
-            <summary>
-            向指定客户端发送数据
-            </summary>
-            <param name="cModel">客户端</param>
-            <param name="data">字符串数据，ANSI编码</param>
-        </member>
-        <member name="M:SocketHelper.SocketTcpServer.SendData(SocketHelper.ClientModel,System.Byte[])">
-            <summary>
-            向指定客户端发送数据
-            </summary>
-            <param name="cModel">客户端</param>
-            <param name="data">字节数组数据</param>
+            <param name="clientModel">客户端对象</param>
+            <param name="data">待发送的数据（字符串）</param>
+            <param name="type">字符串类型，普通字符串或16进制字符串（客户端类型为WebSocket时将无视此参数）</param>
         </member>
         <member name="M:SocketHelper.SocketTcpServer.SendData(System.Byte[])">
             <summary>
@@ -2702,6 +2723,13 @@
             向所有客户端发送命令（字符串）
             </summary>
             <param name="data">待发送的数据（字符串）</param>
+        </member>
+        <member name="M:SocketHelper.SocketTcpServer.SendData(System.String,SocketHelper.StringType)">
+            <summary>
+            向所有客户端发送命令（字符串）
+            </summary>
+            <param name="data">待发送的数据（字符串）</param>
+            <param name="type">字符串类型，普通字符串或16进制字符串</param>
         </member>
         <member name="M:SocketHelper.SocketTcpServer.ResolveSocket(System.String,System.Int32)">
             <summary>

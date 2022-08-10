@@ -11,10 +11,19 @@ namespace ARS408.Core
     /// <summary>
     /// 雷达组类型SQLITE操作类
     /// </summary>
-    public class DataService_GroupType
+    public class DataService_GroupType : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_GroupType() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        protected override void SetTableName()
+        {
+            TableName = "t_base_grouptype";
+        }
+
+        protected override void AddMustHaveColumns() { }
 
         /// <summary>
         /// 获取所有组类型，按ID排序
@@ -22,7 +31,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllGroupTypesOrderbyId()
         {
-            return this.GetAllGroupTypes("group_code");
+            return GetAllGroupTypes("group_code");
         }
 
         /// <summary>
@@ -31,7 +40,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllGroupTypesOrderbyName()
         {
-            return this.GetAllGroupTypes("group_name");
+            return GetAllGroupTypes("group_name");
         }
 
         /// <summary>
@@ -42,7 +51,7 @@ namespace ARS408.Core
         public DataTable GetAllGroupTypes(string orderby)
         {
             string sql = "select t.*, 0 changed from t_base_grouptype t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return this.provider.Query(sql);
+            return Provider.Query(sql);
         }
     }
 }

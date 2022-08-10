@@ -59,6 +59,11 @@
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
+            // notifyIcon_Main
+            // 
+            this.notifyIcon_Main.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_Main.Icon")));
+            this.notifyIcon_Main.Text = "堆取料机毫米波雷达管理";
+            // 
             // menuStrip1
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -238,16 +243,10 @@
             // tcpServer_Watchdog
             // 
             this.tcpServer_Watchdog.CheckTime = 1000;
-            this.tcpServer_Watchdog.HeartBeatCheck = null;
             this.tcpServer_Watchdog.HeartBeatPacket = "X";
             this.tcpServer_Watchdog.IsHeartCheck = false;
-            this.tcpServer_Watchdog.IsStartListening = false;
-            this.tcpServer_Watchdog.LocalEndPoint = null;
-            this.tcpServer_Watchdog.RemoteEndPoint = null;
             this.tcpServer_Watchdog.ServerIp = "127.0.0.1";
             this.tcpServer_Watchdog.ServerPort = 25001;
-            this.tcpServer_Watchdog.ServerSocket = null;
-            this.tcpServer_Watchdog.StartSockst = null;
             this.tcpServer_Watchdog.Received += new SocketHelper.SocketTcpServer.ReceivedEventHandler(this.TcpServer_Watchdog_TcpServerRecevice);
             this.tcpServer_Watchdog.OnErrorMsg += new SocketHelper.SocketTcpServer.ErrorMsgEventHandler(this.TcpServer_Watchdog_OnErrorMsg);
             this.tcpServer_Watchdog.OnStateInfo += new SocketHelper.SocketTcpServer.StateInfoEventHandler(this.TcpServer_Watchdog_OnStateInfo);
@@ -346,5 +345,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem toolStrip_RadarBehavior;
         private System.Windows.Forms.ToolStripMenuItem toolStrip_WriteItemValues;
+        //private System.Windows.Forms.NotifyIcon notifyIcon_Main;
     }
 }

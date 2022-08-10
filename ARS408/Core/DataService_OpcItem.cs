@@ -10,15 +10,22 @@ using System.Threading.Tasks;
 
 namespace ARS408.Core
 {
-    public class DataService_OpcItem
+    public class DataService_OpcItem : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_OpcItem() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
 
-        public void SetFilePath(string filePath)
+        protected override void SetTableName()
         {
-            if (!string.IsNullOrWhiteSpace(filePath))
-                provider = new SqliteProvider(filePath);
+            TableName = "t_plc_opcitem";
+        }
+
+        protected override void AddMustHaveColumns()
+        {
+            ColumnsMustHave.Add(new SqliteColumnMapping("coeff", SqliteSqlType.DOUBLE, true, ConflictClause.FAIL, 0));
+            ColumnsMustHave.Add(new SqliteColumnMapping("offset", SqliteSqlType.DOUBLE, true, ConflictClause.FAIL, 0));
         }
 
         #region 查询
@@ -29,7 +36,17 @@ namespace ARS408.Core
         public DataTable GetOpcInfo()
         {
             string sql = "select * from t_plc_opcgroup g left join t_plc_opcitem i on g.group_id = i.opcgroup_id where i.enabled = 1 order by g.group_id, i.record_id";
-            return provider.Query(sql);
+            return Provider.Query(sql);
+        }
+
+        /// <summary>
+        /// 获取所有t_plc_opcitem记录
+        /// </summary>
+        /// <returns></returns>
+        public DataTable GetAllOpcItemRecords()
+        {
+            string sql = "select * from t_plc_opcitem";
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -63,7 +80,7 @@ namespace ARS408.Core
 select i.*, 0 changed from t_plc_opcitem i
   left join t_plc_opcgroup g on g.group_id = i.opcgroup_id
   where {0} = 0 or g.group_id = {0} {1}", opcgroup_id, string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by i." + orderby);
-            return provider.Query(sql);
+            return Provider.Query(sql);
         }
         #endregion
 
@@ -75,8 +92,18 @@ select i.*, 0 changed from t_plc_opcitem i
         public int DeleteOpcItemById(int id)
         {
             string sql = string.Format("delete from t_plc_opcitem where record_id = {0}", id);
-            return this.provider.ExecuteSql(sql);
+            return Provider.ExecuteSql(sql);
         }
+
+        ///// <summary>
+        ///// 执行多条SQL语句
+        ///// </summary>
+        ///// <param name="sqls"></param>
+        ///// <returns></returns>
+        //public bool ExecuteSqls(IEnumerable<string> sqls)
+        //{
+        //    return Provider.ExecuteSqlTrans(sqls);
+        //}
 
         /// <summary>
         /// 保存OPC项信息
@@ -85,7 +112,7 @@ select i.*, 0 changed from t_plc_opcitem i
         /// <returns></returns>
         public int SaveOpcItem(OpcItem item)
         {
-            return provider.ExecuteSql(GetSqlString(item));
+            return Provider.ExecuteSql(GetSqlString(item));
         }
 
         /// <summary>
@@ -96,7 +123,7 @@ select i.*, 0 changed from t_plc_opcitem i
         public bool SaveOpcItems(IEnumerable<OpcItem> items)
         {
             string[] sqls = items == null ? null : items.Select(radar => GetSqlString(radar)).ToArray();
-            return provider.ExecuteSqlTrans(sqls);
+            return Provider.ExecuteSqlTrans(sqls);
         }
 
         /// <summary>
@@ -108,7 +135,7 @@ select i.*, 0 changed from t_plc_opcitem i
         {
             string sql = string.Empty;
             if (item != null)
-                sql = string.Format(item.RecordId <= 0 ? "insert into t_plc_opcitem (item_id, opcgroup_id, field_name, enabled, coeff) values ('{1}', {2}, '{3}', {4}, {5})" : "update t_plc_opcitem set item_id = '{1}', opcgroup_id = {2}, field_name = '{3}', enabled = {4}, coeff = {5} where record_id = {0}", item.RecordId, item.ItemId, item.OpcGroupId, item.FieldName, item.Enabled ? 1 : 0, item.Coeff);
+                sql = string.Format(item.RecordId <= 0 ? "insert into t_plc_opcitem (item_id, opcgroup_id, field_name, enabled, coeff, offset) values ('{1}', {2}, '{3}', {4}, {5}, {6})" : "update t_plc_opcitem set item_id = '{1}', opcgroup_id = {2}, field_name = '{3}', enabled = {4}, coeff = {5}, offset = {6} where record_id = {0}", item.RecordId, item.ItemId, item.OpcGroupId, item.FieldName, item.Enabled ? 1 : 0, item.Coeff, item.Offset);
             return sql;
         }
     }

@@ -11,10 +11,19 @@ namespace ARS408.Core
     /// <summary>
     /// 装船机信息SQLITE操作类
     /// </summary>
-    public class DataService_Shiploader
+    public class DataService_Shiploader : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_Shiploader() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        protected override void SetTableName()
+        {
+            TableName = "t_base_shiploader_info";
+        }
+
+        protected override void AddMustHaveColumns() { }
 
         /// <summary>
         /// 获取所有装船机，按ID排序
@@ -22,9 +31,9 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllShiploadersOrderbyId()
         {
-            return this.GetAllShiploaders("shiploader_id");
+            return GetAllShiploaders("shiploader_id");
             //string sql = "select t.*, 0 changed from t_base_shiploader_info t order by t.shiploader_id";
-            //return this.provider.Query(sql);
+            //return Provider.Query(sql);
         }
 
         /// <summary>
@@ -33,7 +42,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllShiploadersOrderbyName()
         {
-            return this.GetAllShiploaders("shiploader_name");
+            return GetAllShiploaders("shiploader_name");
         }
 
         /// <summary>
@@ -43,9 +52,9 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetAllShiploaders(string orderby)
         {
-            return this.GetShiploaders(0, orderby);
+            return GetShiploaders(0, orderby);
             //string sql = "select t.*, 0 changed from t_base_shiploader_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            //return this.provider.Query(sql);
+            //return Provider.Query(sql);
         }
 
         /// <summary>
@@ -55,7 +64,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public DataTable GetShiploader(int shiploader_id)
         {
-            return this.GetShiploaders(shiploader_id, null);
+            return GetShiploaders(shiploader_id, null);
         }
 
         /// <summary>
@@ -68,7 +77,7 @@ namespace ARS408.Core
         {
             //string sql = "select t.*, 0 changed from t_base_shiploader_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
             string sql = string.Format("select t.*, 0 changed from t_base_shiploader_info t where {0} = 0 or t.shiploader_id = {0} {1}", shiploader_id, string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return this.provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -79,7 +88,7 @@ namespace ARS408.Core
         public int DeleteShiploaderById(int id)
         {
             string sql = string.Format("delete from t_base_shiploader_info where shiploader_id = {0}", id);
-            return this.provider.ExecuteSql(sql);
+            return Provider.ExecuteSql(sql);
         }
 
         /// <summary>
@@ -102,7 +111,7 @@ namespace ARS408.Core
         /// <returns></returns>
         public int SaveShiploader(Shiploader loader)
         {
-            return this.provider.ExecuteSql(this.GetShiploaderSqlString(loader));
+            return Provider.ExecuteSql(GetShiploaderSqlString(loader));
         }
 
         /// <summary>
@@ -112,8 +121,8 @@ namespace ARS408.Core
         /// <returns></returns>
         public bool SaveShiploaders(IEnumerable<Shiploader> loaders)
         {
-            string[] sqls = loaders == null ? null : loaders.Select(loader => this.GetShiploaderSqlString(loader)).ToArray();
-            return this.provider.ExecuteSqlTrans(sqls);
+            string[] sqls = loaders == null ? null : loaders.Select(loader => GetShiploaderSqlString(loader)).ToArray();
+            return Provider.ExecuteSqlTrans(sqls);
         }
     }
 
@@ -230,9 +239,9 @@ namespace ARS408.Core
         /// <param name="topicName">TOPIC名称</param>
         public Shiploader(int id, string name, string topicName)
         {
-            this.Id = id;
-            this.Name = name;
-            this.TopicName = topicName;
+            Id = id;
+            Name = name;
+            TopicName = topicName;
         }
     }
 }

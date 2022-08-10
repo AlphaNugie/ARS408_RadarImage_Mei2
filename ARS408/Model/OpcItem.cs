@@ -38,6 +38,11 @@ namespace ARS408.Model
         public double Coeff { get; set; }
 
         /// <summary>
+        /// 值的偏移量，默认为0
+        /// </summary>
+        public double Offset { get; set; }
+
+        /// <summary>
         /// 是否可用
         /// </summary>
         public bool Enabled { get; set; }

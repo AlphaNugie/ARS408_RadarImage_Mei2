@@ -848,16 +848,10 @@
             // SocketTcpServer
             // 
             this.SocketTcpServer.CheckTime = 3000;
-            this.SocketTcpServer.HeartBeatCheck = null;
             this.SocketTcpServer.HeartBeatPacket = "X";
             this.SocketTcpServer.IsHeartCheck = false;
-            this.SocketTcpServer.IsStartListening = false;
-            this.SocketTcpServer.LocalEndPoint = null;
-            this.SocketTcpServer.RemoteEndPoint = null;
             this.SocketTcpServer.ServerIp = "127.0.0.1";
             this.SocketTcpServer.ServerPort = 5000;
-            this.SocketTcpServer.ServerSocket = null;
-            this.SocketTcpServer.StartSockst = null;
             this.SocketTcpServer.Received += new SocketHelper.SocketTcpServer.ReceivedEventHandler(this.SocketTcpServer_TcpServerReceived);
             // 
             // FormDisplay

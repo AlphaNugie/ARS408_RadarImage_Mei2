@@ -12,10 +12,29 @@ namespace ARS408.Core
     /// <summary>
     /// 雷达SQLITE服务类
     /// </summary>
-    public class DataService_Radar
+    public class DataService_Radar : BaseDataServiceSqlite
     {
-        //private readonly SqliteProvider provider = new SqliteProvider(string.Empty, "base.db");
-        private readonly SqliteProvider provider = new SqliteProvider(BaseConst.SqliteFileDir, BaseConst.SqliteFileName);
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        public DataService_Radar() : base(BaseConst.SqliteFileDir, BaseConst.SqliteFileName) { }
+
+        /// <summary>
+        /// 构造器
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="name"></param>
+        public DataService_Radar(string path, string name) : base(path, name) { }
+
+        protected override void SetTableName()
+        {
+            TableName = "t_base_radar_info";
+        }
+
+        protected override void AddMustHaveColumns()
+        {
+            ColumnsMustHave.Add(new SqliteColumnMapping("degree_base_yoz", SqliteSqlType.DOUBLE, true, ConflictClause.FAIL, 0));
+        }
 
         #region 查询
         /// <summary>
@@ -68,7 +87,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
   left join t_base_radargroup_info g on t.owner_group_id = g.group_id
   left join t_base_shiploader_info s on g.owner_shiploader_id = s.shiploader_id
   where {0} = 0 or s.shiploader_id = {0} {1}", shiploader_id, string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -88,7 +107,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public DataTable GetRadarItemNames(string orderby)
         {
             string sql = "select t.radar_id, t.radar_name, t.ip_address||':'||t.port address, t.item_name_radar_state, t.item_name_collision_state, t.item_name_collision_state_2, 0 changed from t_base_radar_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -108,7 +127,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public DataTable GetRadarCoorsLimitations(string orderby)
         {
             string sql = "select t.radar_id, t.radar_name, t.ip_address||':'||t.port address, t.radar_coors_limited, t.within_radar_limit, t.radar_x_min, t.radar_x_max, t.radar_y_min, t.radar_y_max, t.claimer_coors_limited, t.within_claimer_limit, t.claimer_x_min, t.claimer_x_max, t.claimer_y_min, t.claimer_y_max, t.claimer_z_min, t.claimer_z_max, t.angle_limited, t.within_angle_limit, t.angle_min, t.angle_max, 0 changed from t_base_radar_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -128,7 +147,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public DataTable GetRadarBehaviors(string orderby)
         {
             string sql = "select t.radar_id, t.radar_name, t.ip_address||':'||t.port address, t.apply_filter, t.use_public_filters, t.apply_iteration, t.pushf_max_count, t.false_alarm_filter, t.ambig_state_filter, t.invalid_state_filter, t.meas_state_filter, t.prob_exist_filter, 0 changed from t_base_radar_info t " + (string.IsNullOrWhiteSpace(orderby) ? string.Empty : "order by t." + orderby);
-            return provider.Query(sql);
+            return Provider.Query(sql);
         }
 
         /// <summary>
@@ -140,7 +159,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public int GetRadarRcsValueById(int id, string field)
         {
             string sqlString = string.Format("select {1} from t_base_radar_info where radar_id = {0}", id, field);
-            DataTable table = provider.Query(sqlString);
+            DataTable table = Provider.Query(sqlString);
             if (table == null || table.Rows.Count == 0)
                 return -64;
             return (int)double.Parse(table.Rows[0][field].ToString());
@@ -195,7 +214,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public int DeleteRadarById(int id)
         {
             string sql = string.Format("delete from t_base_radar_info where radar_id = {0}", id);
-            return provider.ExecuteSql(sql);
+            return Provider.ExecuteSql(sql);
         }
 
         /// <summary>
@@ -208,7 +227,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public int UpdateRadarRcsRangeById(int rcsMin, int rcsMax, int id)
         {
             string sqlString = string.Format("update t_base_radar_info set rcs_min = {0}, rcs_max = {1} where radar_id = {2}", rcsMin, rcsMax, id);
-            return provider.ExecuteSql(sqlString);
+            return Provider.ExecuteSql(sqlString);
         }
 
         ///// <summary>
@@ -220,7 +239,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         //public int UpdateRadarRcsMinById(int rcsMin, int id)
         //{
         //    string sqlString = string.Format("update t_base_radar_info set rcs_min = {0} where radar_id = {1}", rcsMin, id);
-        //    return provider.ExecuteSql(sqlString);
+        //    return Provider.ExecuteSql(sqlString);
         //}
 
         ///// <summary>
@@ -232,7 +251,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         //public int UpdateRadarRcsMaxById(int rcsMax, int id)
         //{
         //    string sqlString = string.Format("update t_base_radar_info set rcs_max = {0} where radar_id = {1}", rcsMax, id);
-        //    return provider.ExecuteSql(sqlString);
+        //    return Provider.ExecuteSql(sqlString);
         //}
 
         /// <summary>
@@ -245,7 +264,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public int UpdateRadarRcsValueById(int rcsValue, int id, string field)
         {
             string sqlString = string.Format("update t_base_radar_info set {2} = {0} where radar_id = {1}", rcsValue, id, field);
-            return this.provider.ExecuteSql(sqlString);
+            return this.Provider.ExecuteSql(sqlString);
         }
 
         /// <summary>
@@ -255,7 +274,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         /// <returns></returns>
         public int SaveRadar(Radar radar)
         {
-            return provider.ExecuteSql(GetRadarSqlString(radar));
+            return Provider.ExecuteSql(GetRadarSqlString(radar));
         }
 
         /// <summary>
@@ -266,7 +285,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public bool SaveRadars(IEnumerable<Radar> radars)
         {
             string[] sqls = radars == null ? null : radars.Select(radar => GetRadarSqlString(radar)).ToArray();
-            return provider.ExecuteSqlTrans(sqls);
+            return Provider.ExecuteSqlTrans(sqls);
         }
 
         ///// <summary>
@@ -277,7 +296,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         //public bool SaveRadarItemNames(IEnumerable<Radar> radars)
         //{
         //    string[] sqls = radars == null ? null : radars.Select(radar => GetRadarSqlString_ItemName(radar)).ToArray();
-        //    return provider.ExecuteSqlTrans(sqls);
+        //    return Provider.ExecuteSqlTrans(sqls);
         //}
 
         /// <summary>
@@ -288,7 +307,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public bool SaveRadarCoorsLimitations(IEnumerable<Radar> radars)
         {
             string[] sqls = radars == null ? null : radars.Select(radar => GetRadarSqlString_CoorsLimitations(radar)).ToArray();
-            return provider.ExecuteSqlTrans(sqls);
+            return Provider.ExecuteSqlTrans(sqls);
         }
 
         /// <summary>
@@ -299,7 +318,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public bool SaveRadarBehaviors(IEnumerable<Radar> radars)
         {
             string[] sqls = radars == null ? null : radars.Select(radar => GetRadarSqlString_RadarBehaviors(radar)).ToArray();
-            return provider.ExecuteSqlTrans(sqls);
+            return Provider.ExecuteSqlTrans(sqls);
         }
 
         /// <summary>
@@ -311,7 +330,7 @@ select t.*, g.group_type, s.shiploader_id, s.topic_name, 0 changed from t_base_r
         public int InsertRadarDistance(int radar_id, string radar_name, double dist)
         {
             string sqlString = string.Format("insert into t_radar_distances_his (radar_id, radar_name, distance) values ({0}, {1}, {2})", radar_id, radar_name, dist);
-            return provider.ExecuteSql(sqlString);
+            return Provider.ExecuteSql(sqlString);
         }
         #endregion
     }
